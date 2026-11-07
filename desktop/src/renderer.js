@@ -22,7 +22,6 @@
 
   // DOM Elements
   const launchSplashScreen = document.getElementById('launch-splash-screen');
-  const splashProgressBar = document.getElementById('splash-progress-bar');
   const container = document.getElementById('main-widget-container');
   const compactBar = document.getElementById('compact-widget-bar');
   const navItems = document.querySelectorAll('.nav-item[data-path]');
@@ -93,8 +92,19 @@
   const syncCardDot = document.getElementById('sync-card-dot');
   const syncCardText = document.getElementById('sync-card-text');
   const btnSettingsPin = document.getElementById('btn-settings-pin');
-  const kbSummonShortcut = document.getElementById('kb-summon-shortcut');
-  const kbQuickShortcut = document.getElementById('kb-quick-shortcut');
+  // Tag Popover Elements
+  const newTagPopover = document.getElementById('new-tag-popover');
+  const inputNewTagName = document.getElementById('input-new-tag-name');
+  const btnSaveNewTag = document.getElementById('btn-save-new-tag');
+  const btnCancelTagPopover = document.getElementById('btn-cancel-tag-popover');
+  const btnCloseTagPopover = document.getElementById('btn-close-tag-popover');
+
+  // Habit Modal Elements
+  const newHabitModal = document.getElementById('new-habit-modal');
+  const inputHabitTitle = document.getElementById('input-habit-title');
+  const btnSaveHabit = document.getElementById('btn-save-habit');
+  const btnCancelHabit = document.getElementById('btn-cancel-habit');
+  const btnCloseHabitModal = document.getElementById('btn-close-habit-modal');
 
   // Footer & Status
   const footerSyncDot = document.getElementById('footer-sync-dot');
@@ -138,21 +148,37 @@
   // ----------------- LAUNCH ANIMATION -----------------
   function playLaunchAnimation() {
     return new Promise((resolve) => {
-      if (!launchSplashScreen || !splashProgressBar) {
+      if (!launchSplashScreen) {
         resolve();
         return;
       }
 
-      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '35%'; }, 150);
-      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '70%'; }, 500);
-      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '100%'; }, 900);
-      setTimeout(() => {
+      let isFinished = false;
+      const finishSplash = () => {
+        if (isFinished) return;
+        isFinished = true;
         launchSplashScreen.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
           launchSplashScreen.remove();
           resolve();
         }, 500);
-      }, 1200);
+      };
+
+      // Click to skip
+      launchSplashScreen.addEventListener('click', finishSplash);
+
+      const video = document.getElementById('desktop-splash-video');
+      if (video) {
+        // Video plays all through
+        video.addEventListener('ended', finishSplash);
+        video.addEventListener('error', finishSplash);
+        video.play().catch(() => {
+          setTimeout(finishSplash, 3000);
+        });
+        setTimeout(finishSplash, 12000);
+      } else {
+        finishSplash();
+      }
     });
   }
 
@@ -171,16 +197,10 @@
       macControls.classList.remove('hidden');
       macControls.classList.add('flex');
       winControls.classList.add('hidden');
-      kbSummonShortcut.textContent = '⌘+Shift+T';
-      kbQuickShortcut.textContent = '⌘K';
-      btnFooterQuick.textContent = '⌘K QUICK-ADD';
     } else {
       macControls.classList.add('hidden');
       winControls.classList.remove('hidden');
       winControls.classList.add('flex');
-      kbSummonShortcut.textContent = 'Ctrl+Shift+T';
-      kbQuickShortcut.textContent = 'Ctrl+K';
-      btnFooterQuick.textContent = 'CTRL+K QUICK-ADD';
     }
   }
 
@@ -909,14 +929,6 @@
       closeQuickAdd();
     }
 
-    quickInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        submitQuickTask();
-      } else if (e.key === 'Escape') {
-        closeQuickAdd();
-      }
-    });
-
     // Priority Cycler
     const priorities = ['urgent', 'medium', 'low'];
     btnQuickPriority.addEventListener('click', () => {
@@ -941,11 +953,24 @@
       updateTagCyclistUI();
     });
 
-    // + New Tag Button (Adds tag to Tag Bank!)
-    btnAddNewTag.addEventListener('click', () => {
-      const newTag = prompt('Create a new tag (e.g. Finance, Health, Project):');
-      if (newTag && newTag.trim()) {
-        const clean = newTag.trim();
+    // + New Tag Popover Controls
+    function openNewTagPopover() {
+      if (!newTagPopover) return;
+      newTagPopover.classList.remove('hidden');
+      if (inputNewTagName) {
+        inputNewTagName.value = '';
+        setTimeout(() => inputNewTagName.focus(), 50);
+      }
+    }
+
+    function closeNewTagPopover() {
+      if (newTagPopover) newTagPopover.classList.add('hidden');
+    }
+
+    function saveNewTagFromInput() {
+      if (!inputNewTagName) return;
+      const clean = inputNewTagName.value.trim();
+      if (clean) {
         if (!appData.tagsBank.includes(clean)) {
           appData.tagsBank.push(clean);
           currentTagIndex = appData.tagsBank.length - 1;
@@ -957,15 +982,62 @@
           updateTagCyclistUI();
         }
       }
+      closeNewTagPopover();
+    }
+
+    btnAddNewTag.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openNewTagPopover();
     });
 
-    // Add Repeated Task
-    btnAddRepeated.addEventListener('click', () => {
-      const title = prompt('Enter a daily recurring habit or task:');
-      if (title && title.trim()) {
+    btnSaveNewTag?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      saveNewTagFromInput();
+    });
+
+    btnCancelTagPopover?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeNewTagPopover();
+    });
+
+    btnCloseTagPopover?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeNewTagPopover();
+    });
+
+    inputNewTagName?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveNewTagFromInput();
+      } else if (e.key === 'Escape') {
+        closeNewTagPopover();
+      }
+    });
+
+    // Repeated Habit Modal Controls
+    function openHabitModal() {
+      if (!newHabitModal) return;
+      newHabitModal.classList.remove('hidden');
+      newHabitModal.classList.add('flex');
+      if (inputHabitTitle) {
+        inputHabitTitle.value = '';
+        setTimeout(() => inputHabitTitle.focus(), 50);
+      }
+    }
+
+    function closeHabitModal() {
+      if (!newHabitModal) return;
+      newHabitModal.classList.add('hidden');
+      newHabitModal.classList.remove('flex');
+    }
+
+    function saveHabitFromInput() {
+      if (!inputHabitTitle) return;
+      const title = inputHabitTitle.value.trim();
+      if (title) {
         const newHabit = {
           id: 'rep-' + Date.now(),
-          title: title.trim(),
+          title: title,
           priority: 'medium',
           time: '09:00',
           tag: 'Daily',
@@ -975,6 +1047,21 @@
         persist();
         renderRepeatedTasks();
         showToast('Daily habit created!');
+      }
+      closeHabitModal();
+    }
+
+    btnAddRepeated.addEventListener('click', openHabitModal);
+    btnSaveHabit?.addEventListener('click', saveHabitFromInput);
+    btnCancelHabit?.addEventListener('click', closeHabitModal);
+    btnCloseHabitModal?.addEventListener('click', closeHabitModal);
+
+    inputHabitTitle?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveHabitFromInput();
+      } else if (e.key === 'Escape') {
+        closeHabitModal();
       }
     });
 
@@ -1088,7 +1175,7 @@
       }
     });
 
-    // Global / IPC shortcut listener
+    // IPC Quick Add listener
     if (window.tasksAPI) {
       window.tasksAPI.onQuickAddTriggered(() => {
         switchView('active-tasks');
@@ -1096,19 +1183,12 @@
       });
     }
 
-    // Close menus on outside click
-    document.addEventListener('click', () => {
+    // Close menus and popovers on outside click
+    document.addEventListener('click', (e) => {
       document.querySelectorAll('.task-dropdown').forEach(d => d.classList.add('hidden'));
       addOptionsMenu.classList.add('hidden');
-    });
-
-    // Keyboard shortcut (Ctrl+K on Windows, Cmd+K on Mac)
-    window.addEventListener('keydown', (e) => {
-      const modifier = isMac ? e.metaKey : e.ctrlKey;
-      if (modifier && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        switchView('active-tasks');
-        openQuickAdd('today');
+      if (newTagPopover && !newTagPopover.contains(e.target) && e.target !== btnAddNewTag && !btnAddNewTag?.contains(e.target)) {
+        newTagPopover.classList.add('hidden');
       }
     });
 

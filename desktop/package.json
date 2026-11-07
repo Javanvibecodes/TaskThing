@@ -17,10 +17,16 @@
       "output": "dist"
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.productivity"
     },
     "files": [
@@ -34,7 +40,7 @@
     "desktop",
     "productivity"
   ],
-  "author": "tasks.core",
+  "author": "Task Thing",
   "license": "MIT",
   "devDependencies": {
     "electron": "^45.2.3"

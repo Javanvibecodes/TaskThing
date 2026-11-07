@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, globalShortcut, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, clipboard } = require('electron');
 const path = require('path');
 const os = require('os');
 const QRCode = require('qrcode');
@@ -43,6 +43,8 @@ function createWindow() {
   store = new LocalStore();
   const settings = store.get().settings || {};
 
+  const iconPath = path.join(__dirname, 'assets', 'blob.png');
+
   mainWindow = new BrowserWindow({
     width: 440,
     height: 600,
@@ -55,6 +57,7 @@ function createWindow() {
     alwaysOnTop: settings.alwaysOnTop || false,
     skipTaskbar: false,
     backgroundColor: '#00000000',
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -175,13 +178,19 @@ function handleRemoteMutation(mutation) {
 }
 
 function createTray() {
-  const svgIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-      <rect width="14" height="14" x="1" y="1" rx="4" fill="#8083ff"/>
-      <path d="M4 8l3 3 5-5" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  `;
-  const icon = nativeImage.createFromBuffer(Buffer.from(svgIcon));
+  const blobIconPath = path.join(__dirname, 'assets', 'blob.png');
+  let icon;
+  try {
+    icon = nativeImage.createFromPath(blobIconPath).resize({ width: 16, height: 16 });
+  } catch (e) {
+    const svgIcon = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+        <rect width="14" height="14" x="1" y="1" rx="4" fill="#0381FC"/>
+        <path d="M4 8l3 3 5-5" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+    icon = nativeImage.createFromBuffer(Buffer.from(svgIcon));
+  }
   tray = new Tray(icon);
   tray.setToolTip('Task Thing — Get your things together');
 
@@ -333,7 +342,7 @@ ipcMain.handle('sync:generatePairingQR', async () => {
   const token = data.settings?.pairingToken || 'TC-LOCAL';
 
   const payload = JSON.stringify({
-    app: 'tasks.core',
+    app: 'Task Thing',
     version: '1.0.0',
     primaryHost: ip,
     hosts: allIps,
@@ -360,15 +369,6 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
 
-  globalShortcut.register('CommandOrControl+Shift+T', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
-    }
-  });
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -376,7 +376,6 @@ app.whenReady().then(() => {
 
 app.on('will-quit', () => {
   if (syncServer) syncServer.stop();
-  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {

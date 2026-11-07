@@ -44,13 +44,12 @@
 
   // DOM Elements
   const mobileLaunchSplash = document.getElementById('mobile-launch-splash');
-  const mobileSplashProgress = document.getElementById('mobile-splash-progress');
   const tabButtons = document.querySelectorAll('.mobile-tab-btn');
   const screens = document.querySelectorAll('.mobile-screen');
   const activeTasksList = document.getElementById('mobile-tasks-list');
   const repeatedTasksList = document.getElementById('mobile-repeated-list');
   const historyList = document.getElementById('mobile-history-list');
-  const mobilePendingBadge = document.getElementById('mobile-pending-badge');
+  const mobilePendingBadge = document.getElementById('mobile-nav-pending-badge');
   const historyCountBadge = document.getElementById('mobile-history-count');
   const searchInput = document.getElementById('mobile-history-search');
   const todayDateBadge = document.getElementById('mobile-today-date');
@@ -78,6 +77,20 @@
   const tagLabel = document.getElementById('mobile-tag-label');
   const btnAddTag = document.getElementById('mobile-btn-add-tag');
   const schedBadge = document.getElementById('mobile-sched-badge');
+
+  // Mobile Tag Modal Elements
+  const newTagModal = document.getElementById('mobile-new-tag-modal');
+  const inputNewTag = document.getElementById('mobile-input-new-tag');
+  const btnSaveNewTag = document.getElementById('mobile-btn-save-new-tag');
+  const btnCancelTagModal = document.getElementById('mobile-btn-cancel-tag-modal');
+  const btnCloseTagModal = document.getElementById('mobile-btn-close-tag-modal');
+
+  // Mobile Habit Modal Elements
+  const newHabitModal = document.getElementById('mobile-new-habit-modal');
+  const inputNewHabit = document.getElementById('mobile-input-new-habit');
+  const btnSaveNewHabit = document.getElementById('mobile-btn-save-new-habit');
+  const btnCancelHabitModal = document.getElementById('mobile-btn-cancel-habit-modal');
+  const btnCloseHabitModal = document.getElementById('mobile-btn-close-habit-modal');
 
   // Tomorrow Banner
   const tomorrowBanner = document.getElementById('mobile-tomorrow-banner');
@@ -455,11 +468,13 @@
     const tasks = mobileData.activeTasks || [];
     
     // Decrementing Pending badge on Tasks tab!
-    mobilePendingBadge.textContent = tasks.length;
-    if (tasks.length === 0) {
-      mobilePendingBadge.classList.add('opacity-40');
-    } else {
-      mobilePendingBadge.classList.remove('opacity-40');
+    if (mobilePendingBadge) {
+      mobilePendingBadge.textContent = tasks.length;
+      if (tasks.length === 0) {
+        mobilePendingBadge.classList.add('opacity-40');
+      } else {
+        mobilePendingBadge.classList.remove('opacity-40');
+      }
     }
 
     const todayCompletedCount = (mobileData.completedTasks || []).filter(c => c.group === 'today' || !c.group).length;
@@ -838,41 +853,69 @@
   // ----------------- LAUNCH ANIMATION -----------------
   function playMobileLaunchAnimation() {
     return new Promise((resolve) => {
-      if (!mobileLaunchSplash || !mobileSplashProgress) {
+      const splash = document.getElementById('mobile-launch-splash');
+      if (!splash) {
         resolve();
         return;
       }
-      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '35%'; }, 150);
-      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '70%'; }, 500);
-      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '100%'; }, 900);
-      setTimeout(() => {
-        mobileLaunchSplash.classList.add('opacity-0', 'pointer-events-none');
+
+      let isFinished = false;
+      const finishSplash = () => {
+        if (isFinished) return;
+        isFinished = true;
+        splash.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
-          mobileLaunchSplash.remove();
+          splash.remove();
           resolve();
         }, 500);
-      }, 1200);
+      };
+
+      // Tap to skip
+      splash.addEventListener('click', finishSplash);
+      splash.addEventListener('touchstart', finishSplash, { passive: true });
+
+      const video = document.getElementById('mobile-splash-video');
+      if (video) {
+        // Video plays all through
+        video.addEventListener('ended', finishSplash);
+        video.addEventListener('error', finishSplash);
+        const p = video.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            setTimeout(finishSplash, 3000);
+          });
+        }
+        setTimeout(finishSplash, 12000);
+      } else {
+        finishSplash();
+      }
     });
   }
 
   // ----------------- INITIALIZATION -----------------
   function init() {
     playMobileLaunchAnimation();
-    mobileSkeleton.classList.remove('hidden');
+    if (mobileSkeleton) mobileSkeleton.classList.remove('hidden');
 
-    loadPersistedState();
+    try {
+      loadPersistedState();
 
-    const now = new Date();
-    todayDateBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      const now = new Date();
+      if (todayDateBadge) {
+        todayDateBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      }
 
-    applyTheme(mobileData.settings.themePreset || 'cobalt', false);
-    updateTagUI();
-    renderActiveTasks();
-    renderHistory();
-    renderRepeatedTasks();
-    updateTomorrowBanner();
-
-    mobileSkeleton.classList.add('hidden');
+      applyTheme(mobileData.settings.themePreset || 'cobalt', false);
+      updateTagUI();
+      renderActiveTasks();
+      renderHistory();
+      renderRepeatedTasks();
+      updateTomorrowBanner();
+    } catch (err) {
+      console.error('Task Thing Mobile init error:', err);
+    } finally {
+      if (mobileSkeleton) mobileSkeleton.classList.add('hidden');
+    }
 
     if (syncConfig.host) {
       connectToDesktop(syncConfig.host);
@@ -888,7 +931,9 @@
       });
     });
 
-    btnSyncHeader.addEventListener('click', () => switchScreen('sync'));
+    if (btnSyncHeader) {
+      btnSyncHeader.addEventListener('click', () => switchScreen('sync'));
+    }
 
     // Toggle Quick Add Form (Hidden by default)
     function openQuickAdd(target = 'today') {
@@ -959,9 +1004,6 @@
     }
 
     btnSubmit.addEventListener('click', submitTask);
-    quickInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') submitTask();
-    });
 
     // Priority button
     const priorities = ['urgent', 'medium', 'low'];
@@ -987,33 +1029,97 @@
       updateTagUI();
     });
 
-    btnAddTag.addEventListener('click', () => {
-      const newTag = prompt('Create a new tag (e.g. Finance, Fitness, Study):');
-      if (newTag && newTag.trim()) {
-        const clean = newTag.trim();
+    // Mobile Tag Modal Controls
+    function openTagModal() {
+      if (!newTagModal) return;
+      newTagModal.classList.remove('hidden');
+      if (inputNewTag) {
+        inputNewTag.value = '';
+        setTimeout(() => inputNewTag.focus(), 80);
+      }
+    }
+
+    function closeTagModal() {
+      if (newTagModal) newTagModal.classList.add('hidden');
+    }
+
+    function saveTagFromInput() {
+      if (!inputNewTag) return;
+      const clean = inputNewTag.value.trim();
+      if (clean) {
         if (!mobileData.tagsBank.includes(clean)) {
           mobileData.tagsBank.push(clean);
           currentTagIndex = mobileData.tagsBank.length - 1;
           persistData();
           updateTagUI();
+          sendWsMessage({ type: 'TAG_ADDED', payload: clean });
+        } else {
+          currentTagIndex = mobileData.tagsBank.indexOf(clean);
+          updateTagUI();
         }
+      }
+      closeTagModal();
+    }
+
+    btnAddTag.addEventListener('click', openTagModal);
+    btnSaveNewTag?.addEventListener('click', saveTagFromInput);
+    btnCancelTagModal?.addEventListener('click', closeTagModal);
+    btnCloseTagModal?.addEventListener('click', closeTagModal);
+
+    inputNewTag?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveTagFromInput();
+      } else if (e.key === 'Escape') {
+        closeTagModal();
       }
     });
 
-    // Add repeated habit
-    btnAddHabit.addEventListener('click', () => {
-      const title = prompt('Enter a daily recurring habit:');
-      if (title && title.trim()) {
-        mobileData.repeatedTasks.push({
+    // Mobile Habit Modal Controls
+    function openHabitModal() {
+      if (!newHabitModal) return;
+      newHabitModal.classList.remove('hidden');
+      if (inputNewHabit) {
+        inputNewHabit.value = '';
+        setTimeout(() => inputNewHabit.focus(), 80);
+      }
+    }
+
+    function closeHabitModal() {
+      if (newHabitModal) newHabitModal.classList.add('hidden');
+    }
+
+    function saveHabitFromInput() {
+      if (!inputNewHabit) return;
+      const title = inputNewHabit.value.trim();
+      if (title) {
+        const habit = {
           id: 'rep-m-' + Date.now(),
-          title: title.trim(),
+          title: title,
           priority: 'medium',
           time: '09:00',
           tag: 'Daily',
           enabled: true
-        });
+        };
+        mobileData.repeatedTasks.push(habit);
         persistData();
         renderRepeatedTasks();
+        sendWsMessage({ type: 'HABIT_ADDED', payload: habit });
+      }
+      closeHabitModal();
+    }
+
+    btnAddHabit.addEventListener('click', openHabitModal);
+    btnSaveNewHabit?.addEventListener('click', saveHabitFromInput);
+    btnCancelHabitModal?.addEventListener('click', closeHabitModal);
+    btnCloseHabitModal?.addEventListener('click', closeHabitModal);
+
+    inputNewHabit?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveHabitFromInput();
+      } else if (e.key === 'Escape') {
+        closeHabitModal();
       }
     });
 

@@ -3,7 +3,7 @@ const http = require('http');
 const url = require('url');
 
 /**
- * tasks.core SyncServer
+ * Task Thing SyncServer
  * Ultra-lightweight local-first WebSocket sync server.
  * Handles instant bi-directional updates, offline event reconciliation,
  * token-based security, and multi-interface LAN/hotspot connectivity.
@@ -47,7 +47,7 @@ class SyncServer {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
             status: 'ok',
-            app: 'tasks.core',
+            app: 'Task Thing',
             version: '1.0.0',
             clients: this.clients.size,
             timestamp: Date.now()
