@@ -1035,6 +1035,11 @@
 
     if (mainScroll) mainScroll.scrollTop = 0;
 
+    // Close modals when switching screens
+    closeTaskModal();
+    closeHabitForm();
+    closeHabitModal();
+
     if (targetKey !== 'sync' && isScanning) {
       stopScanner();
     }

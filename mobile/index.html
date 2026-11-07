@@ -215,7 +215,7 @@
 <body class="relative bg-surface text-on-surface font-body-md h-[100dvh] flex flex-col overflow-hidden" data-theme="cobalt">
 
   <!-- Mobile Launch Animation Splash Overlay (Full screen video) -->
-  <div id="mobile-launch-splash" class="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden cursor-pointer">
+  <div id="mobile-launch-splash" class="fixed inset-0 bg-black z-60 flex items-center justify-center transition-opacity duration-500 overflow-hidden cursor-pointer">
     <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" poster="" class="w-full h-full object-cover pointer-events-none"></video>
   </div>
 
@@ -608,7 +608,7 @@
   </div>
 
   <!-- Mobile Edit Task Modal (same visual language as the Add Task form) -->
-  <div id="mobile-task-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+  <div id="mobile-task-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center sm:items-center justify-center p-4">
     <div class="bg-surface border border-outline rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
       <div class="flex items-center justify-between">
         <span id="mobile-task-modal-title" class="font-headline-sm text-[14px] text-on-surface font-semibold">Edit Task</span>
