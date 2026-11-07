@@ -271,7 +271,8 @@
   async function connectToDesktop(customHost = null) {
     if (reconnectTimer) clearTimeout(reconnectTimer);
     if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
-      return;
+      // Already connected or connecting; if reconnecting to same host, don't re-enter
+      if (customHost && ws.url && ws.url.includes(customHost)) return;
     }
 
     const hostToTry = customHost || syncConfig.host;
@@ -287,6 +288,16 @@
     updateConnectionUI('connecting', hostToTry);
 
     try {
+      // If existing WS is in CONNECTING state for same host, close it first
+      if (ws) {
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onclose = null;
+        ws.onerror = null;
+        ws.close();
+        ws = null;
+      }
+
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -315,20 +326,31 @@
         try {
           const msg = JSON.parse(event.data);
           handleServerMessage(msg);
-        } catch (e) {}
+        } catch (e) {
+          // Ignore malformed messages
+        }
       };
 
       ws.onclose = () => {
         syncConfig.connected = false;
         stopHeartbeat();
+        ws = null;
         updateConnectionUI('disconnected');
         scheduleAutoReconnect();
       };
 
-      ws.onerror = () => {
-        ws.close();
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        ws = null;
+        // Don't close here - onclose will handle it
+        // But ensure we don't stay in connecting state forever
+        updateConnectionUI('disconnected');
+        scheduleAutoReconnect();
       };
     } catch (err) {
+      console.error('WebSocket connection failed:', err);
+      ws = null;
+      updateConnectionUI('disconnected');
       scheduleAutoReconnect();
     }
   }
@@ -431,8 +453,10 @@
     reconnectTimer = setTimeout(async () => {
       if (syncConfig.connected) return;
 
+      // If we already have a successful connection host, try that first
       if (syncConfig.host) {
         connectToDesktop(syncConfig.host);
+        return;
       }
 
       // Check alternate hotspot candidates
@@ -450,9 +474,12 @@
               connectToDesktop(ip);
               return;
             }
-          } catch (e) {}
+          } catch (e) {
+            // continue to next candidate
+          }
         }
       }
+      // No candidates found - UI will show disconnected; user can scan QR or manual connect
     }, 3000);
   }
 
@@ -862,11 +889,32 @@
   }
 
   // ----------------- QR SCANNER & PAIRING -----------------
+  // Request camera permission before starting scanner
+  async function requestCameraPermission() {
+    try {
+      const permission = await navigator.permissions.query({ name: 'camera' });
+      if (permission.state === 'granted') return true;
+      if (permission.state === 'denied') {
+        alert('Camera permission was previously denied. Please enable it in browser settings to use QR scanning.');
+        return false;
+      }
+      // permission.state === 'prompt' - show browser prompt
+      return true; // let startScanner() handle the browser prompt
+    } catch (e) {
+      // Permissions API not supported, proceed directly
+      return true;
+    }
+  }
+
   async function startScanner() {
     if (typeof Html5Qrcode === 'undefined') {
       alert('Camera module unavailable. Connect manually via IP below.');
       return;
     }
+
+    // Check camera permission first
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) return;
 
     try {
       html5QrScanner = new Html5Qrcode('qr-reader');
@@ -882,7 +930,13 @@
       isScanning = true;
       cameraBtnText.textContent = 'Stop Scanner';
     } catch (err) {
-      alert('Camera permission denied or camera not found. Use manual IP connect below.');
+      // Html5Qrcode may throw if permission denied or camera not available
+      const errorName = err.name || err.error || err;
+      if (errorName === 'NotFoundError' || errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+        alert('Camera permission denied or camera not found. Use manual IP connect below.');
+      } else {
+        alert('Camera error: ' + (err.message || err));
+      }
     }
   }
 

@@ -32,7 +32,8 @@
     "files": [
       "src/**/*",
       "package.json"
-    ]
+    ],
+    "icon": "src/assets/blob.png"
   },
   "keywords": [
     "widget",
