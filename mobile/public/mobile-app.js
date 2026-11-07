@@ -918,9 +918,8 @@
 
     try {
       html5QrScanner = new Html5Qrcode('qr-reader');
+      // Start scanner without restrictive facingMode or qrbox - auto-size to container
       await html5QrScanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
           handleScannedData(decodedText);
           stopScanner();
