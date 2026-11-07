@@ -1,6 +1,6 @@
 {
-  "appId": "com.taskscore.mobile",
-  "appName": "tasks.core",
+  "appId": "com.taskthing.mobile",
+  "appName": "Task Thing",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {

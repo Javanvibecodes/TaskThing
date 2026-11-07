@@ -1,7 +1,7 @@
 {
-  "name": "tasks-core-desktop",
+  "name": "task-thing-desktop",
   "version": "1.0.0",
-  "description": "tasks.core - Floating Desktop Widget for Windows & macOS",
+  "description": "Task Thing — Get your things together",
   "main": "src/main.js",
   "type": "commonjs",
   "scripts": {
@@ -11,8 +11,8 @@
     "dist:mac": "electron-builder --mac"
   },
   "build": {
-    "appId": "com.taskscore.widget",
-    "productName": "tasks.core",
+    "appId": "com.taskthing.widget",
+    "productName": "Task Thing",
     "directories": {
       "output": "dist"
     },

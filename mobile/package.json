@@ -1,7 +1,7 @@
 {
-  "name": "tasks-core-mobile",
+  "name": "task-thing-mobile",
   "version": "1.0.0",
-  "description": "tasks.core - Mobile App for Android and iOS",
+  "description": "Task Thing — Mobile App for Android and iOS",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

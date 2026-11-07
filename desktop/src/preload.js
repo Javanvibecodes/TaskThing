@@ -1,7 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('tasksAPI', {
-  // Window controls
+  // System
+  getPlatform: () => ipcRenderer.invoke('system:getPlatform'),
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   closeWindow: () => ipcRenderer.send('window:close'),
   togglePin: () => ipcRenderer.invoke('window:togglePin'),

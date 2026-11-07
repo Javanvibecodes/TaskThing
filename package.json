@@ -1,7 +1,7 @@
 {
-  "name": "widget-monorepo",
+  "name": "task-thing-monorepo",
   "version": "1.0.0",
-  "description": "tasks.core - Floating Desktop Widget & Mobile Sync App",
+  "description": "Task Thing — Get your things together (Desktop Widget & Mobile App)",
   "private": true,
   "scripts": {
     "desktop": "pnpm --dir desktop start",

@@ -1,43 +1,70 @@
-// tasks.core - Desktop Widget Renderer Engine with Real-Time Mobile Sync
+// Task Thing — Desktop Renderer Engine
 (async function() {
-  // Global State
   let appData = {
     settings: {
       themePreset: 'indigo',
       colorMode: 'dark',
-      radius: 'rounded',
-      opacity: 95,
       alwaysOnTop: false,
       compactMode: false
     },
+    tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
+    repeatedTasks: [],
+    tomorrowTasks: [],
     activeTasks: [],
     completedTasks: []
   };
 
   let currentPriority = 'urgent';
-  let currentTag = 'Design';
+  let currentTagIndex = 0;
+  let schedulingTarget = 'today'; // 'today' | 'tomorrow'
   let toastTimer = null;
+  let isMac = false;
 
   // DOM Elements
   const container = document.getElementById('main-widget-container');
   const compactBar = document.getElementById('compact-widget-bar');
   const navItems = document.querySelectorAll('.nav-item[data-path]');
   const viewPanels = document.querySelectorAll('.view-panel');
-  const completedBadge = document.getElementById('nav-completed-badge');
+  const navPendingBadge = document.getElementById('nav-pending-badge');
   const currentDateBadge = document.getElementById('current-date-badge');
   const remainingCountBadge = document.getElementById('remaining-count-badge');
   const activeTasksList = document.getElementById('active-tasks-list');
-  const quickInput = document.getElementById('quick-input');
+  const tasksLoadingSkeleton = document.getElementById('tasks-loading-skeleton');
+  const stateNoTasksToday = document.getElementById('state-no-tasks-today');
+  const stateAllCompletedToday = document.getElementById('state-all-completed-today');
+  const completedSummaryText = document.getElementById('completed-summary-text');
+  const btnEmptyAdd = document.getElementById('btn-empty-add');
+  
+  // Quick Add Elements
+  const quickAddSection = document.getElementById('quick-add-section');
   const toggleAddBtn = document.getElementById('toggle-add-btn');
+  const addBtnIcon = document.getElementById('add-btn-icon');
+  const addBtnText = document.getElementById('add-btn-text');
+  const btnAddDropdown = document.getElementById('btn-add-dropdown');
+  const addOptionsMenu = document.getElementById('add-options-menu');
+  const optAddToday = document.getElementById('opt-add-today');
+  const optSetTomorrow = document.getElementById('opt-set-tomorrow');
+  const quickInput = document.getElementById('quick-input');
+  const btnCancelAdd = document.getElementById('btn-cancel-add');
   const btnQuickPriority = document.getElementById('btn-quick-priority');
   const quickPriorityDot = document.getElementById('quick-priority-dot');
   const quickPriorityText = document.getElementById('quick-priority-text');
   const quickTimeInput = document.getElementById('quick-time-input');
   const btnQuickTag = document.getElementById('btn-quick-tag');
   const quickTagText = document.getElementById('quick-tag-text');
-  
+  const btnAddNewTag = document.getElementById('btn-add-new-tag');
+  const schedulingTargetBadge = document.getElementById('scheduling-target-badge');
+
+  // Tomorrow Prep Banner
+  const tomorrowPrepBanner = document.getElementById('tomorrow-prep-banner');
+  const tomorrowPrepCount = document.getElementById('tomorrow-prep-count');
+  const btnViewTomorrow = document.getElementById('btn-view-tomorrow');
+
+  // Repeated Tasks Elements
+  const repeatedTasksList = document.getElementById('repeated-tasks-list');
+  const btnAddRepeated = document.getElementById('btn-add-repeated');
+
   // History Elements
-  const historyFinishedBadge = document.getElementById('history-finished-badge');
   const historyFilterInput = document.getElementById('history-filter-input');
   const listToday = document.getElementById('list-history-today');
   const listYesterday = document.getElementById('list-history-yesterday');
@@ -52,9 +79,6 @@
 
   // Theme Elements
   const themePresets = document.querySelectorAll('.theme-preset-btn');
-  const radiusButtons = document.querySelectorAll('.radius-btn');
-  const opacitySlider = document.getElementById('opacity-slider');
-  const opacityLabel = document.getElementById('opacity-label');
   const btnThemeSave = document.getElementById('btn-theme-save');
   const btnThemeReset = document.getElementById('btn-theme-reset');
   const themeActiveLabel = document.getElementById('theme-active-label');
@@ -64,16 +88,28 @@
   const syncHostIp = document.getElementById('sync-host-ip');
   const syncPort = document.getElementById('sync-port');
   const syncToken = document.getElementById('sync-token');
+  const syncCardDot = document.getElementById('sync-card-dot');
+  const syncCardText = document.getElementById('sync-card-text');
   const btnSettingsPin = document.getElementById('btn-settings-pin');
-  const footerSyncStatus = document.getElementById('footer-sync-status');
+  const kbSummonShortcut = document.getElementById('kb-summon-shortcut');
+  const kbQuickShortcut = document.getElementById('kb-quick-shortcut');
 
-  // Window Controls
+  // Footer & Status
+  const footerSyncDot = document.getElementById('footer-sync-dot');
+  const footerSyncStatus = document.getElementById('footer-sync-status');
+  const btnFooterQuick = document.getElementById('btn-footer-quick');
+
+  // Window Controls (Mac vs Windows)
+  const macControls = document.getElementById('mac-controls');
+  const winControls = document.getElementById('win-controls');
+  const btnMacClose = document.getElementById('btn-mac-close');
+  const btnMacMin = document.getElementById('btn-mac-min');
+  const btnMacCompact = document.getElementById('btn-mac-compact');
   const btnWinClose = document.getElementById('btn-win-close');
   const btnWinMin = document.getElementById('btn-win-min');
-  const btnWinCompact = document.getElementById('btn-win-compact');
   const btnPinToggle = document.getElementById('btn-pin-toggle');
   const pinIcon = document.getElementById('pin-icon');
-  const btnHeaderMinimize = document.getElementById('btn-header-minimize');
+  const btnHeaderCompact = document.getElementById('btn-header-compact');
   const btnCompactSidebar = document.getElementById('btn-compact-sidebar');
 
   // Compact Bar Elements
@@ -86,7 +122,6 @@
   const toastBar = document.getElementById('toast-bar');
   const toastText = document.getElementById('toast-text');
 
-  // Helper: Toast Notification
   function showToast(message) {
     if (toastTimer) clearTimeout(toastTimer);
     toastText.textContent = message;
@@ -98,92 +133,141 @@
     }, 2200);
   }
 
-  // Load Initial Data
+  // ----------------- PLATFORM DETECTION -----------------
+  async function setupPlatformUI() {
+    try {
+      if (window.tasksAPI?.getPlatform) {
+        const platform = await window.tasksAPI.getPlatform();
+        isMac = platform === 'darwin';
+      }
+    } catch (e) {
+      isMac = false;
+    }
+
+    if (isMac) {
+      macControls.classList.remove('hidden');
+      macControls.classList.add('flex');
+      winControls.classList.add('hidden');
+      kbSummonShortcut.textContent = '⌘+Shift+T';
+      kbQuickShortcut.textContent = '⌘K';
+      btnFooterQuick.textContent = '⌘K QUICK-ADD';
+    } else {
+      macControls.classList.add('hidden');
+      winControls.classList.remove('hidden');
+      winControls.classList.add('flex');
+      kbSummonShortcut.textContent = 'Ctrl+Shift+T';
+      kbQuickShortcut.textContent = 'Ctrl+K';
+      btnFooterQuick.textContent = 'CTRL+K QUICK-ADD';
+    }
+  }
+
+  // ----------------- INITIALIZATION -----------------
   async function init() {
+    await setupPlatformUI();
+
+    // Show initial loading skeleton
+    tasksLoadingSkeleton.classList.remove('hidden');
+
     try {
       if (window.tasksAPI) {
         appData = await window.tasksAPI.loadData();
       }
     } catch (err) {
-      console.warn('Using memory store:', err);
+      console.warn('Using local fallback:', err);
     }
 
+    // Safety checks
+    if (!appData.tagsBank || appData.tagsBank.length === 0) {
+      appData.tagsBank = ['Design', 'Dev', 'Ops', 'Team', 'Personal'];
+    }
+    if (!appData.repeatedTasks) appData.repeatedTasks = [];
+    if (!appData.tomorrowTasks) appData.tomorrowTasks = [];
+    if (!appData.activeTasks) appData.activeTasks = [];
+    if (!appData.completedTasks) appData.completedTasks = [];
+
+    // Hide skeleton after load
+    tasksLoadingSkeleton.classList.add('hidden');
+
     renderCurrentDate();
-    applyTheme(appData.settings.themePreset || 'indigo', false);
-    applyRadius(appData.settings.radius || 'rounded');
-    applyOpacity(appData.settings.opacity || 95);
+    applyTheme(appData.settings.themePreset || 'indigo');
     updatePinUI(appData.settings.alwaysOnTop || false);
 
+    updateTagCyclistUI();
     renderActiveTasks();
     renderCompletedHistory();
+    renderRepeatedTasks();
+    updateTomorrowBanner();
     setupEventListeners();
     setupSyncListeners();
     loadNetworkInfo();
   }
 
-  // Format Today's Date
   function renderCurrentDate() {
     const now = new Date();
-    const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    currentDateBadge.textContent = now.toLocaleDateString('en-US', options);
+    currentDateBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
-  // Save to disk & broadcast
   async function persist(mutation = null) {
     if (window.tasksAPI) {
       await window.tasksAPI.saveData(appData);
       if (mutation) {
-        await window.tasksAPI.broadcastMutation(mutation);
+        // Broadcast all mutations EXCEPT theme (themes stay local!)
+        if (mutation.type !== 'THEME_CHANGED') {
+          await window.tasksAPI.broadcastMutation(mutation);
+        }
       }
     }
   }
 
-  // Setup Real-Time Sync IPC Listeners
+  // ----------------- REAL-TIME SYNC LISTENERS -----------------
   function setupSyncListeners() {
     if (!window.tasksAPI) return;
 
-    // Receive mutations from phone
     window.tasksAPI.onRemoteMutation((mutation) => {
+      // Ignore theme changes from phone (theme is independent per device)
+      if (mutation.type === 'THEME_CHANGED') return;
       handleIncomingRemoteMutation(mutation);
     });
 
-    // Receive live connected client count
     window.tasksAPI.onClientCountChange((count) => {
-      if (count > 0) {
-        footerSyncStatus.textContent = `SYNCED (${count} DEVICE${count > 1 ? 'S' : ''})`;
-        footerSyncStatus.className = 'text-secondary font-semibold';
-      } else {
-        footerSyncStatus.textContent = 'LOCAL READY';
-        footerSyncStatus.className = '';
-      }
+      updateSyncStatusUI(count);
     });
   }
 
-  // Handle Incoming Remote Mutation from Phone
+  function updateSyncStatusUI(clientCount) {
+    if (clientCount > 0) {
+      footerSyncDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary animate-pulse';
+      footerSyncStatus.textContent = `SYNCED (${clientCount} DEVICE${clientCount > 1 ? 'S' : ''})`;
+      footerSyncStatus.className = 'text-secondary font-semibold';
+
+      syncCardDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary animate-pulse';
+      syncCardText.textContent = `${clientCount} Device Connected (Real-Time Sync)`;
+    } else {
+      footerSyncDot.className = 'w-1.5 h-1.5 rounded-full bg-outline';
+      footerSyncStatus.textContent = 'LOCAL ONLY';
+      footerSyncStatus.className = 'text-on-surface-variant';
+
+      syncCardDot.className = 'w-1.5 h-1.5 rounded-full bg-outline';
+      syncCardText.textContent = 'Local Direct Sync Ready (Waiting for Phone)';
+    }
+  }
+
   async function handleIncomingRemoteMutation(mutation) {
-    // Reload full data to stay in sync
     if (window.tasksAPI) {
       appData = await window.tasksAPI.loadData();
     }
     renderActiveTasks();
     renderCompletedHistory();
+    renderRepeatedTasks();
 
-    const title = mutation.payload?.title ? `"${mutation.payload.title.slice(0, 18)}..."` : 'item';
-    if (mutation.type === 'TASK_ADDED') {
-      showToast(`Phone added ${title}`);
-    } else if (mutation.type === 'TASK_COMPLETED') {
-      showToast(`Phone completed ${title}`);
-    } else if (mutation.type === 'TASK_REOPENED') {
-      showToast(`Phone reopened ${title}`);
-    } else if (mutation.type === 'TASK_DELETED') {
-      showToast(`Phone deleted task`);
-    } else if (mutation.type === 'THEME_CHANGED') {
-      applyTheme(appData.settings.themePreset, false);
-      showToast(`Phone synced theme: ${appData.settings.themePreset}`);
-    }
+    const title = mutation.payload?.title ? `"${mutation.payload.title.slice(0, 18)}..."` : 'task';
+    if (mutation.type === 'TASK_ADDED') showToast(`Phone added ${title}`);
+    else if (mutation.type === 'TASK_COMPLETED') showToast(`Phone completed ${title}`);
+    else if (mutation.type === 'TASK_REOPENED') showToast(`Phone reopened ${title}`);
+    else if (mutation.type === 'TASK_DELETED') showToast(`Phone removed task`);
   }
 
-  // Navigation Switcher
+  // ----------------- NAVIGATION -----------------
   function switchView(targetPath) {
     navItems.forEach(item => {
       const isTarget = item.getAttribute('data-path') === targetPath;
@@ -211,31 +295,56 @@
     }
   }
 
-  // Render Active Tasks
+  // ----------------- ACTIVE TASKS & EMPTY STATES -----------------
   function renderActiveTasks() {
     activeTasksList.innerHTML = '';
     const tasks = appData.activeTasks || [];
     
-    remainingCountBadge.textContent = `${tasks.length} remaining`;
-    
+    // Update pending badge on Active Tasks tab!
+    navPendingBadge.textContent = tasks.length;
     if (tasks.length === 0) {
-      activeTasksList.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-8 text-center text-outline gap-1">
-          <span class="material-symbols-outlined text-[24px]">task_alt</span>
-          <span class="font-headline-sm text-body-sm text-on-surface-variant">All tasks done!</span>
-          <span class="font-label-mono text-[11px]">Type in the box above to add a new task.</span>
-        </div>
-      `;
+      navPendingBadge.classList.add('opacity-40');
+    } else {
+      navPendingBadge.classList.remove('opacity-40');
+    }
+
+    remainingCountBadge.textContent = `${tasks.length} remaining`;
+
+    // Check completed today count to differentiate empty states
+    const todayCompletedCount = (appData.completedTasks || []).filter(c => c.group === 'today').length;
+
+    if (tasks.length === 0) {
+      if (todayCompletedCount > 0) {
+        stateNoTasksToday.classList.add('hidden');
+        stateAllCompletedToday.classList.remove('hidden');
+        completedSummaryText.textContent = `You completed ${todayCompletedCount} task${todayCompletedCount > 1 ? 's' : ''} today. Everything is done!`;
+      } else {
+        stateAllCompletedToday.classList.add('hidden');
+        stateNoTasksToday.classList.remove('hidden');
+      }
       compactTaskTitle.textContent = 'All tasks completed';
       return;
     }
 
-    // Set first task on compact bar
+    // Hide empty states
+    stateNoTasksToday.classList.add('hidden');
+    stateAllCompletedToday.classList.add('hidden');
+
+    // Update compact bar with first task
     compactTaskTitle.textContent = tasks[0].title;
 
     tasks.forEach((task) => {
       const card = document.createElement('div');
-      card.className = 'group relative bg-surface-container/70 hover:bg-surface-container p-space-sm rounded-lg shadow-sm flex items-center justify-between gap-space-xs transition-colors';
+      
+      // Highlight in red if task is an overdue rollover from a previous day!
+      let rolloverClasses = '';
+      if (task.isRollover) {
+        rolloverClasses = 'border border-error/50 bg-error-container/20 ring-1 ring-error/30';
+      } else {
+        rolloverClasses = 'bg-surface-container/70 hover:bg-surface-container border border-outline-variant/10';
+      }
+
+      card.className = `group relative p-space-sm rounded-lg shadow-sm flex items-center justify-between gap-space-xs transition-all ${rolloverClasses}`;
       
       const priorityBadge = getPriorityBadge(task.priority);
 
@@ -245,7 +354,12 @@
             <span class="material-symbols-outlined text-[13px]">check</span>
           </button>
           <div class="flex flex-col min-w-0 cursor-pointer task-title-box">
-            <span class="font-body-sm text-body-sm text-on-surface truncate">${escapeHtml(task.title)}</span>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="font-body-sm text-body-sm text-on-surface truncate">${escapeHtml(task.title)}</span>
+              ${task.isRollover ? `
+                <span class="h-3.5 px-1 rounded bg-error text-on-error font-label-mono text-[8px] font-bold tracking-wider uppercase shrink-0">Overdue</span>
+              ` : ''}
+            </div>
             <div class="flex items-center gap-space-xs mt-0.5">
               ${priorityBadge}
               ${task.time ? `
@@ -259,6 +373,12 @@
                   ${escapeHtml(task.tag)}
                 </span>
               ` : ''}
+              ${task.isRollover ? `
+                <button class="move-today-btn ml-1 font-label-mono text-[9px] text-error hover:underline flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[10px]">update</span>
+                  <span>Move to Today</span>
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -266,10 +386,14 @@
           <button class="task-menu-btn w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors flex-shrink-0">
             <span class="material-symbols-outlined text-[15px]">more_horiz</span>
           </button>
-          <div class="task-dropdown hidden absolute right-0 top-7 w-28 bg-surface-container-highest shadow-xl rounded-lg py-1 z-30 flex flex-col border border-outline-variant/20">
+          <div class="task-dropdown hidden absolute right-0 top-7 w-32 bg-surface-container-highest shadow-xl rounded-lg py-1 z-30 flex flex-col border border-outline-variant/20">
             <button data-action="edit" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-bright text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[13px] text-on-surface-variant">edit</span>
               <span>Edit</span>
+            </button>
+            <button data-action="move-tomorrow" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-bright text-left font-label-md text-label-md">
+              <span class="material-symbols-outlined text-[13px] text-tertiary">event_upcoming</span>
+              <span>Tomorrow</span>
             </button>
             <button data-action="delete" class="px-space-sm py-1 flex items-center gap-space-xs text-error hover:bg-error-container/20 text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[13px] text-error">delete</span>
@@ -280,11 +404,27 @@
       `;
 
       // Checkbox listener
-      const checkBtn = card.querySelector('.task-check-btn');
-      checkBtn.addEventListener('click', () => completeTask(task.id));
+      card.querySelector('.task-check-btn').addEventListener('click', () => completeTask(task.id));
 
       // Title click to edit
-      card.querySelector('.task-title-box').addEventListener('click', () => editTask(task.id));
+      card.querySelector('.task-title-box').addEventListener('click', (e) => {
+        if (!e.target.closest('.move-today-btn')) {
+          editTask(task.id);
+        }
+      });
+
+      // Move rollover task to Today
+      const moveBtn = card.querySelector('.move-today-btn');
+      if (moveBtn) {
+        moveBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          task.isRollover = false;
+          task.date = getTodayString();
+          persist({ type: 'TASK_EDITED', payload: task });
+          renderActiveTasks();
+          showToast('Moved to Today');
+        });
+      }
 
       // Dropdown menu toggle
       const menuBtn = card.querySelector('.task-menu-btn');
@@ -297,11 +437,16 @@
         dropdown.classList.toggle('hidden');
       });
 
-      // Menu Actions
       dropdown.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
         e.stopPropagation();
         dropdown.classList.add('hidden');
         editTask(task.id);
+      });
+
+      dropdown.querySelector('[data-action="move-tomorrow"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.add('hidden');
+        moveTaskToTomorrow(task.id);
       });
 
       dropdown.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
@@ -324,7 +469,7 @@
       `;
     } else if (priority === 'medium') {
       return `
-        <span class="h-4 px-1 rounded bg-tertiary-container/30 text-tertiary-fixed-dim font-label-mono text-[9px] font-semibold flex items-center gap-0.5">
+        <span class="h-4 px-1 rounded bg-tertiary-container/30 text-tertiary font-label-mono text-[9px] font-semibold flex items-center gap-0.5">
           <span class="w-1 h-1 rounded-full bg-tertiary"></span>
           Medium
         </span>
@@ -339,7 +484,6 @@
     }
   }
 
-  // Complete a Task
   function completeTask(taskId) {
     const taskIndex = appData.activeTasks.findIndex(t => t.id === taskId);
     if (taskIndex === -1) return;
@@ -354,7 +498,6 @@
 
     appData.completedTasks.unshift(completedItem);
     
-    // Persist & Broadcast
     persist({
       type: 'TASK_COMPLETED',
       payload: {
@@ -370,7 +513,6 @@
     showToast(`Done: "${task.title.slice(0, 24)}..."`);
   }
 
-  // Edit Task
   function editTask(taskId) {
     const task = appData.activeTasks.find(t => t.id === taskId);
     if (!task) return;
@@ -386,7 +528,6 @@
     }
   }
 
-  // Delete Active Task
   function deleteActiveTask(taskId) {
     appData.activeTasks = appData.activeTasks.filter(t => t.id !== taskId);
     persist({
@@ -397,11 +538,87 @@
     showToast('Task deleted');
   }
 
-  // Render Completed History
+  function moveTaskToTomorrow(taskId) {
+    const idx = appData.activeTasks.findIndex(t => t.id === taskId);
+    if (idx === -1) return;
+    const [task] = appData.activeTasks.splice(idx, 1);
+    task.date = getTomorrowString();
+    task.isRollover = false;
+    appData.tomorrowTasks.push(task);
+    persist({ type: 'TASK_DELETED', payload: { id: task.id } });
+    renderActiveTasks();
+    updateTomorrowBanner();
+    showToast('Moved to Tomorrow');
+  }
+
+  // ----------------- TOMORROW SCHEDULING -----------------
+  function updateTomorrowBanner() {
+    const tomorrowCount = (appData.tomorrowTasks || []).length;
+    if (tomorrowCount > 0) {
+      tomorrowPrepBanner.classList.remove('hidden');
+      tomorrowPrepCount.textContent = `${tomorrowCount} task${tomorrowCount > 1 ? 's' : ''} queued for tomorrow`;
+    } else {
+      tomorrowPrepBanner.classList.add('hidden');
+    }
+  }
+
+  // ----------------- REPEATED TASKS (DAILY HABITS) -----------------
+  function renderRepeatedTasks() {
+    repeatedTasksList.innerHTML = '';
+    const repeated = appData.repeatedTasks || [];
+
+    if (repeated.length === 0) {
+      repeatedTasksList.innerHTML = `
+        <div class="py-8 text-center flex flex-col items-center justify-center text-outline gap-1">
+          <span class="material-symbols-outlined text-[28px]">event_repeat</span>
+          <span class="font-headline-sm text-body-sm text-on-surface-variant font-semibold">No repeated tasks set up</span>
+          <span class="font-label-mono text-[11px]">Add daily routines (standups, exercise, inbox zero) to auto-populate each morning.</span>
+        </div>
+      `;
+      return;
+    }
+
+    repeated.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'bg-surface-container/70 p-3 rounded-lg flex items-center justify-between gap-3 border border-outline-variant/10';
+      card.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <input type="checkbox" ${item.enabled ? 'checked' : ''} class="rep-toggle w-4 h-4 accent-primary cursor-pointer rounded" title="Toggle active habit"/>
+          <div class="flex flex-col min-w-0">
+            <span class="font-body-sm text-on-surface truncate ${item.enabled ? '' : 'text-outline line-through'} font-medium">${escapeHtml(item.title)}</span>
+            <div class="flex items-center gap-2 mt-0.5 font-label-mono text-[10px] text-on-surface-variant">
+              <span class="text-secondary">Repeats Daily</span>
+              ${item.time ? `<span>• ${item.time}</span>` : ''}
+              ${item.tag ? `<span class="bg-surface-container-high px-1 rounded text-outline">${item.tag}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <button class="rep-del-btn w-6 h-6 rounded flex items-center justify-center text-outline hover:text-error hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined text-[15px]">delete</span>
+        </button>
+      `;
+
+      card.querySelector('.rep-toggle').addEventListener('change', (e) => {
+        item.enabled = e.target.checked;
+        persist();
+        renderRepeatedTasks();
+        showToast(item.enabled ? 'Daily habit enabled' : 'Daily habit paused');
+      });
+
+      card.querySelector('.rep-del-btn').addEventListener('click', () => {
+        appData.repeatedTasks = appData.repeatedTasks.filter(r => r.id !== item.id);
+        persist();
+        renderRepeatedTasks();
+        showToast('Repeated task removed');
+      });
+
+      repeatedTasksList.appendChild(card);
+    });
+  }
+
+  // ----------------- COMPLETED HISTORY -----------------
   function renderCompletedHistory() {
     const completed = appData.completedTasks || [];
-    completedBadge.textContent = completed.length;
-    historyFinishedBadge.textContent = `${completed.length} Finished`;
 
     listToday.innerHTML = '';
     listYesterday.innerHTML = '';
@@ -419,7 +636,6 @@
     yesterdayItems.forEach(t => listYesterday.appendChild(createCompletedCard(t)));
     earlierItems.forEach(t => listEarlier.appendChild(createCompletedCard(t)));
 
-    // Dynamic Velocity
     const total = (appData.activeTasks.length + completed.length) || 1;
     const velocityRate = Math.min(99, Math.round((completed.length / total) * 100));
     velocityPercentage.textContent = `↑${velocityRate}%`;
@@ -455,7 +671,6 @@
       </div>
     `;
 
-    // Undo action
     const undoAction = () => {
       appData.completedTasks = appData.completedTasks.filter(c => c.id !== item.id);
       const restoredTask = {
@@ -463,6 +678,8 @@
         title: item.title,
         priority: 'medium',
         tag: 'General',
+        date: getTodayString(),
+        isRollover: false,
         createdAt: new Date().toISOString()
       };
       appData.activeTasks.push(restoredTask);
@@ -480,7 +697,6 @@
     card.querySelector('.reopen-trigger').addEventListener('click', undoAction);
     card.querySelector('.reopen-btn').addEventListener('click', undoAction);
 
-    // Delete action
     card.querySelector('.delete-btn').addEventListener('click', () => {
       appData.completedTasks = appData.completedTasks.filter(c => c.id !== item.id);
       persist({
@@ -504,7 +720,6 @@
     }
   }
 
-  // Filter History Items
   function filterHistory(query) {
     const q = query.toLowerCase().trim();
     let totalVisible = 0;
@@ -525,8 +740,8 @@
     noResultsNotice.style.display = totalVisible === 0 ? 'flex' : 'none';
   }
 
-  // Apply Theme
-  function applyTheme(preset, shouldSave = true) {
+  // ----------------- THEMES & APPEARANCE (LOCAL ONLY) -----------------
+  function applyTheme(preset, shouldSave = false) {
     document.body.setAttribute('data-theme', preset);
     appData.settings.themePreset = preset;
 
@@ -546,41 +761,14 @@
     themeActiveLabel.textContent = preset.charAt(0).toUpperCase() + preset.slice(1);
 
     if (shouldSave) {
-      persist({
-        type: 'THEME_CHANGED',
-        payload: { themePreset: preset }
-      });
+      persist(); // Local save ONLY — no broadcast!
     }
   }
 
-  // Apply Radius
-  function applyRadius(radius) {
-    appData.settings.radius = radius;
-    radiusButtons.forEach(btn => {
-      if (btn.dataset.radius === radius) {
-        btn.className = 'radius-btn px-2 py-0.5 rounded text-[11px] font-label-mono bg-surface-container-high text-on-surface font-semibold shadow-sm';
-      } else {
-        btn.className = 'radius-btn px-2 py-0.5 rounded text-[11px] font-label-mono text-on-surface-variant hover:text-on-surface';
-      }
-    });
-
-    const rMap = { sharp: '0.125rem', rounded: '0.75rem', pill: '1.25rem' };
-    container.style.borderRadius = rMap[radius] || '0.75rem';
-  }
-
-  // Apply Opacity
-  function applyOpacity(val) {
-    appData.settings.opacity = val;
-    opacitySlider.value = val;
-    opacityLabel.textContent = `${val}%`;
-    container.style.opacity = (val / 100).toString();
-  }
-
-  // Update Pin UI
   function updatePinUI(pinned) {
     appData.settings.alwaysOnTop = pinned;
     if (pinned) {
-      pinIcon.style.color = '#c0c1ff';
+      pinIcon.style.color = 'var(--primary)';
       btnSettingsPin.textContent = 'Pin: ON';
       btnSettingsPin.classList.add('text-secondary');
     } else {
@@ -590,7 +778,13 @@
     }
   }
 
-  // Load Network & QR Code
+  function updateTagCyclistUI() {
+    const tags = appData.tagsBank;
+    if (currentTagIndex >= tags.length) currentTagIndex = 0;
+    quickTagText.textContent = tags[currentTagIndex];
+  }
+
+  // ----------------- NETWORK & QR CODE -----------------
   async function loadNetworkInfo() {
     if (!window.tasksAPI) return;
     try {
@@ -599,10 +793,7 @@
       syncPort.textContent = net.port;
       syncToken.textContent = net.token;
 
-      if (net.clientCount > 0) {
-        footerSyncStatus.textContent = `SYNCED (${net.clientCount} DEVICE${net.clientCount > 1 ? 'S' : ''})`;
-        footerSyncStatus.className = 'text-secondary font-semibold';
-      }
+      updateSyncStatusUI(net.clientCount || 0);
 
       const qrResult = await window.tasksAPI.generatePairingQR();
       if (qrResult.success) {
@@ -613,8 +804,9 @@
     }
   }
 
-  // Event Listeners setup
+  // ----------------- EVENT LISTENERS -----------------
   function setupEventListeners() {
+    // Navigation
     navItems.forEach(btn => {
       btn.addEventListener('click', () => {
         const path = btn.getAttribute('data-path');
@@ -622,7 +814,46 @@
       });
     });
 
-    // Quick add Task Submit
+    // Toggle Quick-Add Section (Hidden by default)
+    function openQuickAdd(target = 'today') {
+      schedulingTarget = target;
+      schedulingTargetBadge.textContent = target === 'tomorrow' ? 'Tomorrow' : 'Today';
+      quickAddSection.classList.remove('hidden');
+      addBtnText.textContent = 'Close';
+      addBtnIcon.textContent = 'close';
+      quickInput.focus();
+      quickInput.select();
+      addOptionsMenu.classList.add('hidden');
+    }
+
+    function closeQuickAdd() {
+      quickAddSection.classList.add('hidden');
+      addBtnText.textContent = 'Add Task';
+      addBtnIcon.textContent = 'add';
+      quickInput.value = '';
+    }
+
+    toggleAddBtn.addEventListener('click', () => {
+      if (quickAddSection.classList.contains('hidden')) {
+        openQuickAdd('today');
+      } else {
+        closeQuickAdd();
+      }
+    });
+
+    btnCancelAdd.addEventListener('click', closeQuickAdd);
+    btnEmptyAdd?.addEventListener('click', () => openQuickAdd('today'));
+
+    // Dropdown for "Add for Today" vs "Set for Tomorrow"
+    btnAddDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addOptionsMenu.classList.toggle('hidden');
+    });
+
+    optAddToday.addEventListener('click', () => openQuickAdd('today'));
+    optSetTomorrow.addEventListener('click', () => openQuickAdd('tomorrow'));
+
+    // Submit Quick Task
     function submitQuickTask() {
       const text = quickInput.value.trim();
       if (!text) return;
@@ -632,36 +863,37 @@
         title: text,
         priority: currentPriority,
         time: quickTimeInput.value || '17:00',
-        tag: currentTag,
+        tag: appData.tagsBank[currentTagIndex],
+        date: schedulingTarget === 'tomorrow' ? getTomorrowString() : getTodayString(),
+        isRollover: false,
         createdAt: new Date().toISOString()
       };
 
-      appData.activeTasks.push(newTask);
-      persist({
-        type: 'TASK_ADDED',
-        payload: newTask
-      });
+      if (schedulingTarget === 'tomorrow') {
+        appData.tomorrowTasks.push(newTask);
+        persist();
+        updateTomorrowBanner();
+        showToast('Queued for Tomorrow!');
+      } else {
+        appData.activeTasks.push(newTask);
+        persist({ type: 'TASK_ADDED', payload: newTask });
+        renderActiveTasks();
+        showToast('Task added for Today');
+      }
 
-      renderActiveTasks();
       quickInput.value = '';
-      showToast('Task created');
+      closeQuickAdd();
     }
 
     quickInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         submitQuickTask();
       } else if (e.key === 'Escape') {
-        quickInput.value = '';
-        quickInput.blur();
+        closeQuickAdd();
       }
     });
 
-    toggleAddBtn.addEventListener('click', () => {
-      quickInput.focus();
-      quickInput.select();
-    });
-
-    // Priority Cycle
+    // Priority Cycler
     const priorities = ['urgent', 'medium', 'low'];
     btnQuickPriority.addEventListener('click', () => {
       const nextIdx = (priorities.indexOf(currentPriority) + 1) % priorities.length;
@@ -672,19 +904,60 @@
         btnQuickPriority.className = 'h-[20px] px-1.5 bg-error-container/40 text-error font-label-mono text-[10px] rounded flex items-center gap-1';
       } else if (currentPriority === 'medium') {
         quickPriorityDot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
-        btnQuickPriority.className = 'h-[20px] px-1.5 bg-tertiary-container/30 text-tertiary-fixed-dim font-label-mono text-[10px] rounded flex items-center gap-1';
+        btnQuickPriority.className = 'h-[20px] px-1.5 bg-tertiary-container/30 text-tertiary font-label-mono text-[10px] rounded flex items-center gap-1';
       } else {
         quickPriorityDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
         btnQuickPriority.className = 'h-[20px] px-1.5 bg-secondary-container/20 text-secondary font-label-mono text-[10px] rounded flex items-center gap-1';
       }
     });
 
-    // Tag Cycle
-    const tags = ['Design', 'Dev', 'Ops', 'Team', 'Personal'];
+    // Tag Cycler through Tag Bank
     btnQuickTag.addEventListener('click', () => {
-      const nextIdx = (tags.indexOf(currentTag) + 1) % tags.length;
-      currentTag = tags[nextIdx];
-      quickTagText.textContent = currentTag;
+      currentTagIndex = (currentTagIndex + 1) % appData.tagsBank.length;
+      updateTagCyclistUI();
+    });
+
+    // + New Tag Button (Adds tag to Tag Bank!)
+    btnAddNewTag.addEventListener('click', () => {
+      const newTag = prompt('Create a new tag (e.g. Finance, Health, Project):');
+      if (newTag && newTag.trim()) {
+        const clean = newTag.trim();
+        if (!appData.tagsBank.includes(clean)) {
+          appData.tagsBank.push(clean);
+          currentTagIndex = appData.tagsBank.length - 1;
+          persist();
+          updateTagCyclistUI();
+          showToast(`Tag "${clean}" added to bank`);
+        } else {
+          currentTagIndex = appData.tagsBank.indexOf(clean);
+          updateTagCyclistUI();
+        }
+      }
+    });
+
+    // Add Repeated Task
+    btnAddRepeated.addEventListener('click', () => {
+      const title = prompt('Enter a daily recurring habit or task:');
+      if (title && title.trim()) {
+        const newHabit = {
+          id: 'rep-' + Date.now(),
+          title: title.trim(),
+          priority: 'medium',
+          time: '09:00',
+          tag: 'Daily',
+          enabled: true
+        };
+        appData.repeatedTasks.push(newHabit);
+        persist();
+        renderRepeatedTasks();
+        showToast('Daily habit created!');
+      }
+    });
+
+    btnViewTomorrow.addEventListener('click', () => {
+      alert(`Queued for Tomorrow (${appData.tomorrowTasks.length} tasks):\n\n` + 
+        appData.tomorrowTasks.map((t, i) => `${i+1}. ${t.title} [${t.priority}]`).join('\n')
+      );
     });
 
     // History filter
@@ -704,7 +977,7 @@
         showToast('No history to export');
         return;
       }
-      const mdLines = ['# tasks.core - Completed Tasks Log\n'];
+      const mdLines = ['# Task Thing - Completed Tasks Log\n'];
       completed.forEach(c => {
         mdLines.push(`- [x] ${c.title} _(${formatCompletedTime(c.completedAt)})_`);
       });
@@ -727,44 +1000,31 @@
       }
     });
 
-    // Themes selection
+    // Theme selector (Local Only)
     themePresets.forEach(btn => {
       btn.addEventListener('click', () => {
         applyTheme(btn.dataset.preset, true);
       });
     });
 
-    // Radius buttons
-    radiusButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        applyRadius(btn.dataset.radius);
-      });
-    });
-
-    // Opacity slider
-    opacitySlider.addEventListener('input', (e) => {
-      applyOpacity(e.target.value);
-    });
-
-    // Theme Save / Reset
     btnThemeSave.addEventListener('click', () => {
       persist();
-      const orig = btnThemeSave.innerHTML;
-      btnThemeSave.innerHTML = '<span class="material-symbols-outlined text-[16px]">done_all</span><span>Applied!</span>';
-      setTimeout(() => btnThemeSave.innerHTML = orig, 1400);
+      showToast('Theme applied to PC');
     });
 
     btnThemeReset.addEventListener('click', () => {
       applyTheme('indigo', true);
-      applyRadius('rounded');
-      applyOpacity(95);
-      showToast('Theme reset to defaults');
+      showToast('Theme reset to Indigo');
     });
 
     // Window controls
-    btnWinClose.addEventListener('click', () => window.tasksAPI?.closeWindow());
-    btnWinMin.addEventListener('click', () => window.tasksAPI?.minimizeWindow());
-    btnHeaderMinimize.addEventListener('click', () => window.tasksAPI?.minimizeWindow());
+    const closeHandler = () => window.tasksAPI?.closeWindow();
+    const minHandler = () => window.tasksAPI?.minimizeWindow();
+
+    btnWinClose.addEventListener('click', closeHandler);
+    btnWinMin.addEventListener('click', minHandler);
+    btnMacClose.addEventListener('click', closeHandler);
+    btnMacMin.addEventListener('click', minHandler);
 
     // Pin Toggle
     async function togglePin() {
@@ -791,10 +1051,12 @@
         }
       }
     }
-    btnWinCompact.addEventListener('click', toggleCompact);
+    btnWinCompact?.addEventListener('click', toggleCompact);
+    btnMacCompact.addEventListener('click', toggleCompact);
+    btnHeaderCompact.addEventListener('click', toggleCompact);
     btnCompactSidebar.addEventListener('click', toggleCompact);
     compactExpandBtn.addEventListener('click', toggleCompact);
-    compactCloseBtn.addEventListener('click', () => window.tasksAPI?.closeWindow());
+    compactCloseBtn.addEventListener('click', closeHandler);
 
     compactCompleteBtn.addEventListener('click', () => {
       if (appData.activeTasks.length > 0) {
@@ -806,34 +1068,44 @@
     if (window.tasksAPI) {
       window.tasksAPI.onQuickAddTriggered(() => {
         switchView('active-tasks');
-        quickInput.focus();
-        quickInput.select();
+        openQuickAdd('today');
       });
     }
 
-    // Close dropdowns on outside click
+    // Close menus on outside click
     document.addEventListener('click', () => {
       document.querySelectorAll('.task-dropdown').forEach(d => d.classList.add('hidden'));
+      addOptionsMenu.classList.add('hidden');
     });
 
-    // Shortcut Cmd+K / Ctrl+K inside window
+    // Keyboard shortcut (Ctrl+K on Windows, Cmd+K on Mac)
     window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+      if (modifier && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         switchView('active-tasks');
-        quickInput.focus();
-        quickInput.select();
+        openQuickAdd('today');
       }
     });
 
-    document.getElementById('btn-footer-quick')?.addEventListener('click', () => {
+    btnFooterQuick.addEventListener('click', () => {
       switchView('active-tasks');
-      quickInput.focus();
-      quickInput.select();
+      openQuickAdd('today');
     });
   }
 
-  // Utilities
+  // ----------------- UTILITIES -----------------
+  function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function getTomorrowString() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, m => ({
@@ -841,6 +1113,5 @@
     }[m]));
   }
 
-  // Initialize
   init();
 })();

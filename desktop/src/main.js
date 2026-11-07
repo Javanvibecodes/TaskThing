@@ -50,6 +50,7 @@ function createWindow() {
     minHeight: 480,
     frame: false,
     transparent: true,
+    hasShadow: false,
     resizable: true,
     alwaysOnTop: settings.alwaysOnTop || false,
     skipTaskbar: false,
@@ -163,13 +164,6 @@ function handleRemoteMutation(mutation) {
       }
       break;
 
-    case 'THEME_CHANGED':
-      if (payload?.themePreset) {
-        data.settings.themePreset = payload.themePreset;
-        store.save(data);
-      }
-      break;
-
     default:
       break;
   }
@@ -189,7 +183,7 @@ function createTray() {
   `;
   const icon = nativeImage.createFromBuffer(Buffer.from(svgIcon));
   tray = new Tray(icon);
-  tray.setToolTip('tasks.core - Floating Desktop Widget');
+  tray.setToolTip('Task Thing — Get your things together');
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -222,7 +216,7 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: 'Quick Add Task (Cmd/Ctrl+K)',
+      label: 'Quick Add Task',
       click: () => {
         if (!mainWindow.isVisible()) mainWindow.show();
         mainWindow.focus();
@@ -231,7 +225,7 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: 'Quit tasks.core',
+      label: 'Quit Task Thing',
       click: () => {
         app.isQuitting = true;
         app.quit();
@@ -282,6 +276,10 @@ ipcMain.handle('window:togglePin', () => {
 
 ipcMain.handle('window:toggleCompact', () => {
   return toggleCompactMode();
+});
+
+ipcMain.handle('system:getPlatform', () => {
+  return process.platform; // 'win32', 'darwin', or 'linux'
 });
 
 ipcMain.handle('storage:loadData', () => {

@@ -1,68 +1,62 @@
-# tasks.core — Desktop Floating Widget & Mobile App
+# Task Thing — Get your *things* together
 
-A local-first, minimal productivity widget ecosystem built for **Windows**, **macOS**, **Android**, and **iOS**. All data remains 100% on your local devices with zero third-party cloud database dependencies.
-
----
-
-## ⚡ Established Dual-Mode Hybrid Sync Architecture
-
-The sync engine operates with zero configuration:
-1. **Permanent 1-Click Pairing**: Scan the desktop widget's QR code on your phone once. All pairing tokens and host information are saved permanently in local device storage.
-2. **Local Wi-Fi & Mobile Hotspot Ready**:
-   - Works on home/office Wi-Fi.
-   - **Works when phone is on cellular and PC is tethered to phone hotspot**: The mobile client automatically probes standard hotspot gateway subnets (`172.20.10.x` on iPhone, `192.168.43.x` on Android) to auto-reconnect without needing to re-pair.
-3. **Background Auto-Reconnect**:
-   - If the app is closed, phone is locked, or Wi-Fi drops, the mobile app automatically reconnects in the background upon return.
-4. **Offline Buffer & Reconciliation**:
-   - Any tasks added, checked off, or edited while away or offline are queued in local storage (`localStorage`).
-   - The instant a connection is re-established, all buffered changes synchronize to the desktop widget and merge using Last-Write-Wins timestamps.
-5. **Real-Time Bi-Directional Reactivity**:
-   - Sub-5ms updates between desktop and phone.
+A local-first, minimal productivity widget ecosystem built for **Windows**, **macOS**, **Android**, and **iOS**. All data remains 100% on your local devices with zero cloud database dependency.
 
 ---
 
-## 🖥️ 1. Desktop Widget (`/desktop`)
-Cross-platform desktop floating widget built with **Electron** and modern web standards.
+## ⚡ Real-Time Peer-to-Peer Sync Engine
 
-### Features
-- **Frameless & Transparent**: Native desktop floating window with subtle glassmorphism and custom draggable header.
-- **Always-on-Top & Pin Mode**: Pin above your code editor, IDE, or browser with one click (`push_pin`).
-- **Compact Floating Bar Mode**: Toggle from full widget to an ultra-compact 340×56px pill that floats on screen edge showing your current active task.
-- **Active Tasks**:
-  - Live task creation with priority cyclist (`Urgent`, `Medium`, `Low`), scheduled due times, and category tags (`Design`, `Dev`, `Ops`, etc.).
-  - Smooth task completion moving directly into Completed History.
-  - Dropdown context menu with inline editing and deletion.
-  - Quick-add keyboard shortcut (`⌘K` / `Ctrl+K`).
-- **Completed History**:
-  - Log grouped by *Completed Today*, *Yesterday*, and *Earlier this week*.
-  - Real-time search/filter with `ESC` to clear.
-  - Live dynamic velocity sparkline pill (`↑92%`).
-  - One-click *Undo / Reopen* to send tasks back to Active.
-  - One-click *Export as Markdown* checklist directly to system clipboard.
-  - Clear history with confirmation.
-- **Theme & Appearance Engine**:
-  - 6 Material 3 color presets: *Indigo Twilight*, *Emerald Botanical*, *Sunset Amber*, *Rose Berry*, *Obsidian Slate*, *Arctic Cyan*.
-  - Corner radius adjuster (*Sharp*, *Rounded*, *Pill*).
-  - Window glass opacity slider (65% to 100%).
-- **System Tray & Global Hotkeys**:
-  - Tray icon with quick toggle, pin, compact mode, and quit.
-  - Global hotkey `Ctrl+Shift+T` / `Cmd+Shift+T` to summon widget from anywhere.
-- **Embedded Sync Host**:
-  - Embedded token-authenticated WebSocket server on port `48721`.
-  - Dynamic QR code generation with multi-network interface discovery.
+- **Peer-to-Peer Local Network**: Connects directly over your local Wi-Fi router or phone personal mobile hotspot. No external internet connection or cloud accounts needed.
+- **Scan Once & Permanent Pairing**: Scan the desktop widget QR code on your phone once. All pairing tokens and credentials are saved permanently on your device.
+- **Background Auto-Reconnect**: Reconnects in the background upon returning to the network.
+- **Offline Buffer & Reconciliation**: Any tasks created or checked off while away or offline are queued in device storage and automatically merge with Last-Write-Wins timestamps when reconnected.
+- **Independent Themes**: Theme color presets can be customized differently on PC and mobile.
 
 ---
 
-## 📱 2. Mobile App (`/mobile`)
+## 🖥️ Desktop Widget (`/desktop`)
+Cross-platform desktop floating widget built with **Electron**.
+
+### Key Features
+- **No Drop Shadow**: Frameless, crisp, transparent window without artificial drop shadows.
+- **Native Window Controls**:
+  - **Windows**: Native caption controls on the top right (`─` Minimize, `✕` Close with red highlight, Pin Always-on-top, and Compact mode toggle).
+  - **macOS**: Native traffic light controls on the top-left (Red, Yellow, Green).
+- **Device-Aware Shortcuts**:
+  - Windows: `Ctrl+K` (Quick Add), `Ctrl+Shift+T` (Global summon).
+  - macOS: `⌘K` (Quick Add), `⌘+Shift+T` (Global summon).
+- **Today's Tasks & Pending Counter Badge**:
+  - Dynamic pending task counter on the Active Tasks tab that decrements as you complete tasks throughout the day.
+  - Completed History tab has no distracting notification badges.
+- **Add Task Dropdown**:
+  - Add Task form is hidden by default. Click **Add Task** to open.
+  - Dropdown options: **Add for Today** or **Set for Tomorrow**.
+  - Clean input placeholder with no "e.g." text.
+  - Tag bank cycler + **+ New Tag** button to easily create and save custom tags.
+- **Repeated Tasks (Daily Habits)**:
+  - Configure recurring daily routines (daily standup, inbox zero, exercise) that automatically populate in Today's tasks at the start of each new day.
+- **Overdue Task Rollover**:
+  - Tasks left uncompleted from a previous day automatically move to the new day highlighted in red with an **Overdue** badge and a one-click **Move to Today** button.
+- **Differentiated Empty States**:
+  - Clean state when no tasks have been planned for today yet.
+  - Celebratory state when all tasks for today are completed.
+  - Skeleton shimmer loader during initial boot.
+- **6 Dynamic Color Presets**:
+  - Indigo Twilight, Emerald Botanical, Sunset Amber, Rose Berry, Obsidian Slate, and Arctic Cyan.
+  - Operates independently on PC.
+
+---
+
+## 📱 Mobile App (`/mobile`)
 Cross-platform mobile application for **Android** and **iOS** configured for standalone web / PWA and **Capacitor** native builds.
 
-### Features
-- Native mobile layout with iOS Notch / Dynamic Island and Android navigation bar safe-area support.
-- Touch-optimized task creation, swipeable buttons, and priority tag cyclists.
-- Built-in **Camera QR Code Scanner** for point-and-scan pairing with the desktop widget.
-- Hotspot gateway auto-detection and manual LAN IP fallback.
-- Offline buffer: allows full task management while disconnected, auto-syncs on reconnect.
-- Ready for native compilation to `.apk` (Android) and `.ipa` (iOS).
+### Key Features
+- Native mobile layout with iOS notch/Dynamic Island and Android navigation bar safe-area support.
+- No user avatars or irrelevant desktop keyboard shortcut hints.
+- Quick-add form with "Add for Today" vs "Set for Tomorrow" and Tag Bank creator.
+- Repeated tasks manager for daily routines.
+- Built-in camera QR scanner and real-time connection status pill.
+- **Help & Legal section**: In-app pairing guide, 100% local privacy policy, terms of use, and local MIT license.
 
 ---
 
@@ -82,10 +76,9 @@ pnpm start
 # In project root
 pnpm mobile
 ```
-Open `http://<your-desktop-ip>:3000` on your mobile browser (or run it via Capacitor / simulator).
+Open `http://<your-desktop-ip>:3000` on your mobile phone or simulator.
 
-### 3. Pair in 2 Seconds
-1. In the desktop widget, click the **Settings / Tune** (`tune`) icon in the sidebar to open the Mobile Device Pairing view.
-2. In the mobile app, tap the **Sync** tab and tap **Start QR Scanner**.
-3. Point your phone at the desktop screen.
-4. **Done!** Both devices are now paired permanently with real-time bi-directional sync.
+### 3. Pair Devices
+1. In the PC widget, open **Preferences** (`tune`) to view the pairing QR code.
+2. In the mobile app, tap **Sync** -> **Start QR Scanner**.
+3. Point your phone at the PC screen. Devices will pair instantly.

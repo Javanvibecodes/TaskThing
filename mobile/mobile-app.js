@@ -1,23 +1,27 @@
-// tasks.core - Mobile Hybrid Sync Engine & Touch Client
+// Task Thing — Mobile Hybrid Sync Engine & Touch Client
 (function() {
-  // Mobile State
   let mobileData = {
     settings: {
       themePreset: 'indigo',
       connected: false
     },
+    tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
+    repeatedTasks: [
+      { id: 'rep-m-1', title: 'Morning standup & planning', priority: 'medium', time: '09:00', tag: 'Team', enabled: true },
+      { id: 'rep-m-2', title: 'Zero inbox & review pull requests', priority: 'low', time: '17:30', tag: 'Dev', enabled: true }
+    ],
+    tomorrowTasks: [],
     activeTasks: [],
     completedTasks: []
   };
 
-  // Sync Configuration
   let syncConfig = {
     host: '',
     hosts: [],
     port: 48721,
     token: '',
     connected: false,
-    mode: 'disconnected' // 'lan' | 'hotspot' | 'webrtc' | 'disconnected'
+    mode: 'disconnected'
   };
 
   let offlineQueue = [];
@@ -27,9 +31,9 @@
   let isScanning = false;
   let html5QrScanner = null;
   let currentPriority = 'urgent';
-  let currentTag = 'Design';
+  let currentTagIndex = 0;
+  let schedulingTarget = 'today'; // 'today' | 'tomorrow'
 
-  // Standard Hotspot Gateway & Fallback IPs to test automatically
   const HOTSPOT_CANDIDATES = [
     '172.20.10.1',  // iPhone hotspot gateway
     '172.20.10.2',  // PC on iPhone hotspot
@@ -42,34 +46,80 @@
   const tabButtons = document.querySelectorAll('.mobile-tab-btn');
   const screens = document.querySelectorAll('.mobile-screen');
   const activeTasksList = document.getElementById('mobile-tasks-list');
+  const repeatedTasksList = document.getElementById('mobile-repeated-list');
   const historyList = document.getElementById('mobile-history-list');
-  const quickInput = document.getElementById('mobile-quick-input');
-  const btnAdd = document.getElementById('mobile-btn-add');
-  const btnPriority = document.getElementById('mobile-btn-priority');
-  const priorityLabel = document.getElementById('mobile-priority-label');
-  const btnTag = document.getElementById('mobile-btn-tag');
-  const tagLabel = document.getElementById('mobile-tag-label');
-  const remainingBadge = document.getElementById('mobile-remaining-badge');
+  const mobilePendingBadge = document.getElementById('mobile-pending-badge');
   const historyCountBadge = document.getElementById('mobile-history-count');
   const searchInput = document.getElementById('mobile-history-search');
   const todayDateBadge = document.getElementById('mobile-today-date');
+  const mobileSkeleton = document.getElementById('mobile-skeleton');
+  const emptyNoTasks = document.getElementById('mobile-empty-no-tasks');
+  const emptyAllCompleted = document.getElementById('mobile-empty-all-completed');
+  const allCompletedText = document.getElementById('mobile-all-completed-text');
+  const btnEmptyAdd = document.getElementById('mobile-btn-empty-add');
 
-  // Sync Elements
+  // Quick Add Elements
+  const quickAddBox = document.getElementById('mobile-quick-add-box');
+  const toggleAddBtn = document.getElementById('mobile-toggle-add-btn');
+  const addIcon = document.getElementById('mobile-add-icon');
+  const addText = document.getElementById('mobile-add-text');
+  const btnAddDropdown = document.getElementById('mobile-btn-add-dropdown');
+  const addMenu = document.getElementById('mobile-add-menu');
+  const optToday = document.getElementById('mobile-opt-today');
+  const optTomorrow = document.getElementById('mobile-opt-tomorrow');
+  const quickInput = document.getElementById('mobile-quick-input');
+  const btnSubmit = document.getElementById('mobile-btn-submit');
+  const btnPriority = document.getElementById('mobile-btn-priority');
+  const priorityDot = document.getElementById('mobile-priority-dot');
+  const priorityLabel = document.getElementById('mobile-priority-label');
+  const btnTag = document.getElementById('mobile-btn-tag');
+  const tagLabel = document.getElementById('mobile-tag-label');
+  const btnAddTag = document.getElementById('mobile-btn-add-tag');
+  const schedBadge = document.getElementById('mobile-sched-badge');
+
+  // Tomorrow Banner
+  const tomorrowBanner = document.getElementById('mobile-tomorrow-banner');
+  const tomorrowCountText = document.getElementById('mobile-tomorrow-count');
+  const btnViewTomorrow = document.getElementById('mobile-btn-view-tomorrow');
+  const btnAddHabit = document.getElementById('mobile-btn-add-habit');
+
+  // Sync screen elements
   const btnToggleCamera = document.getElementById('btn-toggle-camera');
   const cameraBtnText = document.getElementById('camera-btn-text');
   const manualIpInput = document.getElementById('manual-ip-input');
   const btnManualConnect = document.getElementById('btn-manual-connect');
+  const btnReconnect = document.getElementById('mobile-btn-reconnect');
   const mobileSyncDot = document.getElementById('mobile-sync-dot');
   const mobileSyncText = document.getElementById('mobile-sync-text');
+  const mobileSyncDetailStatus = document.getElementById('mobile-sync-detail-status');
   const btnSyncHeader = document.getElementById('btn-sync-header');
 
-  // ----------------- STORAGE HELPERS -----------------
+  // ----------------- STORAGE & PERSISTENCE -----------------
   function loadPersistedState() {
     try {
       const savedData = localStorage.getItem('tasks_mobile_data');
       if (savedData) {
         mobileData = Object.assign(mobileData, JSON.parse(savedData));
+      } else {
+        // Fallback sample tasks
+        mobileData.activeTasks = [
+          { id: 'm-1', title: 'Review Q4 design system specs', priority: 'urgent', time: '14:00', tag: 'Design', date: getTodayString() },
+          { id: 'm-2', title: 'Send team retrospective notes', priority: 'medium', time: '15:30', tag: 'Team', date: getTodayString() },
+          { id: 'm-3', title: 'Prepare client prototype demo', priority: 'urgent', time: '16:45', tag: 'Client', date: getTodayString() },
+          { id: 'm-4', title: 'Update billing invoice details', priority: 'medium', time: '18:00', tag: 'Ops', date: getTodayString() }
+        ];
+        mobileData.completedTasks = [
+          { id: 'mc-1', title: 'Ship widget micro-interactions polish', completedAt: new Date(Date.now() - 3600000).toISOString(), group: 'today' },
+          { id: 'mc-2', title: 'Review telemetry payload constraints', completedAt: new Date(Date.now() - 7200000).toISOString(), group: 'today' }
+        ];
       }
+
+      if (!mobileData.tagsBank) mobileData.tagsBank = ['Design', 'Dev', 'Ops', 'Team', 'Personal'];
+      if (!mobileData.repeatedTasks) mobileData.repeatedTasks = [];
+      if (!mobileData.tomorrowTasks) mobileData.tomorrowTasks = [];
+      if (!mobileData.activeTasks) mobileData.activeTasks = [];
+      if (!mobileData.completedTasks) mobileData.completedTasks = [];
+
       const savedConfig = localStorage.getItem('tasks_sync_config');
       if (savedConfig) {
         syncConfig = Object.assign(syncConfig, JSON.parse(savedConfig));
@@ -78,17 +128,68 @@
       if (savedQueue) {
         offlineQueue = JSON.parse(savedQueue);
       }
+
+      checkDayRollover();
     } catch (e) {
       console.warn('Local storage load error:', e);
+    }
+  }
+
+  function checkDayRollover() {
+    const today = getTodayString();
+    const lastDate = mobileData.lastActiveDate || today;
+
+    if (lastDate !== today) {
+      // 1. Move tomorrowTasks to activeTasks
+      if (mobileData.tomorrowTasks && mobileData.tomorrowTasks.length > 0) {
+        mobileData.tomorrowTasks.forEach(task => {
+          task.date = today;
+          task.isRollover = false;
+          mobileData.activeTasks.push(task);
+        });
+        mobileData.tomorrowTasks = [];
+      }
+
+      // 2. Mark uncompleted active tasks from yesterday as rollover (red highlight)
+      if (mobileData.activeTasks && mobileData.activeTasks.length > 0) {
+        mobileData.activeTasks.forEach(task => {
+          if (task.date && task.date < today) {
+            task.isRollover = true;
+          }
+        });
+      }
+
+      // 3. Instantiate repeated tasks
+      if (mobileData.repeatedTasks && mobileData.repeatedTasks.length > 0) {
+        mobileData.repeatedTasks.forEach(rep => {
+          if (rep.enabled) {
+            const exists = mobileData.activeTasks.some(t => t.repeatedOriginId === rep.id && t.date === today);
+            if (!exists) {
+              mobileData.activeTasks.push({
+                id: 'm-rep-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                repeatedOriginId: rep.id,
+                title: rep.title,
+                priority: rep.priority || 'medium',
+                time: rep.time || '',
+                tag: rep.tag || 'Daily',
+                date: today,
+                isRollover: false,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
+        });
+      }
+
+      mobileData.lastActiveDate = today;
+      persistData();
     }
   }
 
   function persistData() {
     try {
       localStorage.setItem('tasks_mobile_data', JSON.stringify(mobileData));
-    } catch (e) {
-      console.warn('Storage error:', e);
-    }
+    } catch (e) {}
   }
 
   function persistSyncConfig() {
@@ -99,12 +200,13 @@
         port: syncConfig.port,
         token: syncConfig.token
       }));
-    } catch (e) {
-      console.warn('Config storage error:', e);
-    }
+    } catch (e) {}
   }
 
   function queueOfflineMutation(mutation) {
+    // DO NOT queue theme mutations — themes stay local!
+    if (mutation.type === 'THEME_CHANGED') return;
+
     mutation.timestamp = Date.now();
     offlineQueue.push(mutation);
     try {
@@ -118,7 +220,7 @@
     localStorage.removeItem('tasks_offline_queue');
   }
 
-  // ----------------- HYBRID SYNC CLIENT -----------------
+  // ----------------- REAL-TIME SYNC CLIENT -----------------
   async function connectToDesktop(customHost = null) {
     if (reconnectTimer) clearTimeout(reconnectTimer);
     if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
@@ -141,14 +243,13 @@
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log(`[tasks.core Mobile] Connected to Desktop at ${hostToTry}:${port}`);
         syncConfig.host = hostToTry;
         syncConfig.connected = true;
         syncConfig.mode = isHotspotIp(hostToTry) ? 'hotspot' : 'lan';
         persistSyncConfig();
         updateConnectionUI('connected', hostToTry);
 
-        // Request full state snapshot
+        // Fetch state snapshot
         sendWsMessage({ type: 'SYNC_INIT_REQUEST' });
 
         // Flush queued mutations
@@ -160,7 +261,6 @@
           clearOfflineQueue();
         }
 
-        // Start heartbeat keep-alive
         startHeartbeat();
       };
 
@@ -168,9 +268,7 @@
         try {
           const msg = JSON.parse(event.data);
           handleServerMessage(msg);
-        } catch (e) {
-          console.error('[tasks.core Mobile] Bad message:', e);
-        }
+        } catch (e) {}
       };
 
       ws.onclose = () => {
@@ -180,12 +278,10 @@
         scheduleAutoReconnect();
       };
 
-      ws.onerror = (err) => {
-        console.warn(`[tasks.core Mobile] Connection error on ${hostToTry}:`, err.message || err);
+      ws.onerror = () => {
         ws.close();
       };
     } catch (err) {
-      console.warn('WebSocket instantiation error:', err);
       scheduleAutoReconnect();
     }
   }
@@ -203,13 +299,15 @@
   }
 
   function sendOrQueueMutation(mutation) {
+    // Never send theme changes to desktop
+    if (mutation.type === 'THEME_CHANGED') return;
+
     const sent = sendWsMessage(mutation);
     if (!sent) {
       queueOfflineMutation(mutation);
     }
   }
 
-  // Handle updates coming from desktop
   function handleServerMessage(msg) {
     const { type, payload } = msg;
 
@@ -221,13 +319,19 @@
         if (Array.isArray(payload.completedTasks)) {
           mobileData.completedTasks = payload.completedTasks;
         }
-        if (payload.settings?.themePreset) {
-          mobileData.settings.themePreset = payload.settings.themePreset;
-          applyTheme(payload.settings.themePreset, false);
+        if (Array.isArray(payload.repeatedTasks)) {
+          mobileData.repeatedTasks = payload.repeatedTasks;
         }
+        if (Array.isArray(payload.tagsBank)) {
+          mobileData.tagsBank = payload.tagsBank;
+          updateTagUI();
+        }
+        // Note: We deliberately do NOT overwrite mobileData.settings.themePreset!
         persistData();
         renderActiveTasks();
         renderHistory();
+        renderRepeatedTasks();
+        updateTomorrowBanner();
       }
       return;
     }
@@ -243,7 +347,8 @@
       const compItem = {
         id: payload.completedId || ('mc-' + Date.now()),
         title: payload.title,
-        completedAt: payload.completedAt || new Date().toISOString()
+        completedAt: payload.completedAt || new Date().toISOString(),
+        group: 'today'
       };
       mobileData.completedTasks.unshift(compItem);
       persistData();
@@ -270,37 +375,31 @@
         persistData();
         renderActiveTasks();
       }
-    } else if (type === 'THEME_CHANGED' && payload?.themePreset) {
-      applyTheme(payload.themePreset, false);
     }
   }
 
-  // Automatic Background Reconnect with Multi-Interface / Hotspot Failover
   function scheduleAutoReconnect() {
     if (reconnectTimer) clearTimeout(reconnectTimer);
 
     reconnectTimer = setTimeout(async () => {
       if (syncConfig.connected) return;
 
-      // 1. Try primary host
       if (syncConfig.host) {
         connectToDesktop(syncConfig.host);
       }
 
-      // 2. If primary fails, cycle through other known desktop IPs from QR payload
-      const alternateCandidates = [...(syncConfig.hosts || []), ...HOTSPOT_CANDIDATES];
-      for (const ip of alternateCandidates) {
+      // Check alternate hotspot candidates
+      const candidates = [...(syncConfig.hosts || []), ...HOTSPOT_CANDIDATES];
+      for (const ip of candidates) {
         if (ip && ip !== syncConfig.host) {
-          // Probe via fast fetch ping before full WS upgrade
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 1200);
+            const timeoutId = setTimeout(() => controller.abort(), 1000);
             const res = await fetch(`http://${ip}:${syncConfig.port || 48721}/ping`, {
               signal: controller.signal
             });
             clearTimeout(timeoutId);
             if (res.ok) {
-              console.log(`[tasks.core Mobile] Found desktop on alternate/hotspot IP: ${ip}`);
               connectToDesktop(ip);
               return;
             }
@@ -321,51 +420,78 @@
     if (heartbeatTimer) clearInterval(heartbeatTimer);
   }
 
-  // Update Visual Connection Pill
+  // Update Visual Real-Time Indicators
   function updateConnectionUI(state = null, host = null) {
-    const isConn = state === 'connected' || syncConfig.connected;
-    const isConnPending = state === 'connecting';
+    const isConn = state === 'connected' || (ws && ws.readyState === WebSocket.OPEN);
+    const isConnPending = state === 'connecting' || (ws && ws.readyState === WebSocket.CONNECTING);
 
     if (isConn) {
       const modeText = syncConfig.mode === 'hotspot' ? 'Hotspot Synced' : 'LAN Synced';
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-secondary animate-pulse';
-      mobileSyncText.textContent = host ? `${modeText}` : 'Desktop Synced';
+      mobileSyncText.textContent = host ? modeText : 'PC Synced';
       mobileSyncText.className = 'font-label-mono text-[10px] text-secondary font-semibold';
+      mobileSyncDetailStatus.textContent = `Connected (${syncConfig.host || host}:${syncConfig.port || 48721})`;
+      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-secondary font-semibold';
     } else if (isConnPending) {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-tertiary animate-pulse';
       mobileSyncText.textContent = 'Connecting...';
       mobileSyncText.className = 'font-label-mono text-[10px] text-tertiary font-medium';
+      mobileSyncDetailStatus.textContent = 'Searching for PC Widget...';
+      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-tertiary font-semibold';
     } else {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-outline';
       mobileSyncText.textContent = offlineQueue.length > 0 ? `Offline (${offlineQueue.length} Queued)` : 'Offline';
       mobileSyncText.className = 'font-label-mono text-[10px] text-outline font-medium';
+      mobileSyncDetailStatus.textContent = offlineQueue.length > 0 ? `Offline (${offlineQueue.length} changes queued to sync)` : 'Disconnected / Standalone';
+      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-on-surface font-semibold';
     }
   }
 
-  // ----------------- UI INTERACTIONS & RENDERING -----------------
+  // ----------------- ACTIVE TASKS & EMPTY STATES -----------------
   function renderActiveTasks() {
     activeTasksList.innerHTML = '';
     const tasks = mobileData.activeTasks || [];
-    remainingBadge.textContent = `${tasks.length} remaining`;
+    
+    // Decrementing Pending badge on Tasks tab!
+    mobilePendingBadge.textContent = tasks.length;
+    if (tasks.length === 0) {
+      mobilePendingBadge.classList.add('opacity-40');
+    } else {
+      mobilePendingBadge.classList.remove('opacity-40');
+    }
+
+    const todayCompletedCount = (mobileData.completedTasks || []).filter(c => c.group === 'today' || !c.group).length;
 
     if (tasks.length === 0) {
-      activeTasksList.innerHTML = `
-        <div class="py-12 text-center flex flex-col items-center justify-center text-outline gap-1">
-          <span class="material-symbols-outlined text-[32px]">task_alt</span>
-          <span class="font-headline-sm text-on-surface-variant">All tasks done</span>
-          <span class="font-label-mono text-[11px]">Add a task above or sync from desktop</span>
-        </div>
-      `;
+      if (todayCompletedCount > 0) {
+        emptyNoTasks.classList.add('hidden');
+        emptyAllCompleted.classList.remove('hidden');
+        allCompletedText.textContent = `You completed ${todayCompletedCount} task${todayCompletedCount > 1 ? 's' : ''} today. Everything is done!`;
+      } else {
+        emptyAllCompleted.classList.add('hidden');
+        emptyNoTasks.classList.remove('hidden');
+      }
       return;
     }
 
+    emptyNoTasks.classList.add('hidden');
+    emptyAllCompleted.classList.add('hidden');
+
     tasks.forEach(task => {
       const item = document.createElement('div');
-      item.className = 'bg-surface-container/70 active:bg-surface-container p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm border border-outline-variant/10 transition-colors';
+      
+      let borderStyle = '';
+      if (task.isRollover) {
+        borderStyle = 'border border-error/50 bg-error-container/20 ring-1 ring-error/30';
+      } else {
+        borderStyle = 'bg-surface-container/70 active:bg-surface-container border border-outline-variant/10';
+      }
+
+      item.className = `${borderStyle} p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm transition-all`;
       
       let priorityClass = 'bg-secondary-container/30 text-secondary';
       if (task.priority === 'urgent') priorityClass = 'bg-error-container/40 text-error';
-      else if (task.priority === 'medium') priorityClass = 'bg-tertiary-container/30 text-tertiary-fixed-dim';
+      else if (task.priority === 'medium') priorityClass = 'bg-tertiary-container/30 text-tertiary';
 
       item.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -373,7 +499,12 @@
             <span class="material-symbols-outlined text-[16px]">check</span>
           </button>
           <div class="flex flex-col min-w-0">
-            <span class="font-body-md text-on-surface truncate font-medium">${escapeHtml(task.title)}</span>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="font-body-md text-on-surface truncate font-medium">${escapeHtml(task.title)}</span>
+              ${task.isRollover ? `
+                <span class="h-3.5 px-1 rounded bg-error text-on-error font-label-mono text-[8px] font-bold uppercase shrink-0">Overdue</span>
+              ` : ''}
+            </div>
             <div class="flex items-center gap-2 mt-1">
               <span class="h-4 px-1.5 rounded ${priorityClass} font-label-mono text-[9px] font-semibold">
                 ${task.priority ? task.priority.toUpperCase() : 'NORMAL'}
@@ -389,6 +520,12 @@
                   ${escapeHtml(task.tag)}
                 </span>
               ` : ''}
+              ${task.isRollover ? `
+                <button class="move-today-btn font-label-mono text-[9px] text-error hover:underline flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[10px]">update</span>
+                  <span>Move to Today</span>
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -397,13 +534,20 @@
         </button>
       `;
 
-      item.querySelector('.complete-btn').addEventListener('click', () => {
-        completeTask(task.id);
-      });
+      item.querySelector('.complete-btn').addEventListener('click', () => completeTask(task.id));
+      item.querySelector('.delete-btn').addEventListener('click', () => deleteTask(task.id));
 
-      item.querySelector('.delete-btn').addEventListener('click', () => {
-        deleteTask(task.id);
-      });
+      const moveBtn = item.querySelector('.move-today-btn');
+      if (moveBtn) {
+        moveBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          task.isRollover = false;
+          task.date = getTodayString();
+          persistData();
+          sendOrQueueMutation({ type: 'TASK_EDITED', payload: task });
+          renderActiveTasks();
+        });
+      }
 
       activeTasksList.appendChild(item);
     });
@@ -416,7 +560,8 @@
     const compItem = {
       id: 'mc-' + Date.now(),
       title: t.title,
-      completedAt: new Date().toISOString()
+      completedAt: new Date().toISOString(),
+      group: 'today'
     };
     mobileData.completedTasks.unshift(compItem);
     persistData();
@@ -447,6 +592,70 @@
     renderActiveTasks();
   }
 
+  // ----------------- TOMORROW SCHEDULING -----------------
+  function updateTomorrowBanner() {
+    const tomorrowCount = (mobileData.tomorrowTasks || []).length;
+    if (tomorrowCount > 0) {
+      tomorrowBanner.classList.remove('hidden');
+      tomorrowCountText.textContent = `${tomorrowCount} task${tomorrowCount > 1 ? 's' : ''} queued for tomorrow`;
+    } else {
+      tomorrowBanner.classList.add('hidden');
+    }
+  }
+
+  // ----------------- REPEATED HABITS -----------------
+  function renderRepeatedTasks() {
+    repeatedTasksList.innerHTML = '';
+    const habits = mobileData.repeatedTasks || [];
+
+    if (habits.length === 0) {
+      repeatedTasksList.innerHTML = `
+        <div class="py-12 text-center flex flex-col items-center justify-center text-outline gap-1">
+          <span class="material-symbols-outlined text-[32px]">event_repeat</span>
+          <span class="font-headline-sm text-on-surface-variant font-semibold">No daily habits configured</span>
+          <span class="font-body-sm text-outline text-[12px]">Add habits you repeat every day to automatically appear each morning.</span>
+        </div>
+      `;
+      return;
+    }
+
+    habits.forEach(habit => {
+      const card = document.createElement('div');
+      card.className = 'bg-surface-container/70 p-3 rounded-xl flex items-center justify-between gap-3 border border-outline-variant/10';
+      card.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <input type="checkbox" ${habit.enabled ? 'checked' : ''} class="w-4 h-4 accent-primary rounded cursor-pointer"/>
+          <div class="flex flex-col min-w-0">
+            <span class="font-body-md text-on-surface truncate ${habit.enabled ? '' : 'text-outline line-through'} font-medium">${escapeHtml(habit.title)}</span>
+            <div class="flex items-center gap-2 mt-0.5 font-label-mono text-[10px] text-on-surface-variant">
+              <span class="text-secondary font-semibold">Repeats Daily</span>
+              ${habit.time ? `<span>• ${habit.time}</span>` : ''}
+              ${habit.tag ? `<span class="bg-surface-container-high px-1 rounded text-outline">${habit.tag}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline active:text-error">
+          <span class="material-symbols-outlined text-[16px]">delete</span>
+        </button>
+      `;
+
+      card.querySelector('input').addEventListener('change', (e) => {
+        habit.enabled = e.target.checked;
+        persistData();
+        renderRepeatedTasks();
+      });
+
+      card.querySelector('button').addEventListener('click', () => {
+        mobileData.repeatedTasks = mobileData.repeatedTasks.filter(h => h.id !== habit.id);
+        persistData();
+        renderRepeatedTasks();
+      });
+
+      repeatedTasksList.appendChild(card);
+    });
+  }
+
+  // ----------------- COMPLETED HISTORY -----------------
   function renderHistory(query = '') {
     historyList.innerHTML = '';
     const q = query.toLowerCase().trim();
@@ -475,7 +684,7 @@
           </span>
           <span class="font-body-sm text-outline line-through truncate">${escapeHtml(item.title)}</span>
         </div>
-        <button class="undo-btn px-2 py-1 rounded bg-surface-container-high text-on-surface font-label-mono text-[10px] shrink-0 active:scale-95">
+        <button class="undo-btn px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-mono text-[10px] shrink-0 active:scale-95 font-semibold">
           Undo
         </button>
       `;
@@ -486,7 +695,9 @@
           id: 'm-' + Date.now(),
           title: item.title,
           priority: 'medium',
-          tag: 'General'
+          tag: 'General',
+          date: getTodayString(),
+          isRollover: false
         };
         mobileData.activeTasks.push(restoredTask);
         persistData();
@@ -504,10 +715,10 @@
     });
   }
 
-  function applyTheme(preset, broadcast = true) {
+  // ----------------- THEMES (LOCAL TO MOBILE) -----------------
+  function applyTheme(preset, save = false) {
     document.body.setAttribute('data-theme', preset);
     mobileData.settings.themePreset = preset;
-    persistData();
 
     document.querySelectorAll('.mobile-preset-btn').forEach(b => {
       if (b.dataset.preset === preset) {
@@ -523,18 +734,21 @@
       }
     });
 
-    if (broadcast) {
-      sendOrQueueMutation({
-        type: 'THEME_CHANGED',
-        payload: { themePreset: preset }
-      });
+    if (save) {
+      persistData(); // LOCAL ONLY — never broadcast theme!
     }
+  }
+
+  function updateTagUI() {
+    const tags = mobileData.tagsBank;
+    if (currentTagIndex >= tags.length) currentTagIndex = 0;
+    tagLabel.textContent = tags[currentTagIndex];
   }
 
   // ----------------- QR SCANNER & PAIRING -----------------
   async function startScanner() {
     if (typeof Html5Qrcode === 'undefined') {
-      alert('Camera QR scanner module loading or unsupported. Please use manual IP connection below.');
+      alert('Camera module unavailable. Connect manually via IP below.');
       return;
     }
 
@@ -552,8 +766,7 @@
       isScanning = true;
       cameraBtnText.textContent = 'Stop Scanner';
     } catch (err) {
-      console.error('Camera error:', err);
-      alert('Camera permission denied or camera unavailable. You can enter the desktop IP manually below.');
+      alert('Camera permission denied or camera not found. Use manual IP connect below.');
     }
   }
 
@@ -577,7 +790,7 @@
   function handleScannedData(dataStr) {
     try {
       const parsed = JSON.parse(dataStr);
-      if (parsed.app === 'tasks.core') {
+      if (parsed.app === 'Task Thing' || parsed.app === 'tasks.core') {
         syncConfig.host = parsed.primaryHost || parsed.host;
         syncConfig.hosts = parsed.hosts || [syncConfig.host];
         syncConfig.port = parsed.port || 48721;
@@ -585,13 +798,13 @@
         persistSyncConfig();
 
         connectToDesktop(syncConfig.host);
-        alert(`Paired successfully with Desktop! Connecting to ${syncConfig.host}...`);
+        alert(`Paired with PC at ${syncConfig.host}:${syncConfig.port}!`);
         switchScreen('active-tasks');
       } else {
-        alert('Unrecognized tasks.core QR code.');
+        alert('Unrecognized Task Thing QR code.');
       }
     } catch (e) {
-      alert('Invalid QR code format: ' + dataStr);
+      alert('Invalid QR code format.');
     }
   }
 
@@ -622,16 +835,22 @@
 
   // ----------------- INITIALIZATION -----------------
   function init() {
+    mobileSkeleton.classList.remove('hidden');
+
     loadPersistedState();
 
     const now = new Date();
     todayDateBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
     applyTheme(mobileData.settings.themePreset || 'indigo', false);
+    updateTagUI();
     renderActiveTasks();
     renderHistory();
+    renderRepeatedTasks();
+    updateTomorrowBanner();
 
-    // Auto-connect to paired desktop
+    mobileSkeleton.classList.add('hidden');
+
     if (syncConfig.host) {
       connectToDesktop(syncConfig.host);
     } else {
@@ -648,6 +867,79 @@
 
     btnSyncHeader.addEventListener('click', () => switchScreen('sync'));
 
+    // Toggle Quick Add Form (Hidden by default)
+    function openQuickAdd(target = 'today') {
+      schedulingTarget = target;
+      schedBadge.textContent = target === 'tomorrow' ? 'Tomorrow' : 'Today';
+      quickAddBox.classList.remove('hidden');
+      addText.textContent = 'Close';
+      addIcon.textContent = 'close';
+      quickInput.focus();
+      addMenu.classList.add('hidden');
+    }
+
+    function closeQuickAdd() {
+      quickAddBox.classList.add('hidden');
+      addText.textContent = 'Add Task';
+      addIcon.textContent = 'add';
+      quickInput.value = '';
+    }
+
+    toggleAddBtn.addEventListener('click', () => {
+      if (quickAddBox.classList.contains('hidden')) {
+        openQuickAdd('today');
+      } else {
+        closeQuickAdd();
+      }
+    });
+
+    btnEmptyAdd?.addEventListener('click', () => openQuickAdd('today'));
+
+    btnAddDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addMenu.classList.toggle('hidden');
+    });
+
+    optToday.addEventListener('click', () => openQuickAdd('today'));
+    optTomorrow.addEventListener('click', () => openQuickAdd('tomorrow'));
+
+    // Submit Task
+    function submitTask() {
+      const title = quickInput.value.trim();
+      if (!title) return;
+
+      const newTask = {
+        id: 'm-' + Date.now(),
+        title,
+        priority: currentPriority,
+        tag: mobileData.tagsBank[currentTagIndex],
+        time: '17:00',
+        date: schedulingTarget === 'tomorrow' ? getTomorrowString() : getTodayString(),
+        isRollover: false,
+        createdAt: new Date().toISOString()
+      };
+
+      if (schedulingTarget === 'tomorrow') {
+        mobileData.tomorrowTasks.push(newTask);
+        persistData();
+        updateTomorrowBanner();
+        alert('Queued for Tomorrow!');
+      } else {
+        mobileData.activeTasks.push(newTask);
+        persistData();
+        sendOrQueueMutation({ type: 'TASK_ADDED', payload: newTask });
+        renderActiveTasks();
+      }
+
+      quickInput.value = '';
+      closeQuickAdd();
+    }
+
+    btnSubmit.addEventListener('click', submitTask);
+    quickInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitTask();
+    });
+
     // Priority button
     const priorities = ['urgent', 'medium', 'low'];
     btnPriority.addEventListener('click', () => {
@@ -655,60 +947,65 @@
       currentPriority = priorities[next];
       priorityLabel.textContent = currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1);
       if (currentPriority === 'urgent') {
+        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-error';
         btnPriority.className = 'h-6 px-2 rounded bg-error-container/40 text-error font-label-mono text-[10px] font-semibold flex items-center gap-1';
       } else if (currentPriority === 'medium') {
-        btnPriority.className = 'h-6 px-2 rounded bg-tertiary-container/30 text-tertiary-fixed-dim font-label-mono text-[10px] font-semibold flex items-center gap-1';
+        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
+        btnPriority.className = 'h-6 px-2 rounded bg-tertiary-container/30 text-tertiary font-label-mono text-[10px] font-semibold flex items-center gap-1';
       } else {
+        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
         btnPriority.className = 'h-6 px-2 rounded bg-secondary-container/30 text-secondary font-label-mono text-[10px] font-semibold flex items-center gap-1';
       }
     });
 
-    // Tag button
-    const tags = ['Design', 'Dev', 'Ops', 'Personal'];
+    // Tag button & New Tag
     btnTag.addEventListener('click', () => {
-      const next = (tags.indexOf(currentTag) + 1) % tags.length;
-      currentTag = tags[next];
-      tagLabel.textContent = currentTag;
+      currentTagIndex = (currentTagIndex + 1) % mobileData.tagsBank.length;
+      updateTagUI();
     });
 
-    // Add task
-    function submitTask() {
-      const title = quickInput.value.trim();
-      if (!title) return;
-      const newTask = {
-        id: 'm-' + Date.now(),
-        title,
-        priority: currentPriority,
-        tag: currentTag,
-        time: '17:00',
-        createdAt: new Date().toISOString()
-      };
-      mobileData.activeTasks.push(newTask);
-      persistData();
+    btnAddTag.addEventListener('click', () => {
+      const newTag = prompt('Create a new tag (e.g. Finance, Fitness, Study):');
+      if (newTag && newTag.trim()) {
+        const clean = newTag.trim();
+        if (!mobileData.tagsBank.includes(clean)) {
+          mobileData.tagsBank.push(clean);
+          currentTagIndex = mobileData.tagsBank.length - 1;
+          persistData();
+          updateTagUI();
+        }
+      }
+    });
 
-      sendOrQueueMutation({
-        type: 'TASK_ADDED',
-        payload: newTask
-      });
+    // Add repeated habit
+    btnAddHabit.addEventListener('click', () => {
+      const title = prompt('Enter a daily recurring habit:');
+      if (title && title.trim()) {
+        mobileData.repeatedTasks.push({
+          id: 'rep-m-' + Date.now(),
+          title: title.trim(),
+          priority: 'medium',
+          time: '09:00',
+          tag: 'Daily',
+          enabled: true
+        });
+        persistData();
+        renderRepeatedTasks();
+      }
+    });
 
-      renderActiveTasks();
-      quickInput.value = '';
-    }
-
-    btnAdd.addEventListener('click', submitTask);
-    quickInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') submitTask();
+    btnViewTomorrow.addEventListener('click', () => {
+      alert(`Queued for Tomorrow (${mobileData.tomorrowTasks.length} tasks):\n\n` +
+        mobileData.tomorrowTasks.map((t, i) => `${i+1}. ${t.title}`).join('\n')
+      );
     });
 
     searchInput.addEventListener('input', (e) => renderHistory(e.target.value));
 
     // Camera toggle
     btnToggleCamera.addEventListener('click', () => {
-      if (isScanning) {
-        stopScanner();
-      } else {
-        startScanner();
-      }
+      if (isScanning) stopScanner();
+      else startScanner();
     });
 
     // Manual connect
@@ -724,12 +1021,35 @@
       switchScreen('active-tasks');
     });
 
-    // Theme selector
+    btnReconnect.addEventListener('click', () => {
+      if (syncConfig.host) {
+        connectToDesktop(syncConfig.host);
+      } else {
+        alert('Scan the PC QR code first to pair.');
+      }
+    });
+
+    // Theme selector (Local Only)
     document.querySelectorAll('.mobile-preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         applyTheme(btn.dataset.preset, true);
       });
     });
+
+    document.addEventListener('click', () => {
+      addMenu.classList.add('hidden');
+    });
+  }
+
+  function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function getTomorrowString() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   function escapeHtml(str) {
