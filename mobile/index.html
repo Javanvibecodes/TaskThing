@@ -67,18 +67,18 @@
   <!-- HTML5 QR Scanner library for camera scanning on mobile -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    :root, body[data-theme="indigo"] {
-      --primary: #c0c1ff;
-      --on-primary: #1000a9;
-      --primary-container: #3f4299;
-      --on-primary-container: #e1e0ff;
-      --secondary: #4edea3;
-      --on-secondary: #003824;
-      --secondary-container: #00a572;
-      --tertiary: #ffb95f;
-      --on-tertiary: #472a00;
-      --tertiary-container: #ca8100;
-      --tertiary-fixed-dim: #ffb95f;
+    :root, body[data-theme="cobalt"] {
+      --primary: #60a5fa;
+      --on-primary: #082f49;
+      --primary-container: #1e3a8a;
+      --on-primary-container: #dbeafe;
+      --secondary: #38bdf8;
+      --on-secondary: #082f49;
+      --secondary-container: #0369a1;
+      --tertiary: #fbbf24;
+      --on-tertiary: #451a03;
+      --tertiary-container: #b45309;
+      --tertiary-fixed-dim: #fcd34d;
     }
     body[data-theme="emerald"] {
       --primary: #4edea3;
@@ -88,62 +88,62 @@
       --secondary: #6ffbbe;
       --on-secondary: #003824;
       --secondary-container: #00a572;
-      --tertiary: #ffb95f;
-      --on-tertiary: #472a00;
-      --tertiary-container: #ca8100;
-      --tertiary-fixed-dim: #ffb95f;
+      --tertiary: #38bdf8;
+      --on-tertiary: #082f49;
+      --tertiary-container: #0369a1;
+      --tertiary-fixed-dim: #7dd3fc;
     }
     body[data-theme="amber"] {
       --primary: #ffb95f;
       --on-primary: #472a00;
       --primary-container: #653e00;
       --on-primary-container: #ffddb8;
-      --secondary: #ffd580;
-      --on-secondary: #422b00;
-      --secondary-container: #ca8100;
-      --tertiary: #ffb4ab;
-      --on-tertiary: #690005;
-      --tertiary-container: #93000a;
-      --tertiary-fixed-dim: #ffb4ab;
+      --secondary: #facc15;
+      --on-secondary: #422006;
+      --secondary-container: #854d0e;
+      --tertiary: #38bdf8;
+      --on-tertiary: #082f49;
+      --tertiary-container: #0369a1;
+      --tertiary-fixed-dim: #7dd3fc;
     }
-    body[data-theme="rose"] {
-      --primary: #ffb4ab;
-      --on-primary: #690005;
-      --primary-container: #7a151e;
-      --on-primary-container: #ffdad6;
-      --secondary: #c0c1ff;
-      --on-secondary: #1000a9;
-      --secondary-container: #3f4299;
-      --tertiary: #ffb95f;
-      --on-tertiary: #472a00;
-      --tertiary-container: #ca8100;
-      --tertiary-fixed-dim: #ffb95f;
+    body[data-theme="coral"] {
+      --primary: #ff8f7d;
+      --on-primary: #5c140a;
+      --primary-container: #7f1d1d;
+      --on-primary-container: #ffe4e1;
+      --secondary: #fb923c;
+      --on-secondary: #431407;
+      --secondary-container: #9a3412;
+      --tertiary: #facc15;
+      --on-tertiary: #422006;
+      --tertiary-container: #854d0e;
+      --tertiary-fixed-dim: #fde047;
     }
     body[data-theme="obsidian"] {
-      --primary: #dae2fd;
-      --on-primary: #0b1326;
-      --primary-container: #31394d;
-      --on-primary-container: #dae2fd;
-      --secondary: #c7c4d7;
-      --on-secondary: #191c28;
-      --secondary-container: #464554;
-      --tertiary: #908fa0;
-      --on-tertiary: #141724;
-      --tertiary-container: #222a3d;
-      --tertiary-fixed-dim: #c7c4d7;
+      --primary: #94a3b8;
+      --on-primary: #0f172a;
+      --primary-container: #334155;
+      --on-primary-container: #f1f5f9;
+      --secondary: #cbd5e1;
+      --on-secondary: #0f172a;
+      --secondary-container: #475569;
+      --tertiary: #38bdf8;
+      --on-tertiary: #082f49;
+      --tertiary-container: #0369a1;
+      --tertiary-fixed-dim: #7dd3fc;
     }
     body[data-theme="arctic"] {
-      --primary: #6ffbbe;
-      --on-primary: #003824;
-      --primary-container: #005a3c;
-      --on-primary-container: #9effd7;
-      --secondary: #80e5ff;
-      --on-secondary: #003642;
-      --secondary-container: #004e60;
-      --tertiary: #c0c1ff;
-      --on-tertiary: #1000a9;
-      --tertiary-container: #3f4299;
-      --tertiary-fixed-dim: #c0c1ff;
+      --primary: #2dd4bf;
+      --on-primary: #00382e;
+      --primary-container: #005a4a;
+      --on-primary-container: #99f6e4;
+      --secondary: #38bdf8;
+      --on-secondary: #082f49;
+      --secondary-container: #0284c7;
+      --tertiary: #fbbf24;
+      --on-tertiary: #451a03;
+      --tertiary-container: #b45309;
+      --tertiary-fixed-dim: #fde68a;
     }
     * {
       -webkit-tap-highlight-color: transparent;
@@ -167,9 +167,34 @@
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
+    @keyframes splashGlow {
+      0%, 100% {
+        box-shadow: 0 0 24px -3px rgba(96, 165, 250, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 36px 3px rgba(96, 165, 250, 0.65);
+      }
+    }
+    .splash-logo-glow {
+      animation: splashGlow 2s ease-in-out infinite;
+    }
   </style>
 </head>
-<body class="bg-[#0b1326] text-on-surface font-body-md min-h-screen flex flex-col justify-between overflow-hidden" data-theme="indigo">
+<body class="relative bg-[#0b1326] text-on-surface font-body-md min-h-screen flex flex-col justify-between overflow-hidden" data-theme="cobalt">
+
+  <!-- Mobile Launch Animation Splash Overlay -->
+  <div id="mobile-launch-splash" class="absolute inset-0 bg-[#0b1326] z-50 flex flex-col items-center justify-center gap-4 transition-opacity duration-500">
+    <div class="w-16 h-16 rounded-2xl bg-primary-container text-primary flex items-center justify-center shadow-xl splash-logo-glow">
+      <span class="material-symbols-outlined text-[36px]">checklist</span>
+    </div>
+    <div class="flex flex-col items-center text-center">
+      <span class="font-headline-lg text-[22px] text-on-surface font-bold tracking-tight">Task Thing</span>
+      <span class="font-label-mono text-[12px] text-on-surface-variant/90 tracking-wide mt-1">Loading your <em class="italic text-primary font-serif">things</em>...</span>
+    </div>
+    <div class="w-52 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
+      <div id="mobile-splash-progress" class="h-full bg-primary rounded-full transition-all duration-300 w-0"></div>
+    </div>
+  </div>
 
   <!-- Mobile Top Bar (NO user avatar) -->
   <header class="h-14 bg-surface-container-lowest/90 backdrop-blur-xl px-4 flex items-center justify-between border-b border-outline-variant/15 shrink-0 z-20">
@@ -344,19 +369,21 @@
         <span class="font-body-sm text-body-sm text-on-surface-variant">Customize your mobile appearance independently.</span>
       </div>
 
-      <!-- Color Palettes Grid (Radius and Opacity REMOVED, no pulse indicator) -->
+      <!-- Color Palettes Grid (60/30/10 Rule — Zero Purple!) -->
       <div class="grid grid-cols-1 gap-2.5" id="mobile-theme-list">
-        <button data-preset="indigo" class="mobile-preset-btn p-3 rounded-xl bg-surface-container flex items-center justify-between border border-primary/40">
+        <!-- Preset 1: Cobalt Oceanic -->
+        <button data-preset="cobalt" class="mobile-preset-btn p-3 rounded-xl bg-surface-container flex items-center justify-between border border-primary/40">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
-              <span class="w-3.5 h-3.5 rounded-full bg-[#c0c1ff]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#4346a2]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#4edea3]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#60a5fa]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#1e3a8a]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#38bdf8]"></span>
             </div>
-            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Indigo Twilight</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Cobalt Oceanic</span>
           </div>
           <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
         </button>
+        <!-- Preset 2: Emerald Botanical -->
         <button data-preset="emerald" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
@@ -368,45 +395,49 @@
           </div>
           <span class="material-symbols-outlined text-secondary text-[20px] hidden">check_circle</span>
         </button>
+        <!-- Preset 3: Sunset Amber -->
         <button data-preset="amber" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
               <span class="w-3.5 h-3.5 rounded-full bg-[#ffb95f]"></span>
               <span class="w-3.5 h-3.5 rounded-full bg-[#653e00]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#ffd580]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#facc15]"></span>
             </div>
             <span class="font-headline-sm text-body-md text-on-surface font-semibold">Sunset Amber</span>
           </div>
           <span class="material-symbols-outlined text-tertiary text-[20px] hidden">check_circle</span>
         </button>
-        <button data-preset="rose" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
+        <!-- Preset 4: Crimson Coral (No Purple) -->
+        <button data-preset="coral" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
-              <span class="w-3.5 h-3.5 rounded-full bg-[#ffb4ab]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#7a151e]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#c0c1ff]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#ff8f7d]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#7f1d1d]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#fb923c]"></span>
             </div>
-            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Rose Berry</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Crimson Coral</span>
           </div>
           <span class="material-symbols-outlined text-error text-[20px] hidden">check_circle</span>
         </button>
+        <!-- Preset 5: Obsidian Slate -->
         <button data-preset="obsidian" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
-              <span class="w-3.5 h-3.5 rounded-full bg-[#dae2fd]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#31394d]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#c7c4d7]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#94a3b8]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#334155]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#cbd5e1]"></span>
             </div>
             <span class="font-headline-sm text-body-md text-on-surface font-semibold">Obsidian Slate</span>
           </div>
           <span class="material-symbols-outlined text-on-surface text-[20px] hidden">check_circle</span>
         </button>
+        <!-- Preset 6: Arctic Cyan -->
         <button data-preset="arctic" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
-              <span class="w-3.5 h-3.5 rounded-full bg-[#6ffbbe]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#005a3c]"></span>
-              <span class="w-3.5 h-3.5 rounded-full bg-[#80e5ff]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#2dd4bf]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#005a4a]"></span>
+              <span class="w-3.5 h-3.5 rounded-full bg-[#38bdf8]"></span>
             </div>
             <span class="font-headline-sm text-body-md text-on-surface font-semibold">Arctic Cyan</span>
           </div>

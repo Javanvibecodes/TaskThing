@@ -2,7 +2,7 @@
 (function() {
   let mobileData = {
     settings: {
-      themePreset: 'indigo',
+      themePreset: 'cobalt',
       connected: false
     },
     tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
@@ -43,6 +43,8 @@
   ];
 
   // DOM Elements
+  const mobileLaunchSplash = document.getElementById('mobile-launch-splash');
+  const mobileSplashProgress = document.getElementById('mobile-splash-progress');
   const tabButtons = document.querySelectorAll('.mobile-tab-btn');
   const screens = document.querySelectorAll('.mobile-screen');
   const activeTasksList = document.getElementById('mobile-tasks-list');
@@ -833,8 +835,29 @@
     }
   }
 
+  // ----------------- LAUNCH ANIMATION -----------------
+  function playMobileLaunchAnimation() {
+    return new Promise((resolve) => {
+      if (!mobileLaunchSplash || !mobileSplashProgress) {
+        resolve();
+        return;
+      }
+      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '35%'; }, 150);
+      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '70%'; }, 500);
+      setTimeout(() => { if (mobileSplashProgress) mobileSplashProgress.style.width = '100%'; }, 900);
+      setTimeout(() => {
+        mobileLaunchSplash.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          mobileLaunchSplash.remove();
+          resolve();
+        }, 500);
+      }, 1200);
+    });
+  }
+
   // ----------------- INITIALIZATION -----------------
   function init() {
+    playMobileLaunchAnimation();
     mobileSkeleton.classList.remove('hidden');
 
     loadPersistedState();
@@ -842,7 +865,7 @@
     const now = new Date();
     todayDateBadge.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
-    applyTheme(mobileData.settings.themePreset || 'indigo', false);
+    applyTheme(mobileData.settings.themePreset || 'cobalt', false);
     updateTagUI();
     renderActiveTasks();
     renderHistory();

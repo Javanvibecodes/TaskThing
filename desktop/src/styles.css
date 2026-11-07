@@ -1,15 +1,22 @@
-:root, body[data-theme="indigo"] {
-  --primary: #c0c1ff;
-  --on-primary: #1000a9;
-  --primary-container: #3f4299;
-  --on-primary-container: #e1e0ff;
-  --secondary: #4edea3;
-  --on-secondary: #003824;
-  --secondary-container: #00a572;
-  --tertiary: #ffb95f;
-  --on-tertiary: #472a00;
-  --tertiary-container: #ca8100;
-  --tertiary-fixed-dim: #ffb95f;
+/* 60/30/10 Rule Theme System & Design Tokens
+ * 60% Canvas & Neutral Dark Surface: #0b1326 / #131b2e / #060e20
+ * 30% Structural Elevation, Cards & Text: #171f33 / #222a3d / #dae2fd
+ * 10% High-Contrast Functional Accent: Cobalt, Emerald, Amber, Coral, Obsidian, Arctic
+ * (ZERO PURPLE)
+ */
+
+:root, body[data-theme="cobalt"] {
+  --primary: #60a5fa;
+  --on-primary: #082f49;
+  --primary-container: #1e3a8a;
+  --on-primary-container: #dbeafe;
+  --secondary: #38bdf8;
+  --on-secondary: #082f49;
+  --secondary-container: #0369a1;
+  --tertiary: #fbbf24;
+  --on-tertiary: #451a03;
+  --tertiary-container: #b45309;
+  --tertiary-fixed-dim: #fcd34d;
 }
 
 body[data-theme="emerald"] {
@@ -20,10 +27,10 @@ body[data-theme="emerald"] {
   --secondary: #6ffbbe;
   --on-secondary: #003824;
   --secondary-container: #00a572;
-  --tertiary: #ffb95f;
-  --on-tertiary: #472a00;
-  --tertiary-container: #ca8100;
-  --tertiary-fixed-dim: #ffb95f;
+  --tertiary: #38bdf8;
+  --on-tertiary: #082f49;
+  --tertiary-container: #0369a1;
+  --tertiary-fixed-dim: #7dd3fc;
 }
 
 body[data-theme="amber"] {
@@ -31,55 +38,55 @@ body[data-theme="amber"] {
   --on-primary: #472a00;
   --primary-container: #653e00;
   --on-primary-container: #ffddb8;
-  --secondary: #ffd580;
-  --on-secondary: #422b00;
-  --secondary-container: #ca8100;
-  --tertiary: #ffb4ab;
-  --on-tertiary: #690005;
-  --tertiary-container: #93000a;
-  --tertiary-fixed-dim: #ffb4ab;
+  --secondary: #facc15;
+  --on-secondary: #422006;
+  --secondary-container: #854d0e;
+  --tertiary: #38bdf8;
+  --on-tertiary: #082f49;
+  --tertiary-container: #0369a1;
+  --tertiary-fixed-dim: #7dd3fc;
 }
 
-body[data-theme="rose"] {
-  --primary: #ffb4ab;
-  --on-primary: #690005;
-  --primary-container: #7a151e;
-  --on-primary-container: #ffdad6;
-  --secondary: #c0c1ff;
-  --on-secondary: #1000a9;
-  --secondary-container: #3f4299;
-  --tertiary: #ffb95f;
-  --on-tertiary: #472a00;
-  --tertiary-container: #ca8100;
-  --tertiary-fixed-dim: #ffb95f;
+body[data-theme="coral"] {
+  --primary: #ff8f7d;
+  --on-primary: #5c140a;
+  --primary-container: #7f1d1d;
+  --on-primary-container: #ffe4e1;
+  --secondary: #fb923c;
+  --on-secondary: #431407;
+  --secondary-container: #9a3412;
+  --tertiary: #facc15;
+  --on-tertiary: #422006;
+  --tertiary-container: #854d0e;
+  --tertiary-fixed-dim: #fde047;
 }
 
 body[data-theme="obsidian"] {
-  --primary: #dae2fd;
-  --on-primary: #0b1326;
-  --primary-container: #31394d;
-  --on-primary-container: #dae2fd;
-  --secondary: #c7c4d7;
-  --on-secondary: #191c28;
-  --secondary-container: #464554;
-  --tertiary: #908fa0;
-  --on-tertiary: #141724;
-  --tertiary-container: #222a3d;
-  --tertiary-fixed-dim: #c7c4d7;
+  --primary: #94a3b8;
+  --on-primary: #0f172a;
+  --primary-container: #334155;
+  --on-primary-container: #f1f5f9;
+  --secondary: #cbd5e1;
+  --on-secondary: #0f172a;
+  --secondary-container: #475569;
+  --tertiary: #38bdf8;
+  --on-tertiary: #082f49;
+  --tertiary-container: #0369a1;
+  --tertiary-fixed-dim: #7dd3fc;
 }
 
 body[data-theme="arctic"] {
-  --primary: #6ffbbe;
-  --on-primary: #003824;
-  --primary-container: #005a3c;
-  --on-primary-container: #9effd7;
-  --secondary: #80e5ff;
-  --on-secondary: #003642;
-  --secondary-container: #004e60;
-  --tertiary: #c0c1ff;
-  --on-tertiary: #1000a9;
-  --tertiary-container: #3f4299;
-  --tertiary-fixed-dim: #c0c1ff;
+  --primary: #2dd4bf;
+  --on-primary: #00382e;
+  --primary-container: #005a4a;
+  --on-primary-container: #99f6e4;
+  --secondary: #38bdf8;
+  --on-secondary: #082f49;
+  --secondary-container: #0284c7;
+  --tertiary: #fbbf24;
+  --on-tertiary: #451a03;
+  --tertiary-container: #b45309;
+  --tertiary-fixed-dim: #fde68a;
 }
 
 /* Base resets & Dragging */
@@ -149,4 +156,18 @@ html, body {
   background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Splash Progress Animation */
+@keyframes splashGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px -3px rgba(96, 165, 250, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 32px 2px rgba(96, 165, 250, 0.6);
+  }
+}
+
+.splash-logo-glow {
+  animation: splashGlow 2s ease-in-out infinite;
 }

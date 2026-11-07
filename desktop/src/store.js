@@ -23,7 +23,7 @@ class LocalStore {
       lastActiveDate: today,
       tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
       settings: {
-        themePreset: 'indigo',
+        themePreset: 'cobalt',
         colorMode: 'dark',
         alwaysOnTop: false,
         compactMode: false,

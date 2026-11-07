@@ -2,7 +2,7 @@
 (async function() {
   let appData = {
     settings: {
-      themePreset: 'indigo',
+      themePreset: 'cobalt',
       colorMode: 'dark',
       alwaysOnTop: false,
       compactMode: false
@@ -21,6 +21,8 @@
   let isMac = false;
 
   // DOM Elements
+  const launchSplashScreen = document.getElementById('launch-splash-screen');
+  const splashProgressBar = document.getElementById('splash-progress-bar');
   const container = document.getElementById('main-widget-container');
   const compactBar = document.getElementById('compact-widget-bar');
   const navItems = document.querySelectorAll('.nav-item[data-path]');
@@ -133,6 +135,27 @@
     }, 2200);
   }
 
+  // ----------------- LAUNCH ANIMATION -----------------
+  function playLaunchAnimation() {
+    return new Promise((resolve) => {
+      if (!launchSplashScreen || !splashProgressBar) {
+        resolve();
+        return;
+      }
+
+      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '35%'; }, 150);
+      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '70%'; }, 500);
+      setTimeout(() => { if (splashProgressBar) splashProgressBar.style.width = '100%'; }, 900);
+      setTimeout(() => {
+        launchSplashScreen.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          launchSplashScreen.remove();
+          resolve();
+        }, 500);
+      }, 1200);
+    });
+  }
+
   // ----------------- PLATFORM DETECTION -----------------
   async function setupPlatformUI() {
     try {
@@ -163,6 +186,7 @@
 
   // ----------------- INITIALIZATION -----------------
   async function init() {
+    playLaunchAnimation();
     await setupPlatformUI();
 
     // Show initial loading skeleton
@@ -189,7 +213,7 @@
     tasksLoadingSkeleton.classList.add('hidden');
 
     renderCurrentDate();
-    applyTheme(appData.settings.themePreset || 'indigo');
+    applyTheme(appData.settings.themePreset || 'cobalt');
     updatePinUI(appData.settings.alwaysOnTop || false);
 
     updateTagCyclistUI();
@@ -1013,8 +1037,8 @@
     });
 
     btnThemeReset.addEventListener('click', () => {
-      applyTheme('indigo', true);
-      showToast('Theme reset to Indigo');
+      applyTheme('cobalt', true);
+      showToast('Theme reset to Cobalt');
     });
 
     // Window controls
