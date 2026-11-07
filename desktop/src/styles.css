@@ -1,0 +1,137 @@
+:root {
+  --primary: #c0c1ff;
+  --primary-container: #8083ff;
+  --on-primary: #1000a9;
+  --on-primary-container: #0d0096;
+  --secondary: #4edea3;
+  --secondary-container: #00a572;
+  --on-secondary: #003824;
+  --tertiary: #ffb95f;
+  --tertiary-container: #ca8100;
+  --surface-container-lowest: #060e20;
+  --surface-container-low: #131b2e;
+  --surface-container: #171f33;
+  --surface-container-high: #222a3d;
+  --surface-container-highest: #2d3449;
+  --surface-bright: #31394d;
+  --on-surface: #dae2fd;
+  --on-surface-variant: #c7c4d7;
+  --outline: #908fa0;
+  --outline-variant: #464554;
+  --error: #ffb4ab;
+  --error-container: #93000a;
+  --widget-radius: 0.5rem;
+  --widget-opacity: 0.95;
+}
+
+/* Theme presets CSS variables */
+body[data-theme="indigo"] {
+  --primary: #c0c1ff;
+  --primary-container: #8083ff;
+  --on-primary: #1000a9;
+  --secondary: #4edea3;
+  --secondary-container: #00a572;
+}
+
+body[data-theme="emerald"] {
+  --primary: #4edea3;
+  --primary-container: #00a572;
+  --on-primary: #003824;
+  --secondary: #6ffbbe;
+  --secondary-container: #005236;
+}
+
+body[data-theme="amber"] {
+  --primary: #ffb95f;
+  --primary-container: #ca8100;
+  --on-primary: #472a00;
+  --secondary: #ffddb8;
+  --secondary-container: #653e00;
+}
+
+body[data-theme="rose"] {
+  --primary: #ffb4ab;
+  --primary-container: #93000a;
+  --on-primary: #690005;
+  --secondary: #c0c1ff;
+  --secondary-container: #8083ff;
+}
+
+body[data-theme="obsidian"] {
+  --primary: #dae2fd;
+  --primary-container: #908fa0;
+  --on-primary: #0b1326;
+  --secondary: #c7c4d7;
+  --secondary-container: #464554;
+}
+
+body[data-theme="arctic"] {
+  --primary: #6ffbbe;
+  --primary-container: #00a572;
+  --on-primary: #003824;
+  --secondary: #c0c1ff;
+  --secondary-container: #8083ff;
+}
+
+/* Base resets & Dragging */
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: transparent !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Smooth Transitions */
+.view-transition {
+  transition: opacity 0.18s ease-in-out, transform 0.18s ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(144, 143, 160, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 143, 160, 0.5);
+}
+
+/* Animation helpers */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation: fadeInScale 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

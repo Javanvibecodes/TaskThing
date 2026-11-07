@@ -1,0 +1,15 @@
+{
+  "name": "widget-monorepo",
+  "version": "1.0.0",
+  "description": "tasks.core - Floating Desktop Widget & Mobile Sync App",
+  "private": true,
+  "scripts": {
+    "desktop": "pnpm --dir desktop start",
+    "desktop:pack": "pnpm --dir desktop pack",
+    "desktop:dist:win": "pnpm --dir desktop dist:win",
+    "desktop:dist:mac": "pnpm --dir desktop dist:mac",
+    "mobile": "npx serve mobile -p 3000",
+    "mobile:dev": "pnpm --dir mobile dev"
+  },
+  "packageManager": "pnpm@12.18.0"
+}

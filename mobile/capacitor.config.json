@@ -1,0 +1,17 @@
+{
+  "appId": "com.taskscore.mobile",
+  "appName": "tasks.core",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true
+  },
+  "android": {
+    "backgroundColor": "#0b1326"
+  },
+  "ios": {
+    "backgroundColor": "#0b1326",
+    "contentInset": "always"
+  }
+}
+
