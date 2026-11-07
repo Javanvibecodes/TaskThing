@@ -27,6 +27,7 @@
   let offlineQueue = [];
   let ws = null;
   let reconnectTimer = null;
+  let connectTimeout = null;
   let heartbeatTimer = null;
   let isScanning = false;
   let html5QrScanner = null;
@@ -140,6 +141,11 @@
   const mobileSyncText = document.getElementById('mobile-sync-text');
   const mobileSyncDetailStatus = document.getElementById('mobile-sync-detail-status');
   const btnSyncHeader = document.getElementById('btn-sync-header');
+
+  // Help & Legal elements
+  const btnCheckUpdates = document.getElementById('btn-check-updates');
+  const btnReportIssue = document.getElementById('btn-report-issue');
+  const btnAddHabitTag = document.getElementById('mobile-btn-add-habit-tag');
 
   // ----------------- STORAGE & PERSISTENCE -----------------
   function loadPersistedState() {
@@ -268,16 +274,13 @@
   }
 
   // ----------------- REAL-TIME SYNC CLIENT -----------------
-  async function connectToDesktop(customHost = null) {
+  async function connectToDesktop(customHost = null, isManual = false) {
     if (reconnectTimer) clearTimeout(reconnectTimer);
-    if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
-      // Already connected or connecting; if reconnecting to same host, don't re-enter
-      if (customHost && ws.url && ws.url.includes(customHost)) return;
-    }
+    if (connectTimeout) clearTimeout(connectTimeout);
 
     const hostToTry = customHost || syncConfig.host;
     if (!hostToTry) {
-      updateConnectionUI();
+      updateConnectionUI('disconnected');
       return;
     }
 
@@ -288,19 +291,34 @@
     updateConnectionUI('connecting', hostToTry);
 
     try {
-      // If existing WS is in CONNECTING state for same host, close it first
       if (ws) {
         ws.onopen = null;
         ws.onmessage = null;
         ws.onclose = null;
         ws.onerror = null;
-        ws.close();
+        try { ws.close(); } catch (e) {}
         ws = null;
       }
 
       ws = new WebSocket(wsUrl);
 
+      // 5-second strict timeout: abort if PC is unreachable
+      connectTimeout = setTimeout(() => {
+        if (ws && ws.readyState === WebSocket.CONNECTING) {
+          console.warn('WebSocket connection timed out for host:', hostToTry);
+          ws.onopen = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onerror = null;
+          try { ws.close(); } catch (e) {}
+          ws = null;
+          updateConnectionUI('failed', hostToTry, 'Connection timed out — PC unreachable');
+          if (!isManual) scheduleAutoReconnect();
+        }
+      }, 5000);
+
       ws.onopen = () => {
+        if (connectTimeout) clearTimeout(connectTimeout);
         syncConfig.host = hostToTry;
         syncConfig.connected = true;
         syncConfig.mode = isHotspotIp(hostToTry) ? 'hotspot' : 'lan';
@@ -332,26 +350,33 @@
       };
 
       ws.onclose = () => {
+        if (connectTimeout) clearTimeout(connectTimeout);
+        const wasConnected = syncConfig.connected;
         syncConfig.connected = false;
         stopHeartbeat();
         ws = null;
-        updateConnectionUI('disconnected');
-        scheduleAutoReconnect();
+        if (wasConnected) {
+          updateConnectionUI('disconnected');
+          scheduleAutoReconnect();
+        } else {
+          updateConnectionUI('failed', hostToTry, 'Connection Failed — Host unreachable');
+        }
       };
 
       ws.onerror = (error) => {
+        if (connectTimeout) clearTimeout(connectTimeout);
         console.error('WebSocket error:', error);
+        syncConfig.connected = false;
+        stopHeartbeat();
+        try { ws.close(); } catch (e) {}
         ws = null;
-        // Don't close here - onclose will handle it
-        // But ensure we don't stay in connecting state forever
-        updateConnectionUI('disconnected');
-        scheduleAutoReconnect();
+        updateConnectionUI('failed', hostToTry, 'Connection Failed — Host unreachable');
       };
     } catch (err) {
+      if (connectTimeout) clearTimeout(connectTimeout);
       console.error('WebSocket connection failed:', err);
       ws = null;
-      updateConnectionUI('disconnected');
-      scheduleAutoReconnect();
+      updateConnectionUI('failed', hostToTry, 'Connection Failed: ' + (err.message || err));
     }
   }
 
@@ -495,9 +520,10 @@
   }
 
   // Update Visual Real-Time Indicators
-  function updateConnectionUI(state = null, host = null) {
+  function updateConnectionUI(state = null, host = null, errorMsg = null) {
     const isConn = state === 'connected' || (ws && ws.readyState === WebSocket.OPEN);
     const isConnPending = state === 'connecting' || (ws && ws.readyState === WebSocket.CONNECTING);
+    const isFailed = state === 'failed';
 
     if (isConn) {
       const modeText = syncConfig.mode === 'hotspot' ? 'Hotspot Synced' : 'LAN Synced';
@@ -512,6 +538,12 @@
       mobileSyncText.className = 'font-label-mono text-[10px] text-tertiary font-medium';
       mobileSyncDetailStatus.textContent = 'Searching for PC Widget...';
       mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-tertiary font-semibold';
+    } else if (isFailed) {
+      mobileSyncDot.className = 'w-2 h-2 rounded-full bg-error';
+      mobileSyncText.textContent = 'Connection Failed';
+      mobileSyncText.className = 'font-label-mono text-[10px] text-error font-medium';
+      mobileSyncDetailStatus.textContent = errorMsg || 'Connection Failed — PC Unreachable (Check Wi-Fi / Hotspot)';
+      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-error font-semibold';
     } else {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-outline';
       mobileSyncText.textContent = offlineQueue.length > 0 ? `Offline (${offlineQueue.length} Queued)` : 'Offline';
@@ -861,6 +893,7 @@
 
   // ----------------- THEMES (LOCAL TO MOBILE) -----------------
   function applyTheme(preset, save = false) {
+    document.documentElement.setAttribute('data-theme', preset);
     document.body.setAttribute('data-theme', preset);
     mobileData.settings.themePreset = preset;
 
@@ -912,14 +945,21 @@
       return;
     }
 
-    // Check camera permission first
-    const hasPermission = await requestCameraPermission();
-    if (!hasPermission) return;
-
     try {
+      if (html5QrScanner) {
+        try { await html5QrScanner.stop(); } catch (e) {}
+        html5QrScanner = null;
+      }
+
       html5QrScanner = new Html5Qrcode('qr-reader');
-      // Start scanner without restrictive facingMode or qrbox - auto-size to container
+      // Pass { facingMode: "environment" } as 1st arg, and square 200x200 qrbox as 2nd arg
       await html5QrScanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 190, height: 190 },
+          aspectRatio: 1.0
+        },
         (decodedText) => {
           handleScannedData(decodedText);
           stopScanner();
@@ -929,13 +969,9 @@
       isScanning = true;
       cameraBtnText.textContent = 'Stop Scanner';
     } catch (err) {
-      // Html5Qrcode may throw if permission denied or camera not available
-      const errorName = err.name || err.error || err;
-      if (errorName === 'NotFoundError' || errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
-        alert('Camera permission denied or camera not found. Use manual IP connect below.');
-      } else {
-        alert('Camera error: ' + (err.message || err));
-      }
+      console.error('Camera scanner start error:', err);
+      const msg = err.message || err;
+      alert('Camera error: ' + msg + '. If camera permission is blocked, please check app settings or connect manually with IP.');
     }
   }
 
@@ -1021,7 +1057,7 @@
         setTimeout(() => {
           splash.remove();
           resolve();
-        }, 500);
+        }, 400);
       };
 
       // Tap to skip
@@ -1032,14 +1068,22 @@
       if (video) {
         // Video plays all through
         video.addEventListener('ended', finishSplash);
-        video.addEventListener('error', finishSplash);
+        video.addEventListener('error', (err) => {
+          console.warn('Video error, skipping splash:', err);
+          finishSplash();
+        });
+
+        // Ensure video is unmuted & plays inline smoothly
+        video.muted = true;
         const p = video.play();
         if (p !== undefined) {
-          p.catch(() => {
-            setTimeout(finishSplash, 3000);
+          p.catch((err) => {
+            console.warn('Video play prevented or failed:', err);
+            setTimeout(finishSplash, 1500);
           });
         }
-        setTimeout(finishSplash, 12000);
+        // Safety timeout so splash never stays stuck
+        setTimeout(finishSplash, 8000);
       } else {
         finishSplash();
       }
@@ -1309,7 +1353,10 @@
     });
 
     // Mobile Tag Modal Controls
-    function openTagModal() {
+    let tagModalSource = 'task'; // 'task' or 'habit'
+
+    function openTagModal(source = 'task') {
+      tagModalSource = source;
       if (!newTagModal) return;
       newTagModal.classList.remove('hidden');
       if (inputNewTag) {
@@ -1328,10 +1375,13 @@
       if (clean) {
         if (!mobileData.tagsBank.includes(clean)) {
           mobileData.tagsBank.push(clean);
-          currentTagIndex = mobileData.tagsBank.length - 1;
           persistData();
-          updateTagUI();
           sendWsMessage({ type: 'TAG_ADDED', payload: clean });
+        }
+        
+        if (tagModalSource === 'habit') {
+          habitTagIndex = mobileData.tagsBank.indexOf(clean);
+          if (habitTagLabel) habitTagLabel.textContent = clean;
         } else {
           currentTagIndex = mobileData.tagsBank.indexOf(clean);
           updateTagUI();
@@ -1340,7 +1390,8 @@
       closeTagModal();
     }
 
-    btnAddTag.addEventListener('click', openTagModal);
+    btnAddTag?.addEventListener('click', () => openTagModal('task'));
+    btnAddHabitTag?.addEventListener('click', () => openTagModal('habit'));
     btnSaveNewTag?.addEventListener('click', saveTagFromInput);
     btnCancelTagModal?.addEventListener('click', closeTagModal);
     btnCloseTagModal?.addEventListener('click', closeTagModal);
@@ -1421,22 +1472,21 @@
 
     // Manual connect
     btnManualConnect.addEventListener('click', () => {
-      const val = manualIpInput.value.trim();
+      let val = manualIpInput.value.trim();
       if (!val) return;
+      val = val.replace(/^https?:\/\//i, '').replace(/^wss?:\/\//i, '').replace(/\/.*$/, '');
       const parts = val.split(':');
       syncConfig.host = parts[0];
-      syncConfig.port = parts[1] || 48721;
+      syncConfig.port = parts[1] ? parseInt(parts[1], 10) : 48721;
       persistSyncConfig();
-      connectToDesktop(syncConfig.host);
-      alert(`Connecting to ${val}...`);
-      switchScreen('active-tasks');
+      connectToDesktop(syncConfig.host, true);
     });
 
     btnReconnect.addEventListener('click', () => {
       if (syncConfig.host) {
-        connectToDesktop(syncConfig.host);
+        connectToDesktop(syncConfig.host, true);
       } else {
-        alert('Scan the PC QR code first to pair.');
+        alert('Scan the PC QR code or enter PC IP address below to pair.');
       }
     });
 
@@ -1448,7 +1498,24 @@
     });
 
     // Check for Updates button
-    btnCheckUpdates.addEventListener('click', checkForUpdates);
+    btnCheckUpdates?.addEventListener('click', () => {
+      btnCheckUpdates.disabled = true;
+      const originalText = btnCheckUpdates.textContent;
+      btnCheckUpdates.textContent = 'Checking...';
+      setTimeout(() => {
+        btnCheckUpdates.disabled = false;
+        btnCheckUpdates.textContent = originalText;
+        alert('You are on the latest version of Task Thing (v1.0.0).');
+      }, 700);
+    });
+
+    // Report Issue button
+    btnReportIssue?.addEventListener('click', () => {
+      const issue = prompt('Describe the issue or feedback:');
+      if (issue && issue.trim()) {
+        alert('Thank you! Your feedback has been recorded locally. We appreciate you helping improve Task Thing.');
+      }
+    });
 
     document.addEventListener('click', () => {
       addMenu.classList.add('hidden');

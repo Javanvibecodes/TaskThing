@@ -91,7 +91,7 @@
       --on-error: 255 255 255;
     }
 
-    :root, body[data-theme="cobalt"], body[data-theme="blackblue"] {
+    :root, html[data-theme="cobalt"], body[data-theme="cobalt"], html[data-theme="blackblue"], body[data-theme="blackblue"] {
       --primary: 3 129 252;
       --on-primary: 255 255 255;
       --primary-container: 219 234 254;
@@ -105,7 +105,7 @@
       --tertiary-container: 191 219 254;
       --tertiary-fixed-dim: 147 197 253;
     }
-    body[data-theme="emerald"] {
+    html[data-theme="emerald"], body[data-theme="emerald"] {
       --primary: 16 185 129;
       --on-primary: 255 255 255;
       --primary-container: 209 250 229;
@@ -119,7 +119,7 @@
       --tertiary-container: 204 251 241;
       --tertiary-fixed-dim: 153 246 228;
     }
-    body[data-theme="amber"] {
+    html[data-theme="amber"], body[data-theme="amber"] {
       --primary: 245 158 11;
       --on-primary: 69 26 3;
       --primary-container: 254 243 199;
@@ -133,7 +133,7 @@
       --tertiary-container: 253 230 138;
       --tertiary-fixed-dim: 252 211 77;
     }
-    body[data-theme="coral"] {
+    html[data-theme="coral"], body[data-theme="coral"] {
       --primary: 244 63 94;
       --on-primary: 255 255 255;
       --primary-container: 255 228 230;
@@ -147,7 +147,7 @@
       --tertiary-container: 254 205 211;
       --tertiary-fixed-dim: 253 164 175;
     }
-    body[data-theme="obsidian"] {
+    html[data-theme="obsidian"], body[data-theme="obsidian"] {
       --primary: 71 85 105;
       --on-primary: 255 255 255;
       --primary-container: 226 232 240;
@@ -161,7 +161,7 @@
       --tertiary-container: 203 213 225;
       --tertiary-fixed-dim: 148 163 184;
     }
-    body[data-theme="arctic"] {
+    html[data-theme="arctic"], body[data-theme="arctic"] {
       --primary: 6 182 212;
       --on-primary: 8 47 73;
       --primary-container: 207 250 254;
@@ -174,6 +174,19 @@
       --on-tertiary: 8 47 73;
       --tertiary-container: 224 242 254;
       --tertiary-fixed-dim: 125 211 252;
+    }
+
+    /* Suppress native media controls and play icon completely */
+    video::-webkit-media-controls,
+    video::-webkit-media-controls-enclosure,
+    video::-webkit-media-controls-panel,
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-start-playback-button,
+    video::-webkit-media-controls-overlay-play-button {
+      display: none !important;
+      -webkit-appearance: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
     }
 
     * {
@@ -203,7 +216,7 @@
 
   <!-- Mobile Launch Animation Splash Overlay (Full screen video) -->
   <div id="mobile-launch-splash" class="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden cursor-pointer">
-    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" poster="" class="w-full h-full object-cover"></video>
+    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" poster="" class="w-full h-full object-cover pointer-events-none"></video>
   </div>
 
   <!-- Mobile Top Bar (square Blob logo + app name) -->
@@ -329,13 +342,13 @@
 
     <!-- ================= SCREEN 2: REPEATED TASKS (DAILY HABITS) ================= -->
     <section id="screen-repeated-tasks" class="mobile-screen hidden p-4 flex flex-col gap-3 min-h-full">
-      <div class="flex items-center justify-between">
-        <div class="flex flex-col">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex flex-col min-w-0">
           <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Repeated Tasks</h2>
           <span class="font-body-sm text-body-sm text-on-surface-variant">Daily habits that appear automatically each morning.</span>
         </div>
-        <button id="mobile-btn-add-habit" type="button" class="h-7 px-2.5 rounded-lg bg-primary text-white font-label-md text-label-md font-semibold flex items-center gap-1 shrink-0">
-          <span id="mobile-add-habit-icon" class="material-symbols-outlined text-[14px]">add</span>
+        <button id="mobile-btn-add-habit" type="button" class="h-8 px-3 rounded-lg bg-primary text-white font-label-md text-[11px] font-semibold flex items-center gap-1 shrink-0 whitespace-nowrap active:scale-95 transition-all">
+          <span id="mobile-add-habit-icon" class="material-symbols-outlined text-[15px]">add</span>
           <span id="mobile-add-habit-text">Add Habit</span>
         </button>
       </div>
@@ -359,6 +372,10 @@
             <button id="mobile-habit-tag" class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] flex items-center gap-1">
               <span class="material-symbols-outlined text-[12px]">sell</span>
               <span id="mobile-habit-tag-label">Daily</span>
+            </button>
+            <button id="mobile-btn-add-habit-tag" type="button" class="h-6 px-1.5 rounded bg-surface-container-high text-primary font-label-mono text-[10px] flex items-center gap-0.5 border border-outline-variant">
+              <span class="material-symbols-outlined text-[12px]">add</span>
+              <span>New Tag</span>
             </button>
           </div>
           <div class="flex items-center gap-1">
@@ -451,7 +468,7 @@
     </section>
 
     <!-- ================= SCREEN 5: DESKTOP DIRECT SYNC ================= -->
-    <section id="screen-sync" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full">
+    <section id="screen-sync" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full pb-28">
       <div>
         <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Desktop Direct Sync</h2>
         <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
@@ -465,14 +482,14 @@
           <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Sync State</span>
           <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-on-surface font-semibold">Disconnected</span>
         </div>
-        <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold">
+        <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
           Reconnect
         </button>
       </div>
 
       <!-- Camera Scanner Card -->
       <div class="bg-surface-container rounded-2xl p-4 flex flex-col items-center gap-3 border border-outline-variant shadow-sm">
-        <div id="qr-reader" class="w-full max-w-[280px] h-[220px] bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col items-center justify-center border border-outline relative">
+        <div id="qr-reader" class="w-[230px] h-[230px] max-w-[230px] aspect-square bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col items-center justify-center border border-outline relative">
           <span class="material-symbols-outlined text-[48px] text-on-surface-variant mb-2">qr_code_scanner</span>
           <span class="font-label-mono text-[11px] text-on-surface-variant text-center px-4">
             Point camera at the desktop widget QR code
@@ -501,29 +518,31 @@
     <section id="screen-legal" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full pb-8">
       <div>
         <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Help & Legal</h2>
-        <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
-          <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[16px]">cloud_download</span>
-            <span>Check for Updates</span>
-          </span>
-          <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-            The app checks for newer versions. This app is currently v1.0.0.
-          </p>
-          <button id="btn-check-updates" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold">
-            Check Now
-          </button>
-        </div>
         <span class="font-body-sm text-body-sm text-on-surface-variant">Documentation, pairing guides, and local privacy terms.</span>
       </div>
-      <div class="mt-4 p-4 bg-surface-container rounded-2xl border border-outline-variant">
+
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
+        <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">cloud_download</span>
+          <span>Check for Updates</span>
+        </span>
+        <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
+          The app checks for newer versions. This app is currently v1.0.0.
+        </p>
+        <button id="btn-check-updates" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
+          Check Now
+        </button>
+      </div>
+
+      <div class="p-4 bg-surface-container rounded-2xl border border-outline-variant flex flex-col gap-2">
         <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">report_problem</span>
           <span>Report Issue</span>
         </span>
-        <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed mt-2">
+        <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
           Help us improve Task Thing by reporting any issues you encounter. Local-only, no telemetry.
         </p>
-        <button id="btn-report-issue" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold mt-2">
+        <button id="btn-report-issue" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
           Report
         </button>
       </div>
@@ -571,18 +590,19 @@
   </main>
 
   <!-- Mobile New Tag Modal -->
-  <div id="mobile-new-tag-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
-    <div class="bg-surface border border-outline rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <span class="font-headline-sm text-[14px] text-on-surface font-semibold">New Tag</span>
-        <button id="mobile-btn-close-tag-modal" type="button" class="text-on-surface-variant hover:text-on-surface p-1">
-          <span class="material-symbols-outlined text-[18px]">close</span>
+  <div id="mobile-new-tag-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
+    <div class="bg-surface border border-outline rounded-2xl p-5 w-full max-w-sm flex flex-col gap-3.5 shadow-2xl">
+      <div class="flex items-center justify-between pb-1 border-b border-outline-variant">
+        <span class="font-headline-sm text-[15px] text-on-surface font-semibold">New Tag</span>
+        <button id="mobile-btn-close-tag-modal" type="button" class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg">
+          <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
-      <input id="mobile-input-new-tag" type="text" placeholder="Tag name (e.g. Finance)..." maxlength="20" class="w-full px-3 py-2 bg-surface-container-lowest text-on-surface text-[13px] rounded-lg border border-outline focus:border-primary focus:outline-none" />
-      <div class="flex items-center justify-end gap-2 pt-1">
-        <button id="mobile-btn-cancel-tag-modal" type="button" class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-[12px] font-medium">Cancel</button>
-        <button id="mobile-btn-save-new-tag" type="button" class="px-4 py-1.5 rounded-lg bg-primary text-white font-semibold text-[12px] active:scale-95 transition-all">Save Tag</button>
+      <p class="font-body-sm text-[12px] text-on-surface-variant">Add a category tag to organize your tasks and daily habits.</p>
+      <input id="mobile-input-new-tag" type="text" placeholder="Tag name (e.g. Finance, Health)..." maxlength="20" class="w-full px-3.5 py-2.5 bg-surface-container-low text-on-surface text-[14px] rounded-xl border border-outline focus:border-primary focus:outline-none transition-all placeholder:text-on-surface-variant/50" />
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant">
+        <button id="mobile-btn-cancel-tag-modal" type="button" class="px-3.5 py-2 rounded-xl text-on-surface-variant hover:text-on-surface text-[13px] font-medium active:scale-95 transition-all">Cancel</button>
+        <button id="mobile-btn-save-new-tag" type="button" class="px-4 py-2 rounded-xl bg-primary text-white font-semibold text-[13px] active:scale-95 transition-all shadow-sm">Save Tag</button>
       </div>
     </div>
   </div>
@@ -625,7 +645,7 @@
   </div>
 
   <!-- Bottom Navigation Bar (5 tabs) — fixed so it never disappears -->
-  <nav class="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-outline-variant flex items-center justify-around px-2 z-40 shrink-0" style="padding-bottom: env(safe-area-inset-bottom);">
+  <nav class="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-outline-variant flex items-center justify-around px-2 z-[100] shrink-0" style="padding-bottom: env(safe-area-inset-bottom);">
     <!-- Active Tasks Tab (With real-time pending badge) -->
     <button data-target="active-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-primary py-1 px-2.5 relative">
       <span class="material-symbols-outlined text-[20px]">checklist</span>

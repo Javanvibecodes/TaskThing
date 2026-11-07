@@ -173,11 +173,15 @@
 
       const video = document.getElementById('desktop-splash-video');
       if (video) {
+        video.addEventListener('playing', () => {
+          video.classList.remove('opacity-0');
+          video.classList.add('opacity-100');
+        });
         // Video plays all through
         video.addEventListener('ended', finishSplash);
         video.addEventListener('error', finishSplash);
         video.play().catch(() => {
-          setTimeout(finishSplash, 3000);
+          setTimeout(finishSplash, 2000);
         });
         setTimeout(finishSplash, 12000);
       } else {

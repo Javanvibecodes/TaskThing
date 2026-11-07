@@ -26,7 +26,6 @@ class LocalStore {
         themePreset: 'cobalt',
         colorMode: 'dark',
         alwaysOnTop: false,
-        compactMode: false,
         soundEnabled: true,
         syncPort: 48721,
         pairingToken: 'TC-' + Math.random().toString(36).substring(2, 10).toUpperCase()
