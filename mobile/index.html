@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
+  <meta name="app-version" content="1.0.0"/>
 
   <!-- Google Fonts & Material Symbols -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -202,7 +203,7 @@
 
   <!-- Mobile Launch Animation Splash Overlay (Full screen video) -->
   <div id="mobile-launch-splash" class="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden cursor-pointer">
-    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" class="w-full h-full object-cover"></video>
+    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" poster="" class="w-full h-full object-cover"></video>
   </div>
 
   <!-- Mobile Top Bar (square Blob logo + app name) -->
@@ -500,7 +501,31 @@
     <section id="screen-legal" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full pb-8">
       <div>
         <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Help & Legal</h2>
+        <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
+          <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">cloud_download</span>
+            <span>Check for Updates</span>
+          </span>
+          <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
+            The app checks for newer versions. This app is currently v1.0.0.
+          </p>
+          <button id="btn-check-updates" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold">
+            Check Now
+          </button>
+        </div>
         <span class="font-body-sm text-body-sm text-on-surface-variant">Documentation, pairing guides, and local privacy terms.</span>
+      </div>
+      <div class="mt-4 p-4 bg-surface-container rounded-2xl border border-outline-variant">
+        <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">report_problem</span>
+          <span>Report Issue</span>
+        </span>
+        <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed mt-2">
+          Help us improve Task Thing by reporting any issues you encounter. Local-only, no telemetry.
+        </p>
+        <button id="btn-report-issue" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold mt-2">
+          Report
+        </button>
       </div>
 
       <!-- Pairing Guide -->

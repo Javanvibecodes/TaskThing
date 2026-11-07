@@ -1448,6 +1448,9 @@
       });
     });
 
+    // Check for Updates button
+    btnCheckUpdates.addEventListener('click', checkForUpdates);
+
     document.addEventListener('click', () => {
       addMenu.classList.add('hidden');
     });
