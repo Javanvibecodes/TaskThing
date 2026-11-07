@@ -3,9 +3,8 @@
   let appData = {
     settings: {
       themePreset: 'cobalt',
-      colorMode: 'dark',
-      alwaysOnTop: false,
-      compactMode: false
+      colorMode: 'light',
+      alwaysOnTop: false
     },
     tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
     repeatedTasks: [],
@@ -20,10 +19,13 @@
   let toastTimer = null;
   let isMac = false;
 
+  // Habit editing state
+  let editingHabitId = null;
+  let habitPriority = 'medium';
+  let habitTagIndex = -1;
+
   // DOM Elements
   const launchSplashScreen = document.getElementById('launch-splash-screen');
-  const container = document.getElementById('main-widget-container');
-  const compactBar = document.getElementById('compact-widget-bar');
   const navItems = document.querySelectorAll('.nav-item[data-path]');
   const viewPanels = document.querySelectorAll('.view-panel');
   const navPendingBadge = document.getElementById('nav-pending-badge');
@@ -67,6 +69,9 @@
 
   // History Elements
   const historyFilterInput = document.getElementById('history-filter-input');
+  const groupToday = document.getElementById('group-today');
+  const groupYesterday = document.getElementById('group-yesterday');
+  const groupEarlier = document.getElementById('group-earlier');
   const listToday = document.getElementById('list-history-today');
   const listYesterday = document.getElementById('list-history-yesterday');
   const listEarlier = document.getElementById('list-history-earlier');
@@ -99,12 +104,20 @@
   const btnCancelTagPopover = document.getElementById('btn-cancel-tag-popover');
   const btnCloseTagPopover = document.getElementById('btn-close-tag-popover');
 
-  // Habit Modal Elements
-  const newHabitModal = document.getElementById('new-habit-modal');
+  // Habit Inline Form Elements (create + edit)
+  const habitAddSection = document.getElementById('habit-add-section');
   const inputHabitTitle = document.getElementById('input-habit-title');
+  const btnHabitPriority = document.getElementById('btn-habit-priority');
+  const habitPriorityDot = document.getElementById('habit-priority-dot');
+  const habitPriorityText = document.getElementById('habit-priority-text');
+  const habitTimeInput = document.getElementById('habit-time-input');
+  const btnHabitTag = document.getElementById('btn-habit-tag');
+  const habitTagText = document.getElementById('habit-tag-text');
   const btnSaveHabit = document.getElementById('btn-save-habit');
   const btnCancelHabit = document.getElementById('btn-cancel-habit');
-  const btnCloseHabitModal = document.getElementById('btn-close-habit-modal');
+  const saveHabitText = document.getElementById('save-habit-text');
+  const addRepeatedIcon = document.getElementById('add-repeated-icon');
+  const addRepeatedText = document.getElementById('add-repeated-text');
 
   // Footer & Status
   const footerSyncDot = document.getElementById('footer-sync-dot');
@@ -116,19 +129,10 @@
   const winControls = document.getElementById('win-controls');
   const btnMacClose = document.getElementById('btn-mac-close');
   const btnMacMin = document.getElementById('btn-mac-min');
-  const btnMacCompact = document.getElementById('btn-mac-compact');
   const btnWinClose = document.getElementById('btn-win-close');
   const btnWinMin = document.getElementById('btn-win-min');
   const btnPinToggle = document.getElementById('btn-pin-toggle');
   const pinIcon = document.getElementById('pin-icon');
-  const btnHeaderCompact = document.getElementById('btn-header-compact');
-  const btnCompactSidebar = document.getElementById('btn-compact-sidebar');
-
-  // Compact Bar Elements
-  const compactTaskTitle = document.getElementById('compact-task-title');
-  const compactCompleteBtn = document.getElementById('compact-complete-btn');
-  const compactExpandBtn = document.getElementById('compact-expand-btn');
-  const compactCloseBtn = document.getElementById('compact-close-btn');
 
   // Toast
   const toastBar = document.getElementById('toast-bar');
@@ -366,7 +370,6 @@
         stateAllCompletedToday.classList.add('hidden');
         stateNoTasksToday.classList.remove('hidden');
       }
-      compactTaskTitle.textContent = 'All tasks completed';
       return;
     }
 
@@ -374,18 +377,15 @@
     stateNoTasksToday.classList.add('hidden');
     stateAllCompletedToday.classList.add('hidden');
 
-    // Update compact bar with first task
-    compactTaskTitle.textContent = tasks[0].title;
-
     tasks.forEach((task) => {
       const card = document.createElement('div');
       
       // Highlight in red if task is an overdue rollover from a previous day!
       let rolloverClasses = '';
       if (task.isRollover) {
-        rolloverClasses = 'border border-error/50 bg-error-container/20 ring-1 ring-error/30';
+        rolloverClasses = 'border border-error/40 bg-error-container/40 ring-1 ring-error/20';
       } else {
-        rolloverClasses = 'bg-surface-container/70 hover:bg-surface-container border border-outline-variant/10';
+        rolloverClasses = 'bg-surface-container hover:bg-surface-container-high border border-outline-variant';
       }
 
       card.className = `group relative p-space-sm rounded-lg shadow-sm flex items-center justify-between gap-space-xs transition-all ${rolloverClasses}`;
@@ -413,7 +413,7 @@
                 </span>
               ` : ''}
               ${task.tag ? `
-                <span class="font-label-mono text-[10px] text-outline-variant bg-surface-container-high px-1 rounded">
+                <span class="font-label-mono text-[10px] text-on-surface-variant bg-surface-container-high px-1 rounded">
                   ${escapeHtml(task.tag)}
                 </span>
               ` : ''}
@@ -430,16 +430,16 @@
           <button class="task-menu-btn w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors flex-shrink-0">
             <span class="material-symbols-outlined text-[15px]">more_horiz</span>
           </button>
-          <div class="task-dropdown hidden absolute right-0 top-7 w-32 bg-surface-container-highest shadow-xl rounded-lg py-1 z-30 flex flex-col border border-outline-variant/20">
-            <button data-action="edit" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-bright text-left font-label-md text-label-md">
+          <div class="task-dropdown hidden absolute right-0 top-7 w-32 bg-surface shadow-xl rounded-lg py-1 z-30 flex flex-col border border-outline">
+            <button data-action="edit" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-container text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[13px] text-on-surface-variant">edit</span>
               <span>Edit</span>
             </button>
-            <button data-action="move-tomorrow" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-bright text-left font-label-md text-label-md">
+            <button data-action="move-tomorrow" class="px-space-sm py-1 flex items-center gap-space-xs text-on-surface hover:bg-surface-container text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[13px] text-tertiary">event_upcoming</span>
               <span>Tomorrow</span>
             </button>
-            <button data-action="delete" class="px-space-sm py-1 flex items-center gap-space-xs text-error hover:bg-error-container/20 text-left font-label-md text-label-md">
+            <button data-action="delete" class="px-space-sm py-1 flex items-center gap-space-xs text-error hover:bg-error-container/40 text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[13px] text-error">delete</span>
               <span>Delete</span>
             </button>
@@ -607,6 +607,105 @@
   }
 
   // ----------------- REPEATED TASKS (DAILY HABITS) -----------------
+  const PRIORITY_ORDER = ['urgent', 'medium', 'low'];
+
+  function stylePriorityButton(btn, dot, label, priority) {
+    if (label) label.textContent = priority.charAt(0).toUpperCase() + priority.slice(1);
+    if (priority === 'urgent') {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-error';
+      btn.className = 'h-[20px] px-1.5 bg-error-container text-error font-label-mono text-[10px] rounded flex items-center gap-1';
+    } else if (priority === 'medium') {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
+      btn.className = 'h-[20px] px-1.5 bg-primary-container text-on-primary-container font-label-mono text-[10px] rounded flex items-center gap-1';
+    } else {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
+      btn.className = 'h-[20px] px-1.5 bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] rounded flex items-center gap-1';
+    }
+  }
+
+  function openHabitForm(habitId = null) {
+    if (!habitAddSection) return;
+    editingHabitId = habitId;
+
+    if (habitId) {
+      const habit = (appData.repeatedTasks || []).find(h => h.id === habitId);
+      if (!habit) return;
+      habitPriority = habit.priority || 'medium';
+      habitTagIndex = (appData.tagsBank || []).indexOf(habit.tag);
+      inputHabitTitle.value = habit.title || '';
+      habitTimeInput.value = habit.time || '09:00';
+      habitTagText.textContent = habit.tag || 'Daily';
+      if (saveHabitText) saveHabitText.textContent = 'Save Changes';
+    } else {
+      habitPriority = 'medium';
+      habitTagIndex = -1;
+      inputHabitTitle.value = '';
+      habitTimeInput.value = '09:00';
+      habitTagText.textContent = 'Daily';
+      if (saveHabitText) saveHabitText.textContent = 'Save Habit';
+    }
+
+    stylePriorityButton(btnHabitPriority, habitPriorityDot, habitPriorityText, habitPriority);
+    habitAddSection.classList.remove('hidden');
+    if (addRepeatedIcon) addRepeatedIcon.textContent = 'close';
+    if (addRepeatedText) addRepeatedText.textContent = 'Close';
+    setTimeout(() => inputHabitTitle.focus(), 50);
+  }
+
+  function closeHabitForm() {
+    if (!habitAddSection) return;
+    habitAddSection.classList.add('hidden');
+    editingHabitId = null;
+    if (addRepeatedIcon) addRepeatedIcon.textContent = 'add';
+    if (addRepeatedText) addRepeatedText.textContent = 'Add Habit';
+  }
+
+  function toggleHabitForm() {
+    if (habitAddSection && habitAddSection.classList.contains('hidden')) {
+      openHabitForm();
+    } else {
+      closeHabitForm();
+    }
+  }
+
+  function saveHabit() {
+    if (!inputHabitTitle) return;
+    const title = inputHabitTitle.value.trim();
+    if (!title) return;
+
+    const tag = habitTagIndex >= 0
+      ? ((appData.tagsBank || [])[habitTagIndex] || 'Daily')
+      : 'Daily';
+
+    if (editingHabitId) {
+      const habit = (appData.repeatedTasks || []).find(h => h.id === editingHabitId);
+      if (habit) {
+        habit.title = title;
+        habit.priority = habitPriority;
+        habit.time = habitTimeInput.value || '09:00';
+        habit.tag = tag;
+        persist();
+        renderRepeatedTasks();
+        showToast('Daily habit updated');
+      }
+    } else {
+      const newHabit = {
+        id: 'rep-' + Date.now(),
+        title,
+        priority: habitPriority,
+        time: habitTimeInput.value || '09:00',
+        tag,
+        enabled: true
+      };
+      appData.repeatedTasks.push(newHabit);
+      persist();
+      renderRepeatedTasks();
+      showToast('Daily habit created!');
+    }
+
+    closeHabitForm();
+  }
+
   function renderRepeatedTasks() {
     repeatedTasksList.innerHTML = '';
     const repeated = appData.repeatedTasks || [];
@@ -624,22 +723,27 @@
 
     repeated.forEach(item => {
       const card = document.createElement('div');
-      card.className = 'bg-surface-container/70 p-3 rounded-lg flex items-center justify-between gap-3 border border-outline-variant/10';
+      card.className = 'bg-surface-container p-3 rounded-lg flex items-center justify-between gap-3 border border-outline-variant';
       card.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <input type="checkbox" ${item.enabled ? 'checked' : ''} class="rep-toggle w-4 h-4 accent-primary cursor-pointer rounded" title="Toggle active habit"/>
           <div class="flex flex-col min-w-0">
-            <span class="font-body-sm text-on-surface truncate ${item.enabled ? '' : 'text-outline line-through'} font-medium">${escapeHtml(item.title)}</span>
+            <span class="font-body-sm text-on-surface truncate ${item.enabled ? '' : 'text-on-surface-variant line-through'} font-medium">${escapeHtml(item.title)}</span>
             <div class="flex items-center gap-2 mt-0.5 font-label-mono text-[10px] text-on-surface-variant">
-              <span class="text-secondary">Repeats Daily</span>
-              ${item.time ? `<span>• ${item.time}</span>` : ''}
-              ${item.tag ? `<span class="bg-surface-container-high px-1 rounded text-outline">${item.tag}</span>` : ''}
+              <span class="text-primary">Repeats Daily</span>
+              ${item.time ? `<span>• ${escapeHtml(item.time)}</span>` : ''}
+              ${item.tag ? `<span class="bg-surface-container-high px-1 rounded text-on-surface-variant">${escapeHtml(item.tag)}</span>` : ''}
             </div>
           </div>
         </div>
-        <button class="rep-del-btn w-6 h-6 rounded flex items-center justify-center text-outline hover:text-error hover:bg-surface-container-high transition-colors">
-          <span class="material-symbols-outlined text-[15px]">delete</span>
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="rep-edit-btn w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" title="Edit habit">
+            <span class="material-symbols-outlined text-[15px]">edit</span>
+          </button>
+          <button class="rep-del-btn w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container-high transition-colors" title="Delete habit">
+            <span class="material-symbols-outlined text-[15px]">delete</span>
+          </button>
+        </div>
       `;
 
       card.querySelector('.rep-toggle').addEventListener('change', (e) => {
@@ -648,6 +752,8 @@
         renderRepeatedTasks();
         showToast(item.enabled ? 'Daily habit enabled' : 'Daily habit paused');
       });
+
+      card.querySelector('.rep-edit-btn').addEventListener('click', () => openHabitForm(item.id));
 
       card.querySelector('.rep-del-btn').addEventListener('click', () => {
         appData.repeatedTasks = appData.repeatedTasks.filter(r => r.id !== item.id);
@@ -661,6 +767,19 @@
   }
 
   // ----------------- COMPLETED HISTORY -----------------
+  function historyGroupFor(item) {
+    const raw = item.completedAt || item.completedDate || null;
+    const completed = raw ? new Date(raw) : new Date();
+    if (isNaN(completed.getTime())) return 'earlier';
+    const now = new Date();
+    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startItem = new Date(completed.getFullYear(), completed.getMonth(), completed.getDate());
+    const diffDays = Math.round((startToday - startItem) / 86400000);
+    if (diffDays <= 0) return 'today';
+    if (diffDays === 1) return 'yesterday';
+    return 'earlier';
+  }
+
   function renderCompletedHistory() {
     const completed = appData.completedTasks || [];
 
@@ -668,9 +787,9 @@
     listYesterday.innerHTML = '';
     listEarlier.innerHTML = '';
 
-    const todayItems = completed.filter(t => t.group === 'today');
-    const yesterdayItems = completed.filter(t => t.group === 'yesterday');
-    const earlierItems = completed.filter(t => t.group === 'earlier' || (!t.group && t.group !== 'today' && t.group !== 'yesterday'));
+    const todayItems = completed.filter(t => historyGroupFor(t) === 'today');
+    const yesterdayItems = completed.filter(t => historyGroupFor(t) === 'yesterday');
+    const earlierItems = completed.filter(t => historyGroupFor(t) === 'earlier');
 
     countToday.textContent = `${todayItems.length} TASKS`;
     countYesterday.textContent = `${yesterdayItems.length} TASKS`;
@@ -680,6 +799,10 @@
     yesterdayItems.forEach(t => listYesterday.appendChild(createCompletedCard(t)));
     earlierItems.forEach(t => listEarlier.appendChild(createCompletedCard(t)));
 
+    groupToday.style.display = todayItems.length ? 'flex' : 'none';
+    groupYesterday.style.display = yesterdayItems.length ? 'flex' : 'none';
+    groupEarlier.style.display = earlierItems.length ? 'flex' : 'none';
+
     const total = (appData.activeTasks.length + completed.length) || 1;
     const velocityRate = Math.min(99, Math.round((completed.length / total) * 100));
     velocityPercentage.textContent = `↑${velocityRate}%`;
@@ -687,29 +810,29 @@
 
   function createCompletedCard(item) {
     const card = document.createElement('div');
-    card.className = 'history-item group flex items-center justify-between p-2 rounded-lg bg-surface-container/60 hover:bg-surface-container transition-all';
+    card.className = 'history-item group flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant transition-all';
     card.setAttribute('data-title', item.title.toLowerCase());
 
     const timeString = formatCompletedTime(item.completedAt);
 
     card.innerHTML = `
       <div class="flex items-center gap-space-sm min-w-0 pr-2">
-        <button class="reopen-trigger w-4 h-4 rounded flex items-center justify-center bg-secondary text-on-secondary shrink-0 hover:opacity-80 transition-opacity" title="Click to undo / reopen">
+        <button class="reopen-trigger w-4 h-4 rounded flex items-center justify-center bg-primary text-white shrink-0 hover:opacity-80 transition-opacity" title="Click to undo / reopen">
           <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
         </button>
         <div class="flex flex-col min-w-0">
-          <span class="font-body-sm text-body-sm line-through text-outline truncate group-hover:text-on-surface-variant transition-colors">${escapeHtml(item.title)}</span>
-          <div class="flex items-center gap-1 font-label-mono text-label-sm text-outline">
+          <span class="font-body-sm text-body-sm line-through text-on-surface-variant truncate group-hover:text-on-surface transition-colors">${escapeHtml(item.title)}</span>
+          <div class="flex items-center gap-1 font-label-mono text-label-sm text-on-surface-variant/80">
             <span class="material-symbols-outlined text-[10px]">schedule</span>
             <span>${timeString}</span>
           </div>
         </div>
       </div>
       <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button class="reopen-btn px-1.5 py-0.5 rounded bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-mono text-label-sm transition-colors" title="Reopen Task">
+        <button class="reopen-btn px-1.5 py-0.5 rounded bg-primary-container hover:bg-primary/20 text-on-primary-container font-label-mono text-label-sm transition-colors" title="Reopen Task">
           Undo
         </button>
-        <button class="delete-btn w-6 h-6 flex items-center justify-center rounded text-on-surface-variant hover:text-error hover:bg-surface-variant transition-colors" title="Remove permanently">
+        <button class="delete-btn w-6 h-6 flex items-center justify-center rounded text-on-surface-variant hover:text-error hover:bg-error-container/50 transition-colors" title="Remove permanently">
           <span class="material-symbols-outlined text-[14px]">close</span>
         </button>
       </div>
@@ -778,7 +901,7 @@
 
     document.querySelectorAll('.history-group').forEach(group => {
       const visibleInGroup = group.querySelectorAll('.history-item:not([style*="display: none"])');
-      group.style.display = visibleInGroup.length > 0 ? 'block' : 'none';
+      group.style.display = visibleInGroup.length > 0 ? 'flex' : 'none';
     });
 
     noResultsNotice.style.display = totalVisible === 0 ? 'flex' : 'none';
@@ -792,12 +915,12 @@
     themePresets.forEach(btn => {
       const checkIcon = btn.querySelector('.check-icon');
       if (btn.dataset.preset === preset) {
-        btn.classList.add('ring-1', 'ring-primary/40', 'bg-surface-container/60');
-        btn.classList.remove('bg-surface-container/40');
+        btn.classList.remove('border-outline-variant');
+        btn.classList.add('border-primary', 'ring-1', 'ring-primary/30');
         if (checkIcon) checkIcon.classList.remove('hidden');
       } else {
-        btn.classList.remove('ring-1', 'ring-primary/40', 'bg-surface-container/60');
-        btn.classList.add('bg-surface-container/40');
+        btn.classList.remove('border-primary', 'ring-1', 'ring-primary/30');
+        btn.classList.add('border-outline-variant');
         if (checkIcon) checkIcon.classList.add('hidden');
       }
     });
@@ -930,21 +1053,11 @@
     }
 
     // Priority Cycler
-    const priorities = ['urgent', 'medium', 'low'];
+    const priorities = PRIORITY_ORDER;
     btnQuickPriority.addEventListener('click', () => {
       const nextIdx = (priorities.indexOf(currentPriority) + 1) % priorities.length;
       currentPriority = priorities[nextIdx];
-      quickPriorityText.textContent = currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1);
-      if (currentPriority === 'urgent') {
-        quickPriorityDot.className = 'w-1.5 h-1.5 rounded-full bg-error';
-        btnQuickPriority.className = 'h-[20px] px-1.5 bg-error-container/40 text-error font-label-mono text-[10px] rounded flex items-center gap-1';
-      } else if (currentPriority === 'medium') {
-        quickPriorityDot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
-        btnQuickPriority.className = 'h-[20px] px-1.5 bg-tertiary-container/30 text-tertiary font-label-mono text-[10px] rounded flex items-center gap-1';
-      } else {
-        quickPriorityDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
-        btnQuickPriority.className = 'h-[20px] px-1.5 bg-secondary-container/20 text-secondary font-label-mono text-[10px] rounded flex items-center gap-1';
-      }
+      stylePriorityButton(btnQuickPriority, quickPriorityDot, quickPriorityText, currentPriority);
     });
 
     // Tag Cycler through Tag Bank
@@ -1014,54 +1127,29 @@
       }
     });
 
-    // Repeated Habit Modal Controls
-    function openHabitModal() {
-      if (!newHabitModal) return;
-      newHabitModal.classList.remove('hidden');
-      newHabitModal.classList.add('flex');
-      if (inputHabitTitle) {
-        inputHabitTitle.value = '';
-        setTimeout(() => inputHabitTitle.focus(), 50);
-      }
-    }
+    // Repeated Habit Inline Form Controls (shared by create + edit)
+    btnAddRepeated.addEventListener('click', toggleHabitForm);
 
-    function closeHabitModal() {
-      if (!newHabitModal) return;
-      newHabitModal.classList.add('hidden');
-      newHabitModal.classList.remove('flex');
-    }
+    btnHabitPriority?.addEventListener('click', () => {
+      habitPriority = PRIORITY_ORDER[(PRIORITY_ORDER.indexOf(habitPriority) + 1) % PRIORITY_ORDER.length];
+      stylePriorityButton(btnHabitPriority, habitPriorityDot, habitPriorityText, habitPriority);
+    });
 
-    function saveHabitFromInput() {
-      if (!inputHabitTitle) return;
-      const title = inputHabitTitle.value.trim();
-      if (title) {
-        const newHabit = {
-          id: 'rep-' + Date.now(),
-          title: title,
-          priority: 'medium',
-          time: '09:00',
-          tag: 'Daily',
-          enabled: true
-        };
-        appData.repeatedTasks.push(newHabit);
-        persist();
-        renderRepeatedTasks();
-        showToast('Daily habit created!');
-      }
-      closeHabitModal();
-    }
+    btnHabitTag?.addEventListener('click', () => {
+      if (!appData.tagsBank.length) return;
+      habitTagIndex = (habitTagIndex + 1) % appData.tagsBank.length;
+      habitTagText.textContent = appData.tagsBank[habitTagIndex];
+    });
 
-    btnAddRepeated.addEventListener('click', openHabitModal);
-    btnSaveHabit?.addEventListener('click', saveHabitFromInput);
-    btnCancelHabit?.addEventListener('click', closeHabitModal);
-    btnCloseHabitModal?.addEventListener('click', closeHabitModal);
+    btnSaveHabit?.addEventListener('click', saveHabit);
+    btnCancelHabit?.addEventListener('click', closeHabitForm);
 
     inputHabitTitle?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        saveHabitFromInput();
+        saveHabit();
       } else if (e.key === 'Escape') {
-        closeHabitModal();
+        closeHabitForm();
       }
     });
 
@@ -1147,33 +1235,6 @@
     }
     btnPinToggle.addEventListener('click', togglePin);
     btnSettingsPin.addEventListener('click', togglePin);
-
-    // Compact Mode Toggle
-    async function toggleCompact() {
-      if (window.tasksAPI) {
-        const compact = await window.tasksAPI.toggleCompact();
-        if (compact) {
-          container.classList.add('hidden');
-          compactBar.classList.remove('hidden');
-          renderActiveTasks();
-        } else {
-          compactBar.classList.add('hidden');
-          container.classList.remove('hidden');
-        }
-      }
-    }
-    btnWinCompact?.addEventListener('click', toggleCompact);
-    btnMacCompact.addEventListener('click', toggleCompact);
-    btnHeaderCompact.addEventListener('click', toggleCompact);
-    btnCompactSidebar.addEventListener('click', toggleCompact);
-    compactExpandBtn.addEventListener('click', toggleCompact);
-    compactCloseBtn.addEventListener('click', closeHandler);
-
-    compactCompleteBtn.addEventListener('click', () => {
-      if (appData.activeTasks.length > 0) {
-        completeTask(appData.activeTasks[0].id);
-      }
-    });
 
     // IPC Quick Add listener
     if (window.tasksAPI) {

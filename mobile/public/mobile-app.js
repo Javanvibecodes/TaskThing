@@ -34,6 +34,14 @@
   let currentTagIndex = 0;
   let schedulingTarget = 'today'; // 'today' | 'tomorrow'
 
+  // Editing state
+  let editingTaskId = null;
+  let editPriority = 'medium';
+  let editTagIndex = 0;
+  let editingHabitId = null;
+  let habitPriority = 'medium';
+  let habitTagIndex = 0;
+
   const HOTSPOT_CANDIDATES = [
     '172.20.10.1',  // iPhone hotspot gateway
     '172.20.10.2',  // PC on iPhone hotspot
@@ -85,12 +93,36 @@
   const btnCancelTagModal = document.getElementById('mobile-btn-cancel-tag-modal');
   const btnCloseTagModal = document.getElementById('mobile-btn-close-tag-modal');
 
-  // Mobile Habit Modal Elements
-  const newHabitModal = document.getElementById('mobile-new-habit-modal');
-  const inputNewHabit = document.getElementById('mobile-input-new-habit');
-  const btnSaveNewHabit = document.getElementById('mobile-btn-save-new-habit');
-  const btnCancelHabitModal = document.getElementById('mobile-btn-cancel-habit-modal');
-  const btnCloseHabitModal = document.getElementById('mobile-btn-close-habit-modal');
+  // Mobile Edit Task Modal Elements
+  const taskModal = document.getElementById('mobile-task-modal');
+  const taskModalTitle = document.getElementById('mobile-task-modal-title');
+  const editTaskTitle = document.getElementById('mobile-edit-task-title');
+  const editPriorityBtn = document.getElementById('mobile-edit-priority');
+  const editPriorityDot = document.getElementById('mobile-edit-priority-dot');
+  const editPriorityLabel = document.getElementById('mobile-edit-priority-label');
+  const editTimeInput = document.getElementById('mobile-edit-time');
+  const editTagBtn = document.getElementById('mobile-edit-tag');
+  const editTagLabel = document.getElementById('mobile-edit-tag-label');
+  const btnSaveTaskEdit = document.getElementById('mobile-btn-save-task-edit');
+  const btnCancelTaskModal = document.getElementById('mobile-btn-cancel-task-modal');
+  const btnCloseTaskModal = document.getElementById('mobile-btn-close-task-modal');
+
+  // Mobile Habit Inline Form Elements (shared by create + edit)
+  const habitAddBox = document.getElementById('mobile-habit-add-box');
+  const habitTitleInput = document.getElementById('mobile-habit-title');
+  const habitPriorityBtn = document.getElementById('mobile-habit-priority');
+  const habitPriorityDot = document.getElementById('mobile-habit-priority-dot');
+  const habitPriorityLabel = document.getElementById('mobile-habit-priority-label');
+  const habitTimeInput = document.getElementById('mobile-habit-time');
+  const habitTagBtn = document.getElementById('mobile-habit-tag');
+  const habitTagLabel = document.getElementById('mobile-habit-tag-label');
+  const btnSaveHabit = document.getElementById('mobile-btn-save-habit');
+  const btnCancelHabit = document.getElementById('mobile-btn-cancel-habit');
+  const saveHabitText = document.getElementById('mobile-save-habit-text');
+  const addHabitIcon = document.getElementById('mobile-add-habit-icon');
+  const addHabitText = document.getElementById('mobile-add-habit-text');
+
+  const mainScroll = document.getElementById('mobile-main-scroll');
 
   // Tomorrow Banner
   const tomorrowBanner = document.getElementById('mobile-tomorrow-banner');
@@ -442,11 +474,11 @@
 
     if (isConn) {
       const modeText = syncConfig.mode === 'hotspot' ? 'Hotspot Synced' : 'LAN Synced';
-      mobileSyncDot.className = 'w-2 h-2 rounded-full bg-secondary animate-pulse';
+      mobileSyncDot.className = 'w-2 h-2 rounded-full bg-primary animate-pulse';
       mobileSyncText.textContent = host ? modeText : 'PC Synced';
-      mobileSyncText.className = 'font-label-mono text-[10px] text-secondary font-semibold';
+      mobileSyncText.className = 'font-label-mono text-[10px] text-primary font-semibold';
       mobileSyncDetailStatus.textContent = `Connected (${syncConfig.host || host}:${syncConfig.port || 48721})`;
-      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-secondary font-semibold';
+      mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-primary font-semibold';
     } else if (isConnPending) {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-tertiary animate-pulse';
       mobileSyncText.textContent = 'Connecting...';
@@ -456,7 +488,7 @@
     } else {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-outline';
       mobileSyncText.textContent = offlineQueue.length > 0 ? `Offline (${offlineQueue.length} Queued)` : 'Offline';
-      mobileSyncText.className = 'font-label-mono text-[10px] text-outline font-medium';
+      mobileSyncText.className = 'font-label-mono text-[10px] text-on-surface-variant font-medium';
       mobileSyncDetailStatus.textContent = offlineQueue.length > 0 ? `Offline (${offlineQueue.length} changes queued to sync)` : 'Disconnected / Standalone';
       mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-on-surface font-semibold';
     }
@@ -499,23 +531,23 @@
       
       let borderStyle = '';
       if (task.isRollover) {
-        borderStyle = 'border border-error/50 bg-error-container/20 ring-1 ring-error/30';
+        borderStyle = 'border border-error/40 bg-error-container/40 ring-1 ring-error/20';
       } else {
-        borderStyle = 'bg-surface-container/70 active:bg-surface-container border border-outline-variant/10';
+        borderStyle = 'bg-surface-container active:bg-surface-container-high border border-outline-variant';
       }
 
       item.className = `${borderStyle} p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm transition-all`;
       
-      let priorityClass = 'bg-secondary-container/30 text-secondary';
-      if (task.priority === 'urgent') priorityClass = 'bg-error-container/40 text-error';
-      else if (task.priority === 'medium') priorityClass = 'bg-tertiary-container/30 text-tertiary';
+      let priorityClass = 'bg-surface-container-highest text-on-surface-variant';
+      if (task.priority === 'urgent') priorityClass = 'bg-error-container text-error';
+      else if (task.priority === 'medium') priorityClass = 'bg-primary-container text-on-primary-container';
 
       item.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <button class="complete-btn w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent hover:text-primary active:scale-90 transition-all shrink-0">
             <span class="material-symbols-outlined text-[16px]">check</span>
           </button>
-          <div class="flex flex-col min-w-0">
+          <div class="flex flex-col min-w-0 task-title-box cursor-pointer">
             <div class="flex items-center gap-1.5 min-w-0">
               <span class="font-body-md text-on-surface truncate font-medium">${escapeHtml(task.title)}</span>
               ${task.isRollover ? `
@@ -533,7 +565,7 @@
                 </span>
               ` : ''}
               ${task.tag ? `
-                <span class="font-label-mono text-[10px] text-outline bg-surface-container-high px-1 rounded">
+                <span class="font-label-mono text-[10px] text-on-surface-variant bg-surface-container-high px-1 rounded">
                   ${escapeHtml(task.tag)}
                 </span>
               ` : ''}
@@ -546,13 +578,22 @@
             </div>
           </div>
         </div>
-        <button class="delete-btn w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:text-error shrink-0">
-          <span class="material-symbols-outlined text-[18px]">close</span>
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="edit-btn w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:text-primary">
+            <span class="material-symbols-outlined text-[17px]">edit</span>
+          </button>
+          <button class="delete-btn w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:text-error">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
       `;
 
       item.querySelector('.complete-btn').addEventListener('click', () => completeTask(task.id));
       item.querySelector('.delete-btn').addEventListener('click', () => deleteTask(task.id));
+      item.querySelector('.edit-btn').addEventListener('click', () => openTaskEditModal(task.id));
+      item.querySelector('.task-title-box').addEventListener('click', (e) => {
+        if (!e.target.closest('.move-today-btn')) openTaskEditModal(task.id);
+      });
 
       const moveBtn = item.querySelector('.move-today-btn');
       if (moveBtn) {
@@ -627,10 +668,10 @@
 
     if (habits.length === 0) {
       repeatedTasksList.innerHTML = `
-        <div class="py-12 text-center flex flex-col items-center justify-center text-outline gap-1">
+        <div class="py-12 text-center flex flex-col items-center justify-center text-on-surface-variant gap-1">
           <span class="material-symbols-outlined text-[32px]">event_repeat</span>
           <span class="font-headline-sm text-on-surface-variant font-semibold">No daily habits configured</span>
-          <span class="font-body-sm text-outline text-[12px]">Add habits you repeat every day to automatically appear each morning.</span>
+          <span class="font-body-sm text-on-surface-variant text-[12px]">Add habits you repeat every day to automatically appear each morning.</span>
         </div>
       `;
       return;
@@ -638,22 +679,27 @@
 
     habits.forEach(habit => {
       const card = document.createElement('div');
-      card.className = 'bg-surface-container/70 p-3 rounded-xl flex items-center justify-between gap-3 border border-outline-variant/10';
+      card.className = 'bg-surface-container p-3 rounded-xl flex items-center justify-between gap-3 border border-outline-variant';
       card.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <input type="checkbox" ${habit.enabled ? 'checked' : ''} class="w-4 h-4 accent-primary rounded cursor-pointer"/>
           <div class="flex flex-col min-w-0">
-            <span class="font-body-md text-on-surface truncate ${habit.enabled ? '' : 'text-outline line-through'} font-medium">${escapeHtml(habit.title)}</span>
+            <span class="font-body-md text-on-surface truncate ${habit.enabled ? '' : 'text-on-surface-variant line-through'} font-medium">${escapeHtml(habit.title)}</span>
             <div class="flex items-center gap-2 mt-0.5 font-label-mono text-[10px] text-on-surface-variant">
-              <span class="text-secondary font-semibold">Repeats Daily</span>
-              ${habit.time ? `<span>• ${habit.time}</span>` : ''}
-              ${habit.tag ? `<span class="bg-surface-container-high px-1 rounded text-outline">${habit.tag}</span>` : ''}
+              <span class="text-primary font-semibold">Repeats Daily</span>
+              ${habit.time ? `<span>• ${escapeHtml(habit.time)}</span>` : ''}
+              ${habit.tag ? `<span class="bg-surface-container-high px-1 rounded text-on-surface-variant">${escapeHtml(habit.tag)}</span>` : ''}
             </div>
           </div>
         </div>
-        <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline active:text-error">
-          <span class="material-symbols-outlined text-[16px]">delete</span>
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="edit-habit-btn w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:text-primary">
+            <span class="material-symbols-outlined text-[16px]">edit</span>
+          </button>
+          <button class="delete-habit-btn w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:text-error">
+            <span class="material-symbols-outlined text-[16px]">delete</span>
+          </button>
+        </div>
       `;
 
       card.querySelector('input').addEventListener('change', (e) => {
@@ -662,9 +708,12 @@
         renderRepeatedTasks();
       });
 
-      card.querySelector('button').addEventListener('click', () => {
+      card.querySelector('.edit-habit-btn').addEventListener('click', () => openHabitForm(habit.id));
+
+      card.querySelector('.delete-habit-btn').addEventListener('click', () => {
         mobileData.repeatedTasks = mobileData.repeatedTasks.filter(h => h.id !== habit.id);
         persistData();
+        sendOrQueueMutation({ type: 'HABIT_DELETED', payload: { id: habit.id } });
         renderRepeatedTasks();
       });
 
@@ -673,17 +722,85 @@
   }
 
   // ----------------- COMPLETED HISTORY -----------------
+  function historyGroupFor(item) {
+    const raw = item.completedAt || item.completedDate || null;
+    const completed = raw ? new Date(raw) : new Date();
+    if (isNaN(completed.getTime())) return 'earlier';
+    const now = new Date();
+    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startItem = new Date(completed.getFullYear(), completed.getMonth(), completed.getDate());
+    const diffDays = Math.round((startToday - startItem) / 86400000);
+    if (diffDays <= 0) return 'today';
+    if (diffDays === 1) return 'yesterday';
+    return 'earlier';
+  }
+
+  function formatHistoryTime(isoString) {
+    if (!isoString) return '';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return '';
+      return `Completed ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function createHistoryCard(item) {
+    const card = document.createElement('div');
+    card.className = 'bg-surface-container p-2.5 rounded-xl flex items-center justify-between gap-2 border border-outline-variant';
+    const timeLabel = formatHistoryTime(item.completedAt);
+    card.innerHTML = `
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <span class="w-4 h-4 rounded bg-primary text-white flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[12px]">check</span>
+        </span>
+        <div class="flex flex-col min-w-0">
+          <span class="font-body-sm text-on-surface-variant line-through truncate">${escapeHtml(item.title)}</span>
+          ${timeLabel ? `<span class="font-label-mono text-[9px] text-on-surface-variant/80">${timeLabel}</span>` : ''}
+        </div>
+      </div>
+      <button class="undo-btn px-2.5 py-1 rounded-lg bg-primary-container text-on-primary-container font-label-mono text-[10px] shrink-0 active:scale-95 font-semibold">
+        Undo
+      </button>
+    `;
+
+    card.querySelector('.undo-btn').addEventListener('click', () => {
+      mobileData.completedTasks = mobileData.completedTasks.filter(c => c.id !== item.id);
+      const restoredTask = {
+        id: 'm-' + Date.now(),
+        title: item.title,
+        priority: 'medium',
+        tag: 'General',
+        date: getTodayString(),
+        isRollover: false
+      };
+      mobileData.activeTasks.push(restoredTask);
+      persistData();
+
+      sendOrQueueMutation({
+        type: 'TASK_REOPENED',
+        payload: { id: item.id, title: item.title, newActiveTask: restoredTask }
+      });
+
+      renderActiveTasks();
+      renderHistory();
+    });
+
+    return card;
+  }
+
   function renderHistory(query = '') {
     historyList.innerHTML = '';
     const q = query.toLowerCase().trim();
     const completed = mobileData.completedTasks || [];
     historyCountBadge.textContent = `${completed.length} Finished`;
 
-    const filtered = completed.filter(c => c.title.toLowerCase().includes(q));
+    const filtered = completed.filter(c => (c.title || '').toLowerCase().includes(q));
 
     if (filtered.length === 0) {
       historyList.innerHTML = `
-        <div class="py-10 text-center text-outline flex flex-col items-center">
+        <div class="py-10 text-center text-on-surface-variant flex flex-col items-center">
           <span class="material-symbols-outlined text-[24px]">history</span>
           <span class="font-body-sm mt-1">No completed tasks found</span>
         </div>
@@ -691,44 +808,27 @@
       return;
     }
 
-    filtered.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'bg-surface-container/50 p-2.5 rounded-xl flex items-center justify-between gap-2 border border-outline-variant/10';
-      card.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0 flex-1">
-          <span class="w-4 h-4 rounded bg-secondary/80 text-on-secondary flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[12px]">check</span>
-          </span>
-          <span class="font-body-sm text-outline line-through truncate">${escapeHtml(item.title)}</span>
+    const groups = [
+      { key: 'today', label: 'Today' },
+      { key: 'yesterday', label: 'Yesterday' },
+      { key: 'earlier', label: 'Earlier This Week' }
+    ];
+
+    groups.forEach(group => {
+      const items = filtered.filter(c => historyGroupFor(c) === group.key);
+      if (items.length === 0) return;
+      const section = document.createElement('div');
+      section.className = 'flex flex-col gap-2';
+      section.innerHTML = `
+        <div class="flex items-center justify-between font-label-mono text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+          <span>${group.label}</span>
+          <span class="text-primary">${items.length}</span>
         </div>
-        <button class="undo-btn px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-mono text-[10px] shrink-0 active:scale-95 font-semibold">
-          Undo
-        </button>
+        <div class="flex flex-col gap-2 history-group-items"></div>
       `;
-
-      card.querySelector('.undo-btn').addEventListener('click', () => {
-        mobileData.completedTasks = mobileData.completedTasks.filter(c => c.id !== item.id);
-        const restoredTask = {
-          id: 'm-' + Date.now(),
-          title: item.title,
-          priority: 'medium',
-          tag: 'General',
-          date: getTodayString(),
-          isRollover: false
-        };
-        mobileData.activeTasks.push(restoredTask);
-        persistData();
-
-        sendOrQueueMutation({
-          type: 'TASK_REOPENED',
-          payload: { id: item.id, title: item.title, newActiveTask: restoredTask }
-        });
-
-        renderActiveTasks();
-        renderHistory();
-      });
-
-      historyList.appendChild(card);
+      const list = section.querySelector('.history-group-items');
+      items.forEach(item => list.appendChild(createHistoryCard(item)));
+      historyList.appendChild(section);
     });
   }
 
@@ -738,15 +838,14 @@
     mobileData.settings.themePreset = preset;
 
     document.querySelectorAll('.mobile-preset-btn').forEach(b => {
+      const chk = b.querySelector('.material-symbols-outlined');
       if (b.dataset.preset === preset) {
-        b.classList.add('border-primary/40');
         b.classList.remove('border-transparent');
-        const chk = b.querySelector('.material-symbols-outlined');
+        b.classList.add('border-primary');
         if (chk) chk.classList.remove('hidden');
       } else {
-        b.classList.remove('border-primary/40');
+        b.classList.remove('border-primary', 'border-primary/40');
         b.classList.add('border-transparent');
-        const chk = b.querySelector('.material-symbols-outlined');
         if (chk) chk.classList.add('hidden');
       }
     });
@@ -796,7 +895,7 @@
       isScanning = false;
       cameraBtnText.textContent = 'Start QR Scanner';
       document.getElementById('qr-reader').innerHTML = `
-        <span class="material-symbols-outlined text-[48px] text-outline mb-2">qr_code_scanner</span>
+        <span class="material-symbols-outlined text-[48px] text-on-surface-variant mb-2">qr_code_scanner</span>
         <span class="font-label-mono text-[11px] text-on-surface-variant text-center px-4">
           Point camera at the desktop widget QR code
         </span>
@@ -845,6 +944,8 @@
       }
     });
 
+    if (mainScroll) mainScroll.scrollTop = 0;
+
     if (targetKey !== 'sync' && isScanning) {
       stopScanner();
     }
@@ -890,6 +991,141 @@
         finishSplash();
       }
     });
+  }
+
+  // ----------------- TASK / HABIT EDIT MODALS -----------------
+  const PRIORITY_ORDER = ['urgent', 'medium', 'low'];
+
+  function stylePriorityButton(btn, dot, label, priority) {
+    label.textContent = priority.charAt(0).toUpperCase() + priority.slice(1);
+    if (priority === 'urgent') {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-error';
+      btn.className = 'h-6 px-2 rounded bg-error-container text-error font-label-mono text-[10px] font-semibold flex items-center gap-1';
+    } else if (priority === 'medium') {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
+      btn.className = 'h-6 px-2 rounded bg-primary-container text-on-primary-container font-label-mono text-[10px] font-semibold flex items-center gap-1';
+    } else {
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
+      btn.className = 'h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] font-semibold flex items-center gap-1';
+    }
+  }
+
+  function openTaskEditModal(taskId) {
+    const task = (mobileData.activeTasks || []).find(t => t.id === taskId);
+    if (!task || !taskModal) return;
+    editingTaskId = taskId;
+    editPriority = task.priority || 'medium';
+    editTagIndex = (mobileData.tagsBank || []).indexOf(task.tag);
+    taskModalTitle.textContent = 'Edit Task';
+    editTaskTitle.value = task.title || '';
+    editTimeInput.value = task.time || '17:00';
+    editTagLabel.textContent = task.tag || 'General';
+    stylePriorityButton(editPriorityBtn, editPriorityDot, editPriorityLabel, editPriority);
+    taskModal.classList.remove('hidden');
+    setTimeout(() => editTaskTitle.focus(), 80);
+  }
+
+  function closeTaskModal() {
+    if (taskModal) taskModal.classList.add('hidden');
+    editingTaskId = null;
+  }
+
+  function saveTaskEdit() {
+    if (!editingTaskId) return;
+    const task = (mobileData.activeTasks || []).find(t => t.id === editingTaskId);
+    if (!task) { closeTaskModal(); return; }
+    const title = editTaskTitle.value.trim();
+    if (!title) return;
+    task.title = title;
+    task.priority = editPriority;
+    task.time = editTimeInput.value || '';
+    task.tag = editTagIndex >= 0
+      ? (mobileData.tagsBank[editTagIndex] || task.tag || 'General')
+      : (task.tag || 'General');
+    persistData();
+    sendOrQueueMutation({ type: 'TASK_EDITED', payload: task });
+    closeTaskModal();
+    renderActiveTasks();
+  }
+
+  function openHabitForm(habitId = null) {
+    if (!habitAddBox) return;
+    editingHabitId = habitId;
+    if (habitId) {
+      const habit = (mobileData.repeatedTasks || []).find(h => h.id === habitId);
+      if (!habit) return;
+      habitPriority = habit.priority || 'medium';
+      habitTagIndex = (mobileData.tagsBank || []).indexOf(habit.tag);
+      habitTitleInput.value = habit.title || '';
+      habitTimeInput.value = habit.time || '09:00';
+      habitTagLabel.textContent = habit.tag || 'Daily';
+      if (saveHabitText) saveHabitText.textContent = 'Save Changes';
+    } else {
+      habitPriority = 'medium';
+      habitTagIndex = -1;
+      habitTitleInput.value = '';
+      habitTimeInput.value = '09:00';
+      habitTagLabel.textContent = 'Daily';
+      if (saveHabitText) saveHabitText.textContent = 'Save Habit';
+    }
+    stylePriorityButton(habitPriorityBtn, habitPriorityDot, habitPriorityLabel, habitPriority);
+    habitAddBox.classList.remove('hidden');
+    if (addHabitIcon) addHabitIcon.textContent = 'close';
+    if (addHabitText) addHabitText.textContent = 'Close';
+    setTimeout(() => {
+      habitTitleInput.focus();
+      if (mainScroll) habitAddBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 80);
+  }
+
+  function closeHabitForm() {
+    if (habitAddBox) habitAddBox.classList.add('hidden');
+    editingHabitId = null;
+    if (addHabitIcon) addHabitIcon.textContent = 'add';
+    if (addHabitText) addHabitText.textContent = 'Add Habit';
+  }
+
+  function toggleHabitForm() {
+    if (habitAddBox && habitAddBox.classList.contains('hidden')) {
+      openHabitForm();
+    } else {
+      closeHabitForm();
+    }
+  }
+
+  function saveHabit() {
+    const title = habitTitleInput.value.trim();
+    if (!title) return;
+    const tag = habitTagIndex >= 0
+      ? ((mobileData.tagsBank || [])[habitTagIndex] || 'Daily')
+      : 'Daily';
+
+    if (editingHabitId) {
+      const habit = (mobileData.repeatedTasks || []).find(h => h.id === editingHabitId);
+      if (habit) {
+        habit.title = title;
+        habit.priority = habitPriority;
+        habit.time = habitTimeInput.value || '09:00';
+        habit.tag = tag;
+        persistData();
+        sendOrQueueMutation({ type: 'HABIT_EDITED', payload: habit });
+        renderRepeatedTasks();
+      }
+    } else {
+      const habit = {
+        id: 'rep-m-' + Date.now(),
+        title,
+        priority: habitPriority,
+        time: habitTimeInput.value || '09:00',
+        tag,
+        enabled: true
+      };
+      mobileData.repeatedTasks.push(habit);
+      persistData();
+      sendOrQueueMutation({ type: 'HABIT_ADDED', payload: habit });
+      renderRepeatedTasks();
+    }
+    closeHabitForm();
   }
 
   // ----------------- INITIALIZATION -----------------
@@ -1010,17 +1246,7 @@
     btnPriority.addEventListener('click', () => {
       const next = (priorities.indexOf(currentPriority) + 1) % priorities.length;
       currentPriority = priorities[next];
-      priorityLabel.textContent = currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1);
-      if (currentPriority === 'urgent') {
-        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-error';
-        btnPriority.className = 'h-6 px-2 rounded bg-error-container/40 text-error font-label-mono text-[10px] font-semibold flex items-center gap-1';
-      } else if (currentPriority === 'medium') {
-        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-tertiary';
-        btnPriority.className = 'h-6 px-2 rounded bg-tertiary-container/30 text-tertiary font-label-mono text-[10px] font-semibold flex items-center gap-1';
-      } else {
-        priorityDot.className = 'w-1.5 h-1.5 rounded-full bg-secondary';
-        btnPriority.className = 'h-6 px-2 rounded bg-secondary-container/30 text-secondary font-label-mono text-[10px] font-semibold flex items-center gap-1';
-      }
+      stylePriorityButton(btnPriority, priorityDot, priorityLabel, currentPriority);
     });
 
     // Tag button & New Tag
@@ -1075,51 +1301,54 @@
       }
     });
 
-    // Mobile Habit Modal Controls
-    function openHabitModal() {
-      if (!newHabitModal) return;
-      newHabitModal.classList.remove('hidden');
-      if (inputNewHabit) {
-        inputNewHabit.value = '';
-        setTimeout(() => inputNewHabit.focus(), 80);
-      }
-    }
+    // Mobile Task Edit Modal Controls
+    editPriorityBtn?.addEventListener('click', () => {
+      editPriority = PRIORITY_ORDER[(PRIORITY_ORDER.indexOf(editPriority) + 1) % PRIORITY_ORDER.length];
+      stylePriorityButton(editPriorityBtn, editPriorityDot, editPriorityLabel, editPriority);
+    });
 
-    function closeHabitModal() {
-      if (newHabitModal) newHabitModal.classList.add('hidden');
-    }
+    editTagBtn?.addEventListener('click', () => {
+      if (!mobileData.tagsBank.length) return;
+      editTagIndex = (editTagIndex + 1) % mobileData.tagsBank.length;
+      editTagLabel.textContent = mobileData.tagsBank[editTagIndex];
+    });
 
-    function saveHabitFromInput() {
-      if (!inputNewHabit) return;
-      const title = inputNewHabit.value.trim();
-      if (title) {
-        const habit = {
-          id: 'rep-m-' + Date.now(),
-          title: title,
-          priority: 'medium',
-          time: '09:00',
-          tag: 'Daily',
-          enabled: true
-        };
-        mobileData.repeatedTasks.push(habit);
-        persistData();
-        renderRepeatedTasks();
-        sendWsMessage({ type: 'HABIT_ADDED', payload: habit });
-      }
-      closeHabitModal();
-    }
+    btnSaveTaskEdit?.addEventListener('click', saveTaskEdit);
+    btnCancelTaskModal?.addEventListener('click', closeTaskModal);
+    btnCloseTaskModal?.addEventListener('click', closeTaskModal);
 
-    btnAddHabit.addEventListener('click', openHabitModal);
-    btnSaveNewHabit?.addEventListener('click', saveHabitFromInput);
-    btnCancelHabitModal?.addEventListener('click', closeHabitModal);
-    btnCloseHabitModal?.addEventListener('click', closeHabitModal);
-
-    inputNewHabit?.addEventListener('keydown', (e) => {
+    editTaskTitle?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        saveHabitFromInput();
+        saveTaskEdit();
       } else if (e.key === 'Escape') {
-        closeHabitModal();
+        closeTaskModal();
+      }
+    });
+
+    // Mobile Habit Inline Form Controls (New + Edit)
+    btnAddHabit.addEventListener('click', toggleHabitForm);
+
+    habitPriorityBtn?.addEventListener('click', () => {
+      habitPriority = PRIORITY_ORDER[(PRIORITY_ORDER.indexOf(habitPriority) + 1) % PRIORITY_ORDER.length];
+      stylePriorityButton(habitPriorityBtn, habitPriorityDot, habitPriorityLabel, habitPriority);
+    });
+
+    habitTagBtn?.addEventListener('click', () => {
+      if (!mobileData.tagsBank.length) return;
+      habitTagIndex = (habitTagIndex + 1) % mobileData.tagsBank.length;
+      habitTagLabel.textContent = mobileData.tagsBank[habitTagIndex];
+    });
+
+    btnSaveHabit?.addEventListener('click', saveHabit);
+    btnCancelHabit?.addEventListener('click', closeHabitForm);
+
+    habitTitleInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveHabit();
+      } else if (e.key === 'Escape') {
+        closeHabitForm();
       }
     });
 

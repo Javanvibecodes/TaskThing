@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <meta name="theme-color" content="#000000"/>
+  <meta name="theme-color" content="#ffffff"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
 
   <!-- Google Fonts & Material Symbols -->
@@ -19,35 +19,35 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#0381FC",
-            "on-primary": "#ffffff",
-            "primary-container": "rgba(3, 129, 252, 0.22)",
-            "on-primary-container": "#ffffff",
-            "primary-fixed": "#0381FC",
-            "secondary": "#38bdf8",
-            "on-secondary": "#000000",
-            "secondary-container": "rgba(3, 129, 252, 0.12)",
-            "on-secondary-container": "#ffffff",
-            "secondary-fixed": "#38bdf8",
-            "tertiary": "#60a5fa",
-            "on-tertiary": "#000000",
-            "tertiary-container": "#1d4ed8",
-            "tertiary-fixed-dim": "#93c5fd",
-            "surface-container": "#0f141f",
-            "surface-container-low": "#080b11",
-            "surface-container-lowest": "#000000",
-            "surface-container-high": "#171f2f",
-            "surface-container-highest": "#202a3f",
-            "surface-bright": "#28344c",
-            "surface": "#000000",
-            "surface-variant": "#171f2f",
-            "on-surface": "#ffffff",
-            "on-surface-variant": "#94a3b8",
-            "outline": "#334155",
-            "outline-variant": "rgba(255, 255, 255, 0.12)",
-            "error": "#f43f5e",
-            "error-container": "#9f1239",
-            "on-error": "#ffffff"
+            "primary": "rgb(var(--primary) / <alpha-value>)",
+            "on-primary": "rgb(var(--on-primary) / <alpha-value>)",
+            "primary-container": "rgb(var(--primary-container) / <alpha-value>)",
+            "on-primary-container": "rgb(var(--on-primary-container) / <alpha-value>)",
+            "primary-fixed": "rgb(var(--primary) / <alpha-value>)",
+            "secondary": "rgb(var(--secondary) / <alpha-value>)",
+            "on-secondary": "rgb(var(--on-secondary) / <alpha-value>)",
+            "secondary-container": "rgb(var(--secondary-container) / <alpha-value>)",
+            "on-secondary-container": "rgb(var(--on-secondary-container) / <alpha-value>)",
+            "secondary-fixed": "rgb(var(--secondary) / <alpha-value>)",
+            "tertiary": "rgb(var(--tertiary) / <alpha-value>)",
+            "on-tertiary": "rgb(var(--on-tertiary) / <alpha-value>)",
+            "tertiary-container": "rgb(var(--tertiary-container) / <alpha-value>)",
+            "tertiary-fixed-dim": "rgb(var(--tertiary-fixed-dim) / <alpha-value>)",
+            "surface": "rgb(var(--surface) / <alpha-value>)",
+            "surface-container": "rgb(var(--surface-container) / <alpha-value>)",
+            "surface-container-low": "rgb(var(--surface-container-low) / <alpha-value>)",
+            "surface-container-lowest": "rgb(var(--surface-container-lowest) / <alpha-value>)",
+            "surface-container-high": "rgb(var(--surface-container-high) / <alpha-value>)",
+            "surface-container-highest": "rgb(var(--surface-container-highest) / <alpha-value>)",
+            "surface-bright": "rgb(var(--surface-bright) / <alpha-value>)",
+            "surface-variant": "rgb(var(--surface-variant) / <alpha-value>)",
+            "on-surface": "rgb(var(--on-surface) / <alpha-value>)",
+            "on-surface-variant": "rgb(var(--on-surface-variant) / <alpha-value>)",
+            "outline": "rgb(var(--outline) / <alpha-value>)",
+            "outline-variant": "rgb(var(--outline-variant) / <alpha-value>)",
+            "error": "rgb(var(--error) / <alpha-value>)",
+            "error-container": "rgb(var(--error-container) / <alpha-value>)",
+            "on-error": "rgb(var(--on-error) / <alpha-value>)"
           },
           fontFamily: {
             "headline-sm": ["Inter"],
@@ -67,84 +67,114 @@
   <!-- HTML5 QR Scanner library for camera scanning on mobile -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    /* =========================================================
+       Palette tokens
+       Surface tokens are shared by every preset; only the
+       accent tokens change when a theme is picked.
+       ========================================================= */
+    :root {
+      --surface: 255 255 255;
+      --surface-container: 244 246 250;
+      --surface-container-low: 247 249 252;
+      --surface-container-lowest: 255 255 255;
+      --surface-container-high: 232 237 245;
+      --surface-container-highest: 220 227 238;
+      --surface-bright: 234 240 249;
+      --surface-variant: 241 244 249;
+      --on-surface: 10 12 16;
+      --on-surface-variant: 90 100 114;
+      --outline: 199 208 220;
+      --outline-variant: 226 232 240;
+      --error: 220 38 38;
+      --error-container: 254 226 226;
+      --on-error: 255 255 255;
+    }
+
     :root, body[data-theme="cobalt"], body[data-theme="blackblue"] {
-      --primary: #0381FC;
-      --on-primary: #ffffff;
-      --primary-container: rgba(3, 129, 252, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #38bdf8;
-      --on-secondary: #000000;
-      --secondary-container: rgba(3, 129, 252, 0.12);
-      --tertiary: #60a5fa;
-      --on-tertiary: #000000;
-      --tertiary-container: #1d4ed8;
-      --tertiary-fixed-dim: #93c5fd;
+      --primary: 3 129 252;
+      --on-primary: 255 255 255;
+      --primary-container: 219 234 254;
+      --on-primary-container: 7 58 128;
+      --secondary: 37 99 235;
+      --on-secondary: 255 255 255;
+      --secondary-container: 219 234 254;
+      --on-secondary-container: 7 58 128;
+      --tertiary: 96 165 250;
+      --on-tertiary: 9 30 66;
+      --tertiary-container: 191 219 254;
+      --tertiary-fixed-dim: 147 197 253;
     }
     body[data-theme="emerald"] {
-      --primary: #10b981;
-      --on-primary: #ffffff;
-      --primary-container: rgba(16, 185, 129, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #34d399;
-      --on-secondary: #000000;
-      --secondary-container: rgba(16, 185, 129, 0.12);
-      --tertiary: #06b6d4;
-      --on-tertiary: #000000;
-      --tertiary-container: #0e7490;
-      --tertiary-fixed-dim: #67e8f9;
+      --primary: 16 185 129;
+      --on-primary: 255 255 255;
+      --primary-container: 209 250 229;
+      --on-primary-container: 6 78 59;
+      --secondary: 5 150 105;
+      --on-secondary: 255 255 255;
+      --secondary-container: 209 250 229;
+      --on-secondary-container: 6 78 59;
+      --tertiary: 20 184 166;
+      --on-tertiary: 4 47 46;
+      --tertiary-container: 204 251 241;
+      --tertiary-fixed-dim: 153 246 228;
     }
     body[data-theme="amber"] {
-      --primary: #f59e0b;
-      --on-primary: #000000;
-      --primary-container: rgba(245, 158, 11, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #fbbf24;
-      --on-secondary: #000000;
-      --secondary-container: rgba(245, 158, 11, 0.12);
-      --tertiary: #38bdf8;
-      --on-tertiary: #082f49;
-      --tertiary-container: #0369a1;
-      --tertiary-fixed-dim: #7dd3fc;
+      --primary: 245 158 11;
+      --on-primary: 69 26 3;
+      --primary-container: 254 243 199;
+      --on-primary-container: 120 53 15;
+      --secondary: 217 119 6;
+      --on-secondary: 255 255 255;
+      --secondary-container: 254 243 199;
+      --on-secondary-container: 120 53 15;
+      --tertiary: 251 191 36;
+      --on-tertiary: 69 26 3;
+      --tertiary-container: 253 230 138;
+      --tertiary-fixed-dim: 252 211 77;
     }
     body[data-theme="coral"] {
-      --primary: #f43f5e;
-      --on-primary: #ffffff;
-      --primary-container: rgba(244, 63, 94, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #fb7185;
-      --on-secondary: #000000;
-      --secondary-container: rgba(244, 63, 94, 0.12);
-      --tertiary: #f59e0b;
-      --on-tertiary: #422006;
-      --tertiary-container: #854d0e;
-      --tertiary-fixed-dim: #fde047;
+      --primary: 244 63 94;
+      --on-primary: 255 255 255;
+      --primary-container: 255 228 230;
+      --on-primary-container: 136 19 55;
+      --secondary: 225 29 72;
+      --on-secondary: 255 255 255;
+      --secondary-container: 255 228 230;
+      --on-secondary-container: 136 19 55;
+      --tertiary: 251 113 133;
+      --on-tertiary: 76 5 25;
+      --tertiary-container: 254 205 211;
+      --tertiary-fixed-dim: 253 164 175;
     }
     body[data-theme="obsidian"] {
-      --primary: #94a3b8;
-      --on-primary: #000000;
-      --primary-container: rgba(148, 163, 184, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #cbd5e1;
-      --on-secondary: #000000;
-      --secondary-container: rgba(148, 163, 184, 0.12);
-      --tertiary: #64748b;
-      --on-tertiary: #ffffff;
-      --tertiary-container: #334155;
-      --tertiary-fixed-dim: #cbd5e1;
+      --primary: 71 85 105;
+      --on-primary: 255 255 255;
+      --primary-container: 226 232 240;
+      --on-primary-container: 15 23 42;
+      --secondary: 51 65 85;
+      --on-secondary: 255 255 255;
+      --secondary-container: 226 232 240;
+      --on-secondary-container: 15 23 42;
+      --tertiary: 100 116 139;
+      --on-tertiary: 255 255 255;
+      --tertiary-container: 203 213 225;
+      --tertiary-fixed-dim: 148 163 184;
     }
     body[data-theme="arctic"] {
-      --primary: #06b6d4;
-      --on-primary: #000000;
-      --primary-container: rgba(6, 182, 212, 0.22);
-      --on-primary-container: #ffffff;
-      --secondary: #22d3ee;
-      --on-secondary: #000000;
-      --secondary-container: rgba(6, 182, 212, 0.12);
-      --tertiary: #38bdf8;
-      --on-tertiary: #000000;
-      --tertiary-container: #0369a1;
-      --tertiary-fixed-dim: #7dd3fc;
+      --primary: 6 182 212;
+      --on-primary: 8 47 73;
+      --primary-container: 207 250 254;
+      --on-primary-container: 8 51 68;
+      --secondary: 8 145 178;
+      --on-secondary: 255 255 255;
+      --secondary-container: 207 250 254;
+      --on-secondary-container: 8 51 68;
+      --tertiary: 56 189 248;
+      --on-tertiary: 8 47 73;
+      --tertiary-container: 224 242 254;
+      --tertiary-fixed-dim: 125 211 252;
     }
+
     * {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
@@ -153,9 +183,8 @@
     body {
       overscroll-behavior-y: none;
       padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
     }
-    input {
+    input, textarea {
       user-select: text;
     }
     @keyframes shimmer {
@@ -163,48 +192,41 @@
       100% { background-position: 200% 0; }
     }
     .skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background: linear-gradient(90deg, rgba(10,12,16,0.04) 25%, rgba(10,12,16,0.08) 50%, rgba(10,12,16,0.04) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
   </style>
 </head>
-<body class="relative bg-black text-white font-body-md min-h-screen flex flex-col justify-between overflow-hidden" data-theme="cobalt">
+<body class="relative bg-surface text-on-surface font-body-md h-[100dvh] flex flex-col overflow-hidden" data-theme="cobalt">
 
   <!-- Mobile Launch Animation Splash Overlay (Full screen video) -->
   <div id="mobile-launch-splash" class="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden cursor-pointer">
-    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline class="w-full h-full object-cover"></video>
+    <video id="mobile-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" class="w-full h-full object-cover"></video>
   </div>
 
-  <!-- Mobile Top Bar (NO user avatar, square Blob logo, app name only) -->
-  <header class="h-14 bg-black px-4 flex items-center justify-between border-b border-white/10 shrink-0 z-20">
+  <!-- Mobile Top Bar (square Blob logo + app name) -->
+  <header class="h-14 bg-surface px-4 flex items-center justify-between border-b border-outline-variant shrink-0 z-20">
     <div class="flex items-center gap-2.5">
-      <img src="assets/blob.png" alt="Task Thing Logo" class="w-8 h-8 aspect-square rounded-lg object-contain shrink-0" />
-      <span class="font-headline-lg text-[18px] font-bold text-white tracking-tight">Task Thing</span>
+      <img src="assets/blob.png" alt="Task Thing Logo" class="w-7 h-7 aspect-square rounded-lg object-contain shrink-0" />
+      <span class="font-headline-lg text-[18px] font-bold text-on-surface tracking-tight">Task Thing</span>
     </div>
 
     <!-- Real-time sync status pill -->
-    <button id="btn-sync-header" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high border border-white/15 hover:border-primary/50 transition-all">
-      <span id="mobile-sync-dot" class="w-2 h-2 rounded-full bg-outline"></span>
-      <span id="mobile-sync-text" class="font-label-mono text-[10px] text-on-surface-variant font-medium">Offline</span>
-    </button>
-  </header>
-
-    <!-- Real-time sync status pill -->
-    <button id="btn-sync-header" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high border border-white/15 hover:border-primary/50 transition-all">
+    <button id="btn-sync-header" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high border border-outline hover:border-primary/50 transition-all">
       <span id="mobile-sync-dot" class="w-2 h-2 rounded-full bg-outline"></span>
       <span id="mobile-sync-text" class="font-label-mono text-[10px] text-on-surface-variant font-medium">Offline</span>
     </button>
   </header>
 
   <!-- Mobile Screens Container -->
-  <main class="flex-1 overflow-y-auto min-h-0 relative">
+  <main id="mobile-main-scroll" class="flex-1 overflow-y-auto min-h-0 relative pb-24">
 
     <!-- ================= SCREEN 1: ACTIVE TASKS ================= -->
     <section id="screen-active-tasks" class="mobile-screen p-4 flex flex-col gap-3 min-h-full">
       <div class="flex items-center justify-between">
         <div class="flex flex-col">
-          <h2 class="font-headline-md text-headline-md text-white tracking-tight">Today's Tasks</h2>
+          <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Today's Tasks</h2>
           <span id="mobile-today-date" class="font-label-mono text-[11px] text-on-surface-variant">Today</span>
         </div>
         
@@ -215,17 +237,17 @@
               <span class="material-symbols-outlined text-[16px]" id="mobile-add-icon">add</span>
               <span id="mobile-add-text">Add Task</span>
             </button>
-            <button id="mobile-btn-add-dropdown" class="h-8 px-1.5 border-l border-white/20 flex items-center justify-center">
+            <button id="mobile-btn-add-dropdown" class="h-8 px-1.5 border-l border-white/25 flex items-center justify-center">
               <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
             </button>
           </div>
 
-          <div id="mobile-add-menu" class="hidden absolute right-0 top-10 w-44 bg-surface-container-highest shadow-2xl rounded-xl py-1 z-30 border border-white/15 flex flex-col">
-            <button id="mobile-opt-today" class="px-3 py-2 flex items-center gap-2 text-white active:bg-surface-bright text-left font-label-md text-label-md">
+          <div id="mobile-add-menu" class="hidden absolute right-0 top-10 w-44 bg-surface shadow-2xl rounded-xl py-1 z-30 border border-outline flex flex-col">
+            <button id="mobile-opt-today" class="px-3 py-2 flex items-center gap-2 text-on-surface active:bg-surface-container text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[16px] text-primary">today</span>
               <span>Add for Today</span>
             </button>
-            <button id="mobile-opt-tomorrow" class="px-3 py-2 flex items-center gap-2 text-white active:bg-surface-bright text-left font-label-md text-label-md">
+            <button id="mobile-opt-tomorrow" class="px-3 py-2 flex items-center gap-2 text-on-surface active:bg-surface-container text-left font-label-md text-label-md">
               <span class="material-symbols-outlined text-[16px] text-tertiary">event_upcoming</span>
               <span>Set for Tomorrow</span>
             </button>
@@ -234,14 +256,14 @@
       </div>
 
       <!-- Quick Add Form -->
-      <div id="mobile-quick-add-box" class="hidden bg-surface-container rounded-xl p-3 shadow-md border border-white/15 flex flex-col gap-2">
+      <div id="mobile-quick-add-box" class="hidden bg-surface-container rounded-xl p-3 shadow-sm border border-outline-variant flex flex-col gap-2">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[18px] text-primary">radio_button_unchecked</span>
-          <input id="mobile-quick-input" type="text" placeholder="Add a new task..." class="bg-transparent border-0 outline-none w-full text-white font-body-md placeholder:text-on-surface-variant/60"/>
+          <input id="mobile-quick-input" type="text" placeholder="Add a new task..." class="bg-transparent border-0 outline-none w-full text-on-surface font-body-md placeholder:text-on-surface-variant/60"/>
         </div>
-        <div class="flex items-center justify-between pt-1 border-t border-white/10">
+        <div class="flex items-center justify-between pt-1 border-t border-outline-variant">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <button id="mobile-btn-priority" class="h-6 px-2 rounded bg-error/20 text-error font-label-mono text-[10px] font-semibold flex items-center gap-1">
+            <button id="mobile-btn-priority" class="h-6 px-2 rounded bg-error-container text-error font-label-mono text-[10px] font-semibold flex items-center gap-1">
               <span id="mobile-priority-dot" class="w-1.5 h-1.5 rounded-full bg-error"></span>
               <span id="mobile-priority-label">Urgent</span>
             </button>
@@ -249,11 +271,11 @@
               <span class="material-symbols-outlined text-[12px]">sell</span>
               <span id="mobile-tag-label">Design</span>
             </button>
-            <button id="mobile-btn-add-tag" type="button" class="h-6 px-1.5 rounded bg-surface-container-high text-primary font-label-mono text-[10px] flex items-center gap-0.5">
+            <button id="mobile-btn-add-tag" type="button" class="h-6 px-1.5 rounded bg-surface-container-high text-primary font-label-mono text-[10px] flex items-center gap-0.5 border border-outline-variant">
               <span class="material-symbols-outlined text-[12px]">add</span>
               <span>New Tag</span>
             </button>
-            <span id="mobile-sched-badge" class="h-6 px-1.5 rounded bg-surface-container-highest text-on-surface-variant font-label-mono text-[9px] flex items-center">Today</span>
+            <span id="mobile-sched-badge" class="h-6 px-1.5 rounded bg-primary-container text-on-primary-container font-label-mono text-[9px] flex items-center">Today</span>
           </div>
           <button id="mobile-btn-submit" class="h-7 px-3 bg-primary text-white font-label-md text-label-md rounded-lg flex items-center gap-1 shadow-sm font-semibold active:scale-95 transition-all">
             <span>Save</span>
@@ -262,7 +284,7 @@
       </div>
 
       <!-- Tomorrow Prep Banner -->
-      <div id="mobile-tomorrow-banner" class="hidden px-3 py-1.5 bg-tertiary-container/20 rounded-lg border border-tertiary/20 flex items-center justify-between font-label-mono text-[11px] text-tertiary">
+      <div id="mobile-tomorrow-banner" class="hidden px-3 py-1.5 bg-primary-container/60 rounded-lg border border-primary/20 flex items-center justify-between font-label-mono text-[11px] text-on-primary-container">
         <span class="flex items-center gap-1">
           <span class="material-symbols-outlined text-[14px]">event_upcoming</span>
           <span id="mobile-tomorrow-count">0 tasks queued for tomorrow</span>
@@ -287,7 +309,7 @@
         <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
           <span class="material-symbols-outlined text-[28px]">post_add</span>
         </div>
-        <span class="font-headline-sm text-body-md text-white font-semibold">No tasks planned for today yet</span>
+        <span class="font-headline-sm text-body-md text-on-surface font-semibold">No tasks planned for today yet</span>
         <span class="font-body-sm text-body-sm text-on-surface-variant max-w-[260px]">Get your things together! Tap Add Task above to get started.</span>
         <button id="mobile-btn-empty-add" class="mt-2 px-4 py-1.5 rounded-lg bg-primary text-white font-label-md text-label-md font-semibold">
           Add Your First Task
@@ -296,10 +318,10 @@
 
       <!-- Empty State: All tasks completed -->
       <div id="mobile-empty-all-completed" class="hidden py-12 text-center flex flex-col items-center justify-center gap-2">
-        <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+        <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-primary">
           <span class="material-symbols-outlined text-[28px]">celebration</span>
         </div>
-        <span class="font-headline-sm text-body-md text-white font-semibold">All done for today! 🎉</span>
+        <span class="font-headline-sm text-body-md text-on-surface font-semibold">All done for today! 🎉</span>
         <span id="mobile-all-completed-text" class="font-body-sm text-body-sm text-on-surface-variant max-w-[260px]">You completed all your planned things today. Great job!</span>
       </div>
     </section>
@@ -308,13 +330,43 @@
     <section id="screen-repeated-tasks" class="mobile-screen hidden p-4 flex flex-col gap-3 min-h-full">
       <div class="flex items-center justify-between">
         <div class="flex flex-col">
-          <h2 class="font-headline-md text-headline-md text-white tracking-tight">Repeated Tasks</h2>
+          <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Repeated Tasks</h2>
           <span class="font-body-sm text-body-sm text-on-surface-variant">Daily habits that appear automatically each morning.</span>
         </div>
         <button id="mobile-btn-add-habit" type="button" class="h-7 px-2.5 rounded-lg bg-primary text-white font-label-md text-label-md font-semibold flex items-center gap-1 shrink-0">
-          <span class="material-symbols-outlined text-[14px]">add</span>
-          <span>New Habit</span>
+          <span id="mobile-add-habit-icon" class="material-symbols-outlined text-[14px]">add</span>
+          <span id="mobile-add-habit-text">Add Habit</span>
         </button>
+      </div>
+
+      <!-- Inline Habit Add / Edit Form (same flow as Add Task) -->
+      <div id="mobile-habit-add-box" class="hidden bg-surface-container rounded-xl p-3 shadow-sm border border-outline-variant flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-primary">event_repeat</span>
+          <input id="mobile-habit-title" type="text" placeholder="Add a daily habit..." class="bg-transparent border-0 outline-none w-full text-on-surface font-body-md placeholder:text-on-surface-variant/60"/>
+        </div>
+        <div class="flex items-center justify-between pt-1 border-t border-outline-variant">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button id="mobile-habit-priority" class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] font-semibold flex items-center gap-1">
+              <span id="mobile-habit-priority-dot" class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+              <span id="mobile-habit-priority-label">Medium</span>
+            </button>
+            <label class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px]">schedule</span>
+              <input id="mobile-habit-time" type="time" value="09:00" class="bg-transparent border-0 outline-none text-[10px] text-on-surface-variant w-[72px]"/>
+            </label>
+            <button id="mobile-habit-tag" class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px]">sell</span>
+              <span id="mobile-habit-tag-label">Daily</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="mobile-btn-cancel-habit" type="button" class="px-2 py-1 rounded-lg text-on-surface-variant text-[11px] font-medium">Cancel</button>
+            <button id="mobile-btn-save-habit" type="button" class="h-7 px-3 bg-primary text-white font-label-md text-label-md rounded-lg flex items-center gap-1 shadow-sm font-semibold active:scale-95 transition-all">
+              <span id="mobile-save-habit-text">Save Habit</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div id="mobile-repeated-list" class="flex flex-col gap-2 pb-6">
@@ -322,23 +374,23 @@
       </div>
     </section>
 
-    <!-- ================= SCREEN 3: COMPLETED HISTORY (NO NOTIFICATION BADGE) ================= -->
+    <!-- ================= SCREEN 3: COMPLETED HISTORY ================= -->
     <section id="screen-completed-history" class="mobile-screen hidden p-4 flex flex-col gap-3 min-h-full">
       <div class="flex items-center justify-between">
-        <h2 class="font-headline-md text-headline-md text-white tracking-tight">Completed Log</h2>
-        <span id="mobile-history-count" class="px-2 py-0.5 rounded-full bg-primary/20 text-primary font-label-mono text-[11px] font-semibold">
+        <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Completed Log</h2>
+        <span id="mobile-history-count" class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-mono text-[11px] font-semibold">
           0 Finished
         </span>
       </div>
 
       <!-- Search Input -->
-      <div class="flex items-center bg-surface-container rounded-xl px-3 py-2 border border-white/10 shadow-sm">
+      <div class="flex items-center bg-surface-container rounded-xl px-3 py-2 border border-outline-variant shadow-sm">
         <span class="material-symbols-outlined text-[16px] text-on-surface-variant mr-2">search</span>
-        <input id="mobile-history-search" type="text" placeholder="Search completed tasks..." class="bg-transparent border-0 outline-none w-full text-white font-body-sm placeholder:text-on-surface-variant/60"/>
+        <input id="mobile-history-search" type="text" placeholder="Search completed tasks..." class="bg-transparent border-0 outline-none w-full text-on-surface font-body-sm placeholder:text-on-surface-variant/60"/>
       </div>
 
-      <!-- Completed List -->
-      <div id="mobile-history-list" class="flex flex-col gap-2 pb-6">
+      <!-- Completed List (grouped) -->
+      <div id="mobile-history-list" class="flex flex-col gap-4 pb-6">
         <!-- Rendered via JS -->
       </div>
     </section>
@@ -346,59 +398,53 @@
     <!-- ================= SCREEN 4: THEMES (LOCAL TO PHONE) ================= -->
     <section id="screen-themes" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full">
       <div>
-        <h2 class="font-headline-md text-headline-md text-white tracking-tight">Theme Palette</h2>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Main theme is Black, White, and Blue #0381FC.</span>
+        <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Theme Palette</h2>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Pick an accent colour below. Themes are local to this device.</span>
       </div>
 
-      <!-- Color Palettes Grid (Zero Purple!) -->
+      <!-- Color Palettes -->
       <div class="grid grid-cols-1 gap-2.5" id="mobile-theme-list">
-        <!-- Preset 1: Electric Blue -->
         <button data-preset="cobalt" class="mobile-preset-btn p-3 rounded-xl bg-surface-container flex items-center justify-between border border-primary">
           <div class="flex items-center gap-3">
             <span class="w-4 h-4 rounded-full bg-[#0381FC]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Electric Blue (#0381FC)</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Electric Blue</span>
           </div>
           <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
         </button>
-        <!-- Preset 2: Emerald Botanical -->
         <button data-preset="emerald" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <span class="w-4 h-4 rounded-full bg-[#10b981]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Emerald Forest</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Emerald Forest</span>
           </div>
-          <span class="material-symbols-outlined text-secondary text-[20px] hidden">check_circle</span>
+          <span class="material-symbols-outlined text-primary text-[20px] hidden">check_circle</span>
         </button>
-        <!-- Preset 3: Sunset Amber -->
         <button data-preset="amber" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <span class="w-4 h-4 rounded-full bg-[#f59e0b]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Amber Gold</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Amber Gold</span>
           </div>
-          <span class="material-symbols-outlined text-tertiary text-[20px] hidden">check_circle</span>
+          <span class="material-symbols-outlined text-primary text-[20px] hidden">check_circle</span>
         </button>
-        <!-- Preset 4: Crimson Coral -->
         <button data-preset="coral" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <span class="w-4 h-4 rounded-full bg-[#f43f5e]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Coral Flame</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Coral Flame</span>
           </div>
-          <span class="material-symbols-outlined text-error text-[20px] hidden">check_circle</span>
+          <span class="material-symbols-outlined text-primary text-[20px] hidden">check_circle</span>
         </button>
-        <!-- Preset 5: Obsidian Slate -->
         <button data-preset="obsidian" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
-            <span class="w-4 h-4 rounded-full bg-[#94a3b8]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Obsidian Slate</span>
+            <span class="w-4 h-4 rounded-full bg-[#475569]"></span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Obsidian Slate</span>
           </div>
-          <span class="material-symbols-outlined text-on-surface text-[20px] hidden">check_circle</span>
+          <span class="material-symbols-outlined text-primary text-[20px] hidden">check_circle</span>
         </button>
-        <!-- Preset 6: Arctic Cyan -->
         <button data-preset="arctic" class="mobile-preset-btn p-3 rounded-xl bg-surface-container/60 flex items-center justify-between border border-transparent">
           <div class="flex items-center gap-3">
             <span class="w-4 h-4 rounded-full bg-[#06b6d4]"></span>
-            <span class="font-headline-sm text-body-md text-white font-semibold">Arctic Cyan</span>
+            <span class="font-headline-sm text-body-md text-on-surface font-semibold">Arctic Cyan</span>
           </div>
-          <span class="material-symbols-outlined text-secondary-fixed text-[20px] hidden">check_circle</span>
+          <span class="material-symbols-outlined text-primary text-[20px] hidden">check_circle</span>
         </button>
       </div>
     </section>
@@ -406,26 +452,26 @@
     <!-- ================= SCREEN 5: DESKTOP DIRECT SYNC ================= -->
     <section id="screen-sync" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full">
       <div>
-        <h2 class="font-headline-md text-headline-md text-white tracking-tight">Desktop Direct Sync</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Desktop Direct Sync</h2>
         <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
           Connects peer-to-peer over your local Wi-Fi router or phone mobile hotspot. Everything stays strictly on your local devices — zero cloud dependency.
         </p>
       </div>
 
       <!-- Real-Time Status Card -->
-      <div class="bg-surface-container rounded-2xl p-4 flex items-center justify-between border border-white/10">
+      <div class="bg-surface-container rounded-2xl p-4 flex items-center justify-between border border-outline-variant">
         <div class="flex flex-col">
           <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Sync State</span>
-          <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-white font-semibold">Disconnected</span>
+          <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-on-surface font-semibold">Disconnected</span>
         </div>
-        <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-white font-label-mono text-[11px] font-semibold">
+        <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold">
           Reconnect
         </button>
       </div>
 
       <!-- Camera Scanner Card -->
-      <div class="bg-surface-container rounded-2xl p-4 flex flex-col items-center gap-3 border border-white/10 shadow-md">
-        <div id="qr-reader" class="w-full max-w-[280px] h-[220px] bg-black rounded-xl overflow-hidden flex flex-col items-center justify-center border border-white/15 relative">
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col items-center gap-3 border border-outline-variant shadow-sm">
+        <div id="qr-reader" class="w-full max-w-[280px] h-[220px] bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col items-center justify-center border border-outline relative">
           <span class="material-symbols-outlined text-[48px] text-on-surface-variant mb-2">qr_code_scanner</span>
           <span class="font-label-mono text-[11px] text-on-surface-variant text-center px-4">
             Point camera at the desktop widget QR code
@@ -439,11 +485,11 @@
       </div>
 
       <!-- Manual Connection Fallback -->
-      <div class="bg-surface-container/60 rounded-2xl p-4 flex flex-col gap-3 border border-white/10">
+      <div class="bg-surface-container/60 rounded-2xl p-4 flex flex-col gap-3 border border-outline-variant">
         <span class="font-label-mono text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">Manual Desktop IP Connect</span>
         <div class="flex items-center gap-2">
-          <input id="manual-ip-input" type="text" placeholder="192.168.1.100:48721" class="flex-1 bg-black rounded-lg px-3 py-2 text-white font-label-mono text-[12px] border border-white/15 outline-none focus:border-primary"/>
-          <button id="btn-manual-connect" class="h-9 px-3 rounded-lg bg-surface-container-highest active:bg-surface-bright text-white font-label-md text-label-md font-semibold shrink-0">
+          <input id="manual-ip-input" type="text" placeholder="192.168.1.100:48721" class="flex-1 bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
+          <button id="btn-manual-connect" class="h-9 px-3 rounded-lg bg-primary text-white font-label-md text-label-md font-semibold shrink-0">
             Connect
           </button>
         </div>
@@ -453,12 +499,12 @@
     <!-- ================= SCREEN 6: HELP & LEGAL ================= -->
     <section id="screen-legal" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full pb-8">
       <div>
-        <h2 class="font-headline-md text-headline-md text-white tracking-tight">Help & Legal</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Help & Legal</h2>
         <span class="font-body-sm text-body-sm text-on-surface-variant">Documentation, pairing guides, and local privacy terms.</span>
       </div>
 
       <!-- Pairing Guide -->
-      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-white/10">
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
         <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">help_outline</span>
           <span>How to Pair & Sync</span>
@@ -471,8 +517,8 @@
       </div>
 
       <!-- Privacy Policy -->
-      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-white/10">
-        <span class="font-headline-sm text-body-md text-secondary font-semibold flex items-center gap-1.5">
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
+        <span class="font-headline-sm text-body-md text-primary font-semibold flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">verified_user</span>
           <span>Privacy Policy (100% Local-First)</span>
         </span>
@@ -487,8 +533,8 @@
       </div>
 
       <!-- Terms of Use -->
-      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-white/10">
-        <span class="font-headline-sm text-body-md text-tertiary font-semibold flex items-center gap-1.5">
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-2 border border-outline-variant">
+        <span class="font-headline-sm text-body-md text-on-surface font-semibold flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">gavel</span>
           <span>Terms of Use</span>
         </span>
@@ -500,74 +546,94 @@
   </main>
 
   <!-- Mobile New Tag Modal -->
-  <div id="mobile-new-tag-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-    <div class="bg-surface-container-high border border-white/20 rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
+  <div id="mobile-new-tag-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+    <div class="bg-surface border border-outline rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
       <div class="flex items-center justify-between">
-        <span class="font-headline-sm text-[14px] text-white font-semibold">New Tag</span>
-        <button id="mobile-btn-close-tag-modal" type="button" class="text-on-surface-variant hover:text-white p-1">
+        <span class="font-headline-sm text-[14px] text-on-surface font-semibold">New Tag</span>
+        <button id="mobile-btn-close-tag-modal" type="button" class="text-on-surface-variant hover:text-on-surface p-1">
           <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
-      <input id="mobile-input-new-tag" type="text" placeholder="Tag name (e.g. Finance)..." maxlength="20" class="w-full px-3 py-2 bg-black text-white text-[13px] rounded-lg border border-white/20 focus:border-primary focus:outline-none" />
+      <input id="mobile-input-new-tag" type="text" placeholder="Tag name (e.g. Finance)..." maxlength="20" class="w-full px-3 py-2 bg-surface-container-lowest text-on-surface text-[13px] rounded-lg border border-outline focus:border-primary focus:outline-none" />
       <div class="flex items-center justify-end gap-2 pt-1">
-        <button id="mobile-btn-cancel-tag-modal" type="button" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white text-[12px] font-medium">Cancel</button>
+        <button id="mobile-btn-cancel-tag-modal" type="button" class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-[12px] font-medium">Cancel</button>
         <button id="mobile-btn-save-new-tag" type="button" class="px-4 py-1.5 rounded-lg bg-primary text-white font-semibold text-[12px] active:scale-95 transition-all">Save Tag</button>
       </div>
     </div>
   </div>
 
-  <!-- Mobile New Habit Modal -->
-  <div id="mobile-new-habit-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-    <div class="bg-surface-container-high border border-white/20 rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
+  <!-- Mobile Edit Task Modal (same visual language as the Add Task form) -->
+  <div id="mobile-task-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+    <div class="bg-surface border border-outline rounded-2xl p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl">
       <div class="flex items-center justify-between">
-        <span class="font-headline-sm text-[14px] text-white font-semibold">New Daily Recurring Habit</span>
-        <button id="mobile-btn-close-habit-modal" type="button" class="text-on-surface-variant hover:text-white p-1">
+        <span id="mobile-task-modal-title" class="font-headline-sm text-[14px] text-on-surface font-semibold">Edit Task</span>
+        <button id="mobile-btn-close-task-modal" type="button" class="text-on-surface-variant hover:text-on-surface p-1">
           <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
-      <input id="mobile-input-new-habit" type="text" placeholder="Habit name (e.g. Daily Standup)..." class="w-full px-3 py-2 bg-black text-white text-[13px] rounded-lg border border-white/20 focus:border-primary focus:outline-none" />
-      <div class="flex items-center justify-end gap-2 pt-1">
-        <button id="mobile-btn-cancel-habit-modal" type="button" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white text-[12px] font-medium">Cancel</button>
-        <button id="mobile-btn-save-new-habit" type="button" class="px-4 py-1.5 rounded-lg bg-primary text-white font-semibold text-[12px] active:scale-95 transition-all">Save Habit</button>
+
+      <div class="flex items-center gap-2 bg-surface-container rounded-lg px-3 py-2 border border-outline-variant">
+        <span class="material-symbols-outlined text-[18px] text-primary">radio_button_unchecked</span>
+        <input id="mobile-edit-task-title" type="text" placeholder="Task title..." class="bg-transparent border-0 outline-none w-full text-on-surface font-body-md placeholder:text-on-surface-variant/60"/>
+      </div>
+
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="mobile-edit-priority" class="h-6 px-2 rounded bg-error-container text-error font-label-mono text-[10px] font-semibold flex items-center gap-1">
+          <span id="mobile-edit-priority-dot" class="w-1.5 h-1.5 rounded-full bg-error"></span>
+          <span id="mobile-edit-priority-label">Urgent</span>
+        </button>
+        <label class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">schedule</span>
+          <input id="mobile-edit-time" type="time" class="bg-transparent border-0 outline-none text-[10px] text-on-surface-variant w-[72px]"/>
+        </label>
+        <button id="mobile-edit-tag" class="h-6 px-2 rounded bg-surface-container-high text-on-surface-variant font-label-mono text-[10px] flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">sell</span>
+          <span id="mobile-edit-tag-label">Design</span>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-1 border-t border-outline-variant">
+        <button id="mobile-btn-cancel-task-modal" type="button" class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-[12px] font-medium">Cancel</button>
+        <button id="mobile-btn-save-task-edit" type="button" class="px-4 py-1.5 rounded-lg bg-primary text-white font-semibold text-[12px] active:scale-95 transition-all">Save Task</button>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Navigation Bar (5 tabs) -->
-  <nav class="h-16 bg-black border-t border-white/10 flex items-center justify-around px-2 z-20 shrink-0">
+  <!-- Bottom Navigation Bar (5 tabs) — fixed so it never disappears -->
+  <nav class="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-outline-variant flex items-center justify-around px-2 z-40 shrink-0" style="padding-bottom: env(safe-area-inset-bottom);">
     <!-- Active Tasks Tab (With real-time pending badge) -->
     <button data-target="active-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-primary py-1 px-2.5 relative">
       <span class="material-symbols-outlined text-[20px]">checklist</span>
       <span class="font-label-mono text-[9px]">Today</span>
-      <span id="mobile-nav-pending-badge" class="absolute -top-0.5 right-1.5 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-white text-black font-label-mono text-[9px] font-bold leading-none">4</span>
+      <span id="mobile-nav-pending-badge" class="absolute -top-0.5 right-1.5 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-primary text-white font-label-mono text-[9px] font-bold leading-none">4</span>
     </button>
     
     <!-- Repeated Habits Tab -->
-    <button data-target="repeated-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-white py-1 px-2.5">
+    <button data-target="repeated-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
       <span class="material-symbols-outlined text-[20px]">event_repeat</span>
       <span class="font-label-mono text-[9px]">Habits</span>
     </button>
 
     <!-- History Tab (NO BADGE) -->
-    <button data-target="completed-history" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-white py-1 px-2.5">
+    <button data-target="completed-history" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
       <span class="material-symbols-outlined text-[20px]">done_all</span>
       <span class="font-label-mono text-[9px]">History</span>
     </button>
     
     <!-- Themes Tab -->
-    <button data-target="themes" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-white py-1 px-2.5">
+    <button data-target="themes" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
       <span class="material-symbols-outlined text-[20px]">palette</span>
       <span class="font-label-mono text-[9px]">Themes</span>
     </button>
     
     <!-- Sync Tab -->
-    <button data-target="sync" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-white py-1 px-2.5">
+    <button data-target="sync" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
       <span class="material-symbols-outlined text-[20px]">devices</span>
       <span class="font-label-mono text-[9px]">Sync</span>
     </button>
 
     <!-- Help & Legal Tab -->
-    <button data-target="legal" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-white py-1 px-2.5">
+    <button data-target="legal" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
       <span class="material-symbols-outlined text-[20px]">help</span>
       <span class="font-label-mono text-[9px]">Help</span>
     </button>

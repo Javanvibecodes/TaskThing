@@ -10,7 +10,6 @@ let tray = null;
 let store = null;
 let syncServer = null;
 let isPinned = false;
-let isCompact = false;
 
 // Discover all non-internal IPv4 LAN & Hotspot network interfaces
 function getAllLocalIpAddresses() {
@@ -207,14 +206,6 @@ function createTray() {
       }
     },
     {
-      label: 'Compact Mode',
-      type: 'checkbox',
-      checked: isCompact,
-      click: (menuItem) => {
-        toggleCompactMode(menuItem.checked);
-      }
-    },
-    {
       label: 'Always On Top',
       type: 'checkbox',
       checked: isPinned,
@@ -253,20 +244,6 @@ function createTray() {
   });
 }
 
-function toggleCompactMode(forceState) {
-  isCompact = typeof forceState === 'boolean' ? forceState : !isCompact;
-  if (isCompact) {
-    mainWindow.setMinimumSize(320, 68);
-    mainWindow.setSize(340, 68);
-    mainWindow.setResizable(false);
-  } else {
-    mainWindow.setMinimumSize(360, 480);
-    mainWindow.setSize(440, 600);
-    mainWindow.setResizable(true);
-  }
-  return isCompact;
-}
-
 // IPC Handlers
 ipcMain.on('window:minimize', () => {
   if (mainWindow) mainWindow.minimize();
@@ -281,10 +258,6 @@ ipcMain.handle('window:togglePin', () => {
   isPinned = !isPinned;
   mainWindow.setAlwaysOnTop(isPinned);
   return isPinned;
-});
-
-ipcMain.handle('window:toggleCompact', () => {
-  return toggleCompactMode();
 });
 
 ipcMain.handle('system:getPlatform', () => {
@@ -354,8 +327,8 @@ ipcMain.handle('sync:generatePairingQR', async () => {
     const qrDataUrl = await QRCode.toDataURL(payload, {
       margin: 1,
       color: {
-        dark: '#dae2fd',
-        light: '#131b2e'
+        dark: '#0B0C10',
+        light: '#FFFFFF'
       },
       width: 180
     });

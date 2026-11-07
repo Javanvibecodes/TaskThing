@@ -6,7 +6,6 @@ contextBridge.exposeInMainWorld('tasksAPI', {
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   closeWindow: () => ipcRenderer.send('window:close'),
   togglePin: () => ipcRenderer.invoke('window:togglePin'),
-  toggleCompact: () => ipcRenderer.invoke('window:toggleCompact'),
   
   // Storage
   loadData: () => ipcRenderer.invoke('storage:loadData'),

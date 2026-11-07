@@ -7,10 +7,10 @@
     "cleartext": true
   },
   "android": {
-    "backgroundColor": "#0b1326"
+    "backgroundColor": "#000000"
   },
   "ios": {
-    "backgroundColor": "#0b1326",
+    "backgroundColor": "#000000",
     "contentInset": "always"
   }
 }

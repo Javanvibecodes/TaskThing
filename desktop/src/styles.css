@@ -1,154 +1,121 @@
-/* Task Thing — Design Tokens & 60/30/10 Theme System
- * Main Theme: Black canvas, White typography, Blue #0381FC accent
- * (ZERO PURPLE)
+/* Task Thing — Design Tokens
+ * Palette: white + light neutral surfaces, near-black type,
+ * accent blue #0381FC (or the selected preset).
+ * Every preset keeps the white/black base and only changes the accent.
+ * Token values are RGB channels so Tailwind opacity modifiers work.
  */
 
-:root, body[data-theme="cobalt"], body[data-theme="electric"] {
-  --primary: #0381FC;
-  --on-primary: #ffffff;
-  --primary-container: rgba(3, 129, 252, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #38bdf8;
-  --on-secondary: #000000;
-  --secondary-container: rgba(3, 129, 252, 0.12);
-  --tertiary: #60a5fa;
-  --on-tertiary: #000000;
-  --tertiary-container: #1d4ed8;
-  --tertiary-fixed-dim: #93c5fd;
+:root {
+  --surface: 255 255 255;
+  --surface-container: 244 246 250;
+  --surface-container-low: 247 249 252;
+  --surface-container-lowest: 255 255 255;
+  --surface-container-high: 232 237 245;
+  --surface-container-highest: 220 227 238;
+  --surface-bright: 234 240 249;
+  --surface-variant: 241 244 249;
+  --on-surface: 10 12 16;
+  --on-surface-variant: 90 100 114;
+  --outline: 199 208 220;
+  --outline-variant: 226 232 240;
+  --error: 220 38 38;
+  --error-container: 254 226 226;
+  --on-error: 255 255 255;
+}
 
-  --surface-bg: #000000;
-  --surface-low: #080b11;
-  --surface-card: #0f141f;
-  --surface-high: #171f2f;
-  --surface-highest: #202a3f;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+:root, body[data-theme="cobalt"], body[data-theme="blackblue"], body[data-theme="electric"] {
+  --primary: 3 129 252;
+  --on-primary: 255 255 255;
+  --primary-container: 219 234 254;
+  --on-primary-container: 7 58 128;
+  --secondary: 37 99 235;
+  --on-secondary: 255 255 255;
+  --secondary-container: 219 234 254;
+  --on-secondary-container: 7 58 128;
+  --tertiary: 96 165 250;
+  --on-tertiary: 9 30 66;
+  --tertiary-container: 191 219 254;
+  --tertiary-fixed-dim: 147 197 253;
 }
 
 body[data-theme="emerald"] {
-  --primary: #10b981;
-  --on-primary: #ffffff;
-  --primary-container: rgba(16, 185, 129, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #34d399;
-  --on-secondary: #000000;
-  --secondary-container: rgba(16, 185, 129, 0.12);
-  --tertiary: #06b6d4;
-  --on-tertiary: #000000;
-  --tertiary-container: #0e7490;
-  --tertiary-fixed-dim: #67e8f9;
-
-  --surface-bg: #000000;
-  --surface-low: #060e0a;
-  --surface-card: #0d1a14;
-  --surface-high: #15261e;
-  --surface-highest: #1e352b;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+  --primary: 16 185 129;
+  --on-primary: 255 255 255;
+  --primary-container: 209 250 229;
+  --on-primary-container: 6 78 59;
+  --secondary: 5 150 105;
+  --on-secondary: 255 255 255;
+  --secondary-container: 209 250 229;
+  --on-secondary-container: 6 78 59;
+  --tertiary: 20 184 166;
+  --on-tertiary: 4 47 46;
+  --tertiary-container: 204 251 241;
+  --tertiary-fixed-dim: 153 246 228;
 }
 
 body[data-theme="amber"] {
-  --primary: #f59e0b;
-  --on-primary: #000000;
-  --primary-container: rgba(245, 158, 11, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #fbbf24;
-  --on-secondary: #000000;
-  --secondary-container: rgba(245, 158, 11, 0.12);
-  --tertiary: #38bdf8;
-  --on-tertiary: #000000;
-  --tertiary-container: #0369a1;
-  --tertiary-fixed-dim: #7dd3fc;
-
-  --surface-bg: #000000;
-  --surface-low: #0f0c05;
-  --surface-card: #1c160b;
-  --surface-high: #292212;
-  --surface-highest: #382f1b;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+  --primary: 245 158 11;
+  --on-primary: 69 26 3;
+  --primary-container: 254 243 199;
+  --on-primary-container: 120 53 15;
+  --secondary: 217 119 6;
+  --on-secondary: 255 255 255;
+  --secondary-container: 254 243 199;
+  --on-secondary-container: 120 53 15;
+  --tertiary: 251 191 36;
+  --on-tertiary: 69 26 3;
+  --tertiary-container: 253 230 138;
+  --tertiary-fixed-dim: 252 211 77;
 }
 
 body[data-theme="coral"] {
-  --primary: #f43f5e;
-  --on-primary: #ffffff;
-  --primary-container: rgba(244, 63, 94, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #fb7185;
-  --on-secondary: #000000;
-  --secondary-container: rgba(244, 63, 94, 0.12);
-  --tertiary: #f59e0b;
-  --on-tertiary: #000000;
-  --tertiary-container: #b45309;
-  --tertiary-fixed-dim: #fde047;
-
-  --surface-bg: #000000;
-  --surface-low: #100608;
-  --surface-card: #1f0c10;
-  --surface-high: #2e141a;
-  --surface-highest: #3e1d24;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+  --primary: 244 63 94;
+  --on-primary: 255 255 255;
+  --primary-container: 255 228 230;
+  --on-primary-container: 136 19 55;
+  --secondary: 225 29 72;
+  --on-secondary: 255 255 255;
+  --secondary-container: 255 228 230;
+  --on-secondary-container: 136 19 55;
+  --tertiary: 251 113 133;
+  --on-tertiary: 76 5 25;
+  --tertiary-container: 254 205 211;
+  --tertiary-fixed-dim: 253 164 175;
 }
 
 body[data-theme="obsidian"] {
-  --primary: #94a3b8;
-  --on-primary: #000000;
-  --primary-container: rgba(148, 163, 184, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #cbd5e1;
-  --on-secondary: #000000;
-  --secondary-container: rgba(148, 163, 184, 0.12);
-  --tertiary: #64748b;
-  --on-tertiary: #ffffff;
-  --tertiary-container: #334155;
-  --tertiary-fixed-dim: #cbd5e1;
-
-  --surface-bg: #000000;
-  --surface-low: #0a0a0a;
-  --surface-card: #141414;
-  --surface-high: #1f1f1f;
-  --surface-highest: #2b2b2b;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+  --primary: 71 85 105;
+  --on-primary: 255 255 255;
+  --primary-container: 226 232 240;
+  --on-primary-container: 15 23 42;
+  --secondary: 51 65 85;
+  --on-secondary: 255 255 255;
+  --secondary-container: 226 232 240;
+  --on-secondary-container: 15 23 42;
+  --tertiary: 100 116 139;
+  --on-tertiary: 255 255 255;
+  --tertiary-container: 203 213 225;
+  --tertiary-fixed-dim: 148 163 184;
 }
 
 body[data-theme="arctic"] {
-  --primary: #06b6d4;
-  --on-primary: #000000;
-  --primary-container: rgba(6, 182, 212, 0.22);
-  --on-primary-container: #ffffff;
-  --secondary: #22d3ee;
-  --on-secondary: #000000;
-  --secondary-container: rgba(6, 182, 212, 0.12);
-  --tertiary: #38bdf8;
-  --on-tertiary: #000000;
-  --tertiary-container: #0369a1;
-  --tertiary-fixed-dim: #7dd3fc;
-
-  --surface-bg: #000000;
-  --surface-low: #040d10;
-  --surface-card: #09171d;
-  --surface-high: #10242d;
-  --surface-highest: #18333f;
-  --on-surface: #ffffff;
-  --on-surface-variant: #94a3b8;
-  --outline: #334155;
-  --outline-variant: rgba(255, 255, 255, 0.12);
+  --primary: 6 182 212;
+  --on-primary: 8 47 73;
+  --primary-container: 207 250 254;
+  --on-primary-container: 8 51 68;
+  --secondary: 8 145 178;
+  --on-secondary: 255 255 255;
+  --secondary-container: 207 250 254;
+  --on-secondary-container: 8 51 68;
+  --tertiary: 56 189 248;
+  --on-tertiary: 8 47 73;
+  --tertiary-container: 224 242 254;
+  --tertiary-fixed-dim: 125 211 252;
 }
 
 /* Electron Window Draggable Header */
-.app-drag-region {
+.app-drag-region,
+.titlebar-drag {
   -webkit-app-region: drag;
   user-select: none;
 }
@@ -192,7 +159,7 @@ body[data-theme="arctic"] {
   content: '';
 }
 
-/* Glow Keyframes for Logo */
+/* Glow Keyframes for the launch logo */
 @keyframes splashGlow {
   0%, 100% {
     box-shadow: 0 0 15px rgba(3, 129, 252, 0.3);
