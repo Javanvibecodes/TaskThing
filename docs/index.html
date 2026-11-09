@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Thing — Minimal Desktop Widget & Mobile Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0381FC',
+                        surface: '#FFFFFF',
+                        onSurface: '#0A0C10',
+                        onSurfaceVariant: '#5A6472',
+                        outline: '#C7D0DC',
+                        success: '#10B981',
+                        warning: '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { backdrop-filter: blur(8px); background: rgba(255,255,255,0.6); border-radius: 12px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <span class="material-symbols-outlined text-[22px]">bolt</span>
+                </div>
+                <span class="font-bold text-xl tracking-tight">Task Thing</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-4 text-sm font-medium text-slate-500">
+                <a href="#apps" class="hover:text-primary transition-colors">Apps</a>
+                <a href="#features" class="hover:text-primary transition-colors">Features</a>
+                <a href="#sync" class="hover:text-primary transition-colors">Connect Phone & PC</a>
+                <a href="https://github.com/your-org/task-thing" target="_blank" class="text-primary font-semibold hover:text-primary/90 transition-colors flex items-center gap-1">
+                    GitHub <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-6">
+            v1.0.0 — Stable Release
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight max-w-2xl mb-6">
+            Keep your tasks at your fingertips.
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400 leading-relaxed max-w-xl mb-8">
+            A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over your local Wi‑Fi — no cloud, no third‑party servers.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="#downloads" class="px-6 py-3 rounded-xl bg-primary text-white text-center font-medium text-sm hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">download</span> Download Apps
+            </a>
+            <a href="#sync" class="px-6 py-3 rounded-xl border border-primary text-primary text-center font-medium text-sm hover:bg-primary/5 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span> How Pairing Works
+            </a>
+        </div>
+    </section>
+
+    <!-- Downloads -->
+    <section id="apps" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight mb-3">Direct App Downloads</h2>
+                <p class="text-slate-400">Pick the build for your operating system — no signup, no waiting.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Windows -->
+                <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[26px]">window</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">Windows (.exe)</h3>
+                        <p class="text-sm text-slate-500 mb-4">Windows 10 & 11 (64‑bit) standalone installer.</p>
+                    </div>
+                    <a href="https://github.com/your-org/task-thing/releases/latest/download/Task-Thing-Setup.exe" class="w-full py-2.5 rounded-xl bg-primary text-white text-center font-medium text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">download</span> Download for Windows
+                    </a>
+                </div>
+
+                <!-- macOS -->
+                <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[26px]">laptop_mac</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">macOS (.dmg)</h3>
+                        <p class="text-sm text-slate-400 mb-6">Universal binary — Apple Silicon (M1/M2/M3) and Intel.</p>
+                    </div>
+                    <a href="https://github.com/your-org/task-thing/releases/latest/download/Task-Thing.dmg" class="w-full py-2.5 rounded-xl bg-slate-200 border border-slate-300 text-slate-600 text-center font-medium text-sm hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">download</span> Download for macOS
+                    </a>
+                </div>
+
+                <!-- Android -->
+                <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500 text-emerald-600 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[26px]">phone_android</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-1">Android APK</h3>
+                        <p class="text-sm text-slate-400 mb-6">Android 6.0+ native companion app (Capacitor). Instant logo splash on launch.</p>
+                    </div>
+                    <a href="https://github.com/your-org/task-thing/releases/latest/download/app-debug.apk" class="w-full py-2.5 rounded-xl bg-primary text-white text-center font-medium text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">download</span> Download Android APK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works / Sync -->
+    <section id="sync" class="py-20 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-primary font-semibold text-sm uppercase tracking-wider">Seamless Connection</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mt-2 mb-3">How PC & Phone Sync Works</h2>
+                <p class="text-slate-400 max-w-lg mx-auto">
+                    Task Thing runs a local WebSocket sync server on your PC (port <strong>44751</strong>). No cloud accounts, no third‑party servers — your data stays on your local network.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Phone Side -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-3">On Your Phone (Android)</h3>
+                    <ol class="list-decimal list-inside space-y-3 text-slate-600">
+                        <li>Open Task Thing from your app drawer.</li>
+                        <br />
+                        <li>Tap the <strong>Sync</strong> tab at the bottom.</li>
+                        <br />
+                        <li>Point your camera at the PC screen QR code — the scanner auto‑detects the pairing payload with <em>no extra framing</em>.</li>
+                        <br />
+                        <li>Or tap <strong>Manual IP</strong> and enter your PC's local IP (e.g. <code>192.168.1.50</code>) plus port <code>44751</code>.</li>
+                        <br />
+                        <li>The header pill turns <span class="text-primary font-medium">green</span> when the live connection is active.</li>
+                    </ol>
+                </div>
+
+                <!-- PC Side -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-3">On Your PC (Desktop Widget)</h3>
+                    <ol class="list-decimal list-inside space-y-3 text-slate-600">
+                        <li>Launch Task Thing on Windows or macOS.</li>
+                        <br />
+                        <li>Click the <strong>Sync</strong> tab in the navigation bar.</li>
+                        <br />
+                        <li>A QR code with your PC's IP, port <strong>44751</strong>, and secure sync token is generated instantly.</li>
+                        <br />
+                        <li>Share the QR code with your phone, or click <strong>Copy IP</strong> to paste it manually into the mobile app.</li>
+                        <br />
+                        <li>The local WebSocket server starts automatically — no installation required beyond the desktop widget.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-16">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass rounded-xl p-5">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-[28px]">task_alt</span>
+                    </div>
+                    <h3 class="font-bold mb-1">Daily Tasks</h3>
+                    <p class="text-slate-400 text-sm">Add, edit, prioritize, and check off tasks — syncs instantly to phone.</p>
+                </div>
+                <div class="glass rounded-xl p-5">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500 text-emerald-600 flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-[28px]">repeat</span>
+                    </div>
+                    <h3 class="font-bold mb-1">Recurring Habits</h3>
+                    <p class="text-slate-400 text-sm">Set it-and-forget-it habits (daily, weekly) that auto‑appear each morning.</p>
+                </div>
+                <div class="glass rounded-xl p-5">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500 text-purple-100 flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-[28px]">sync</span>
+                    </div>
+                    <h3 class="font-bold mb-1">Real‑Time Sync</h3>
+                    <p class="text-slate-400 text-sm">Every change on either device propagates to the other over Wi‑Fi in under a second.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+                <p>&copy; 2026 Task Thing. Open Source under the MIT License.</p>
+                <div class="flex items-center gap-4">
+                    <a href="https://github.com/your-org/task-thing" target="_blank" class="hover:text-primary transition-colors text-sm">GitHub Repository</a>
+                    <a href="https://github.com/your-org/task-thing/releases" target="_blank" class="hover:text-primary transition-colors text-sm">Releases & Changelog</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

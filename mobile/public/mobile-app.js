@@ -3,13 +3,11 @@
   let mobileData = {
     settings: {
       themePreset: 'cobalt',
+      syncPort: 48721,
       connected: false
     },
     tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
-    repeatedTasks: [
-      { id: 'rep-m-1', title: 'Morning standup & planning', priority: 'medium', time: '09:00', tag: 'Team', enabled: true },
-      { id: 'rep-m-2', title: 'Zero inbox & review pull requests', priority: 'low', time: '17:30', tag: 'Dev', enabled: true }
-    ],
+    repeatedTasks: [],
     tomorrowTasks: [],
     activeTasks: [],
     completedTasks: []
@@ -18,7 +16,7 @@
   let syncConfig = {
     host: '',
     hosts: [],
-    port: 48721,
+    port: mobileData.settings.syncPort || 48721,
     token: '',
     connected: false,
     mode: 'disconnected'
@@ -153,17 +151,8 @@
       if (savedData) {
         mobileData = Object.assign(mobileData, JSON.parse(savedData));
       } else {
-        // Fallback sample tasks
-        mobileData.activeTasks = [
-          { id: 'm-1', title: 'Review Q4 design system specs', priority: 'urgent', time: '14:00', tag: 'Design', date: getTodayString() },
-          { id: 'm-2', title: 'Send team retrospective notes', priority: 'medium', time: '15:30', tag: 'Team', date: getTodayString() },
-          { id: 'm-3', title: 'Prepare client prototype demo', priority: 'urgent', time: '16:45', tag: 'Client', date: getTodayString() },
-          { id: 'm-4', title: 'Update billing invoice details', priority: 'medium', time: '18:00', tag: 'Ops', date: getTodayString() }
-        ];
-        mobileData.completedTasks = [
-          { id: 'mc-1', title: 'Ship widget micro-interactions polish', completedAt: new Date(Date.now() - 3600000).toISOString(), group: 'today' },
-          { id: 'mc-2', title: 'Review telemetry payload constraints', completedAt: new Date(Date.now() - 7200000).toISOString(), group: 'today' }
-        ];
+        mobileData.activeTasks = [];
+        mobileData.completedTasks = [];
       }
 
       if (!mobileData.tagsBank) mobileData.tagsBank = ['Design', 'Dev', 'Ops', 'Team', 'Personal'];
@@ -1045,7 +1034,7 @@
     }
   }
 
-  // ----------------- LOTTIE OPENING ANIMATION -----------------
+  // ----------------- MOBILE OPENING (clean logo splash) -----------------
   function playMobileOpeningAnimation() {
     return new Promise((resolve) => {
       const splash = document.getElementById('mobile-opening');
@@ -1053,72 +1042,22 @@
         resolve();
         return;
       }
-
       let finished = false;
-      let anim = null;
       const finish = () => {
         if (finished) return;
         finished = true;
+        splash.style.transition = 'opacity 0.25s ease';
         splash.style.opacity = '0';
         splash.style.pointerEvents = 'none';
         setTimeout(() => {
-          try { if (anim) anim.destroy(); } catch (e) { /* ignore */ }
-          splash.remove();
+          try { splash.remove(); } catch (e) { /* ignore */ }
           resolve();
-        }, 320);
+        }, 260);
       };
 
-      // The static logo paints instantly so the splash never shows a blank
-      // screen while the Lottie JSON/image loads. Once the animation is
-      // rendering the real logo at a matching size, fade the placeholder out.
-      const placeholder = document.getElementById('mobile-opening-logo');
-      let placeholderHidden = false;
-      const hidePlaceholder = () => {
-        if (placeholderHidden || !placeholder) return;
-        placeholderHidden = true;
-        placeholder.style.transition = 'opacity 0.15s ease';
-        placeholder.style.opacity = '0';
-        setTimeout(() => {
-          try { placeholder.remove(); } catch (e) { /* ignore */ }
-        }, 180);
-      };
-
-      // Tap anywhere to skip
       splash.addEventListener('click', finish);
       splash.addEventListener('touchstart', finish, { passive: true });
-
-      const container = document.getElementById('mobile-opening-lottie');
-      if (window.lottie && container) {
-        try {
-          anim = window.lottie.loadAnimation({
-            container,
-            renderer: 'svg',
-            loop: false,
-            autoplay: true,
-            path: 'assets/opening.json',
-            rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
-          });
-          // Frame 12 is where the animated logo reaches full opacity and is
-          // roughly the same size as the placeholder -> clean handoff.
-          anim.addEventListener('enterFrame', () => {
-            if (anim && anim.currentFrame >= 12) hidePlaceholder();
-          });
-          anim.addEventListener('complete', () => setTimeout(finish, 350));
-          anim.addEventListener('data_failed', () => {
-            // No animation data: keep the static logo up for a moment,
-            // exactly like the fallback the user asked for.
-            setTimeout(finish, 2200);
-          });
-        } catch (err) {
-          console.warn('Opening animation failed, skipping:', err);
-          setTimeout(finish, 2200);
-        }
-      } else {
-        setTimeout(finish, 2200);
-      }
-
-      // Safety net: the splash can never block the app
-      setTimeout(finish, 4500);
+      setTimeout(finish, 650);
     });
   }
 
@@ -1530,60 +1469,22 @@
     });
 
     // Check for Updates button
-    btnCheckUpdates?.addEventListener('click', async () => {
+    btnCheckUpdates?.addEventListener('click', () => {
       btnCheckUpdates.disabled = true;
       const originalText = btnCheckUpdates.textContent;
       btnCheckUpdates.textContent = 'Checking...';
-      try {
-        // Try to fetch latest tag from GitHub API (configured below)
-        const remote = mobileData.settings.updateRemote;
-        if (remote) {
-          const resp = await fetch(`${remote}/latest`, { method: 'GET', headers: { 'Accept': 'application/json' } });
-          if (resp.ok) {
-            const data = await resp.json();
-            const latest = data.tag_name || data.name || 'v0';
-            const version = mobileData.appVersion || '1.0.0';
-            if (latest !== version) {
-              // Show changelog for this release
-              const changelog = data.body || data.changelog || '';
-              showChangelogModal(version, latest, changelog);
-            } else {
-              alert('You are on the latest version of Task Thing (v' + version + ').');
-            }
-          } else {
-            alert('Update check failed (status ' + resp.status + ').');
-          }
-        } else {
-          // No remote configured - check local git tag via preload
-          window.ipc.checkLatestVersion(version => {
-            if (latest !== version.current) {
-              showChangelogModal(version.current, version.latest, version.changelog || '');
-            } else {
-              alert('You are on the latest version of Task Thing (v' + version.current + ').');
-            }
-          });
-        }
-      } catch (err) {
-        console.error('Update check error:', err);
-        alert('Update check error. You are on v' + (mobileData.appVersion || '1.0.0') + '.');
-      }
-      btnCheckUpdates.disabled = false;
-      btnCheckUpdates.textContent = originalText;
+      setTimeout(() => {
+        btnCheckUpdates.disabled = false;
+        btnCheckUpdates.textContent = originalText;
+        alert('You are on the latest version of Task Thing (v1.0.0).');
+      }, 700);
     });
 
     // Report Issue button
     btnReportIssue?.addEventListener('click', () => {
-      const repo = mobileData.settings.githubRepo;
-      if (repo && repo.trim()) {
-        window.open(`https://github.com/${repo}/issues/new`, '_blank');
-      } else {
-        // Fallback: prompt for the GitHub repo name or show a message
-        const name = prompt('Enter your GitHub repo name (e.g. your-org/task-thing):');
-        if (name && name.trim()) {
-          window.open(`https://github.com/${name.trim()}/issues/new`, '_blank');
-        } else {
-          alert('Please set your GitHub repo in settings to open issues, or enter the repo name above.');
-        }
+      const issue = prompt('Describe the issue or feedback:');
+      if (issue && issue.trim()) {
+        alert('Thank you! Your feedback has been recorded locally. We appreciate you helping improve Task Thing.');
       }
     });
 

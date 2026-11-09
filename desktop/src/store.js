@@ -30,87 +30,10 @@ class LocalStore {
         syncPort: 48721,
         pairingToken: 'TC-' + Math.random().toString(36).substring(2, 10).toUpperCase()
       },
-      repeatedTasks: [
-        {
-          id: 'rep-1',
-          title: 'Daily morning standup & sync',
-          priority: 'medium',
-          time: '09:00',
-          tag: 'Team',
-          enabled: true
-        },
-        {
-          id: 'rep-2',
-          title: 'Zero inbox & review pull requests',
-          priority: 'low',
-          time: '17:30',
-          tag: 'Dev',
-          enabled: true
-        }
-      ],
+      repeatedTasks: [],
       tomorrowTasks: [],
-      activeTasks: [
-        {
-          id: 'task-1',
-          title: 'Review Q4 design system specs',
-          priority: 'urgent',
-          time: '14:00',
-          tag: 'Design',
-          date: today,
-          isRollover: false,
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'task-2',
-          title: 'Send team retrospective notes',
-          priority: 'medium',
-          time: '15:30',
-          tag: 'Team',
-          date: today,
-          isRollover: false,
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'task-3',
-          title: 'Prepare client prototype demo',
-          priority: 'urgent',
-          time: '16:45',
-          tag: 'Client',
-          date: today,
-          isRollover: false,
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'task-4',
-          title: 'Update billing invoice details',
-          priority: 'medium',
-          time: '18:00',
-          tag: 'Ops',
-          date: today,
-          isRollover: false,
-          createdAt: new Date().toISOString()
-        }
-      ],
-      completedTasks: [
-        {
-          id: 'comp-1',
-          title: 'Ship widget micro-interactions polish',
-          completedAt: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
-          group: 'today'
-        },
-        {
-          id: 'comp-2',
-          title: 'Review telemetry payload constraints',
-          completedAt: new Date(Date.now() - 1000 * 60 * 230).toISOString(),
-          group: 'today'
-        },
-        {
-          id: 'comp-3',
-          title: 'Export design system color ramp tokens',
-          completedAt: new Date(Date.now() - 1000 * 60 * 370).toISOString(),
-          group: 'today'
-        }
-      ]
+      activeTasks: [],
+      completedTasks: []
     };
   }
 

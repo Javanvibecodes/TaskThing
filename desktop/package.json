@@ -8,7 +8,9 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac"
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "electron-builder -mwl"
   },
   "build": {
     "appId": "com.taskthing.widget",
@@ -28,6 +30,14 @@
         "zip"
       ],
       "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ],
+      "category": "Utility"
     },
     "files": [
       "src/**/*",

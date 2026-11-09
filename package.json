@@ -8,8 +8,13 @@
     "desktop:pack": "pnpm --dir desktop pack",
     "desktop:dist:win": "pnpm --dir desktop dist:win",
     "desktop:dist:mac": "pnpm --dir desktop dist:mac",
-    "mobile": "npx serve mobile -p 3000",
-    "mobile:dev": "pnpm --dir mobile dev"
+    "desktop:dist:linux": "pnpm --dir desktop dist:linux",
+    "desktop:dist:all": "pnpm --dir desktop dist:all",
+    "mobile:dev": "pnpm --dir mobile dev",
+    "mobile:build": "pnpm --dir mobile build",
+    "mobile:sync": "pnpm --dir mobile cap:sync",
+    "mobile:android": "pnpm --dir mobile cap:android",
+    "mobile:ios": "pnpm --dir mobile cap:ios"
   },
   "packageManager": "pnpm@12.18.0"
 }
