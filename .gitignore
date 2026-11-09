@@ -1,13 +1,42 @@
-node_modules/
-dist/
-.DS_Store
-Thumbs.db
-*.log
-.gradle/
-build/
-mobile/android/.gradle/
-mobile/android/app/build/
-mobile/android/capacitor-cordova-android-plugins/build/
-mobile/android/local.properties
-git-repo.git/
+# Build artifacts
+/dist/
+/mobile/dist/
+/android/app/build/
 
+# Capacitor/android
+/android/app/src/main/assets/google-services.json
+/android/app/google-services.json
+
+# iOS build artifacts
+/ios/
+/mobile/ios/
+
+# Screenshots and recordings
+/screenshots/
+/*.mp4
+/*.mov
+/*.avi
+
+# OS specific
+/Ds_Store/
+/.windows/
+/.macos/
+/.linux/
+
+# IDE / Editor
+/.vscode/
+/.hatom/
+/.idea/
+/*.swp
+*.lock
+
+# Local settings
+/.env
+/settings.yaml
+
+# Operating system specific
+/android/local.properties
+/ios/Podfile.lock
+
+# Capacitor
+/mobile/capacitor.config.json
