@@ -1,84 +1,68 @@
-# Task Thing — Get your *things* together
+# Task Thing
 
-A local-first, minimal productivity widget ecosystem built for **Windows**, **macOS**, **Android**, and **iOS**. All data remains 100% on your local devices with zero cloud database dependency.
-
----
-
-## ⚡ Real-Time Peer-to-Peer Sync Engine
-
-- **Peer-to-Peer Local Network**: Connects directly over your local Wi-Fi router or phone personal mobile hotspot. No external internet connection or cloud accounts needed.
-- **Scan Once & Permanent Pairing**: Scan the desktop widget QR code on your phone once. All pairing tokens and credentials are saved permanently on your device.
-- **Background Auto-Reconnect**: Reconnects in the background upon returning to the network.
-- **Offline Buffer & Reconciliation**: Any tasks created or checked off while away or offline are queued in device storage and automatically merge with Last-Write-Wins timestamps when reconnected.
-- **Independent Themes**: Theme color presets can be customized differently on PC and mobile.
+A local-first, minimal productivity widget and mobile companion for daily task tracking on Windows, macOS, Linux, Android, and iOS. All data remains stored locally on your devices with zero cloud database dependency.
 
 ---
 
-## 🖥️ Desktop Widget (`/desktop`)
-Cross-platform desktop floating widget built with **Electron**.
+## Downloads
 
-### Key Features
-- **No Drop Shadow**: Frameless, crisp, transparent window without artificial drop shadows.
-- **Native Window Controls**:
-  - **Windows**: Native caption controls on the top right (`─` Minimize, `✕` Close with red highlight, Pin Always-on-top, and Compact mode toggle).
-  - **macOS**: Native traffic light controls on the top-left (Red, Yellow, Green).
-- **Device-Aware Shortcuts**:
-  - Windows: `Ctrl+K` (Quick Add), `Ctrl+Shift+T` (Global summon).
-  - macOS: `⌘K` (Quick Add), `⌘+Shift+T` (Global summon).
-- **Today's Tasks & Pending Counter Badge**:
-  - Dynamic pending task counter on the Active Tasks tab that decrements as you complete tasks throughout the day.
-  - Completed History tab has no distracting notification badges.
-- **Add Task Dropdown**:
-  - Add Task form is hidden by default. Click **Add Task** to open.
-  - Dropdown options: **Add for Today** or **Set for Tomorrow**.
-  - Clean input placeholder with no "e.g." text.
-  - Tag bank cycler + **+ New Tag** button to easily create and save custom tags.
-- **Repeated Tasks (Daily Habits)**:
-  - Configure recurring daily routines (daily standup, inbox zero, exercise) that automatically populate in Today's tasks at the start of each new day.
-- **Overdue Task Rollover**:
-  - Tasks left uncompleted from a previous day automatically move to the new day highlighted in red with an **Overdue** badge and a one-click **Move to Today** button.
-- **Differentiated Empty States**:
-  - Clean state when no tasks have been planned for today yet.
-  - Celebratory state when all tasks for today are completed.
-  - Skeleton shimmer loader during initial boot.
-- **6 Dynamic Color Presets**:
-  - Indigo Twilight, Emerald Botanical, Sunset Amber, Rose Berry, Obsidian Slate, and Arctic Cyan.
-  - Operates independently on PC.
+Download the latest version directly for your platform:
+
+| Platform | File | Direct Download |
+| :--- | :--- | :--- |
+| Windows | `Task-Thing-Setup.exe` | [Download for Windows](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-Setup.exe) |
+| Android | `Task-Thing.apk` | [Download APK](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/app-debug.apk) |
+| macOS | `Task-Thing.dmg` | [Download for macOS](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing.dmg) |
+| Linux | `Task-Thing.AppImage` | [Download for Linux](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing.AppImage) |
+
+View all releases and changelogs on the [Releases page](https://github.com/Javanvibecodes/TaskThing/releases).
 
 ---
 
-## 📱 Mobile App (`/mobile`)
-Cross-platform mobile application for **Android** and **iOS** configured for standalone web / PWA and **Capacitor** native builds.
+## Desktop Widget
 
-### Key Features
-- Native mobile layout with iOS notch/Dynamic Island and Android navigation bar safe-area support.
-- No user avatars or irrelevant desktop keyboard shortcut hints.
-- Quick-add form with "Add for Today" vs "Set for Tomorrow" and Tag Bank creator.
-- Repeated tasks manager for daily routines.
-- Built-in camera QR scanner and real-time connection status pill.
-- **Help & Legal section**: In-app pairing guide, 100% local privacy policy, terms of use, and local MIT license.
+Cross-platform floating desktop widget designed to stay out of the way until needed.
+
+### Features
+
+- Frameless Design: Crisp, borderless floating window with no artificial drop shadows.
+- Native Caption Controls:
+  - Windows: Minimize, Pin Always-on-top, Compact Mode toggle, and Close controls on the top right.
+  - macOS: Traffic light controls on the top left.
+- Today Tasks and Real-Time Counter: Dynamic badge displaying remaining uncompleted tasks for today.
+- Add Task Form:
+  - Accessible via the Add Task button.
+  - Options to schedule for Today or queue for Tomorrow.
+  - Built-in Tag Bank cycler with a New Tag button to create and save custom labels.
+- Daily Habit Routines: Recurring tasks that automatically populate in Today's task list every morning.
+- Overdue Task Rollover: Uncompleted tasks from previous days display an Overdue indicator with a single-click Move to Today action.
+- Distinct Empty States: Tailored views when no tasks have been created yet, and celebratory views when all planned tasks are completed.
+- Color Presets: Six accent themes (Cobalt, Emerald, Amber, Coral, Obsidian, and Arctic) configurable independently per device.
 
 ---
 
-## 🚀 How to Run
+## Mobile Companion
 
-### 1. Launch the Desktop Widget
-```bash
-# In project root
-pnpm desktop
-# Or inside /desktop
-cd desktop
-pnpm start
-```
+Cross-platform mobile application for Android and iOS providing full mobile management.
 
-### 2. Launch the Mobile App
-```bash
-# In project root
-pnpm mobile
-```
-Open `http://<your-desktop-ip>:3000` on your mobile phone or simulator.
+### Features
 
-### 3. Pair Devices
-1. In the PC widget, open **Preferences** (`tune`) to view the pairing QR code.
-2. In the mobile app, tap **Sync** -> **Start QR Scanner**.
-3. Point your phone at the PC screen. Devices will pair instantly.
+- Native Interface: Adapts to system display cutouts, notches, and navigation bars.
+- Immediate Launch: Clean logo splash screen that transitions straight to the main task view.
+- Task and Habit Management: Add, edit, check off, and organize daily tasks and recurring habits.
+- Tag Manager: Easily create custom tags on mobile that persist across sessions.
+- In-App Help and Legal: Built-in pairing instructions, offline privacy policy, and terms of use.
+
+---
+
+## Peer-to-Peer Local Sync
+
+Synchronize tasks and habits between your desktop widget and mobile phone over your local network without intermediate servers.
+
+### Features
+
+- Local Network Only: Syncs directly over your local Wi-Fi router or phone mobile hotspot. No external internet connection or cloud service required.
+- Single QR Scan Pairing: Scan the QR code displayed in the desktop widget once to pair devices permanently.
+- Background Auto-Reconnection: Automatically re-establishes synchronization whenever both devices are on the same local network.
+- Offline Buffer and Merge: Any tasks created or checked off while away or offline are saved locally and merged using timestamps upon reconnection.
+- Complete Privacy: Your task data, routines, and history never leave your own devices.
