@@ -52,7 +52,6 @@
   ];
 
   // DOM Elements
-  const mobileLaunchSplash = document.getElementById('mobile-launch-splash');
   const tabButtons = document.querySelectorAll('.mobile-tab-btn');
   const screens = document.querySelectorAll('.mobile-screen');
   const activeTasksList = document.getElementById('mobile-tasks-list');
@@ -1045,56 +1044,6 @@
     }
   }
 
-  // ----------------- LAUNCH ANIMATION -----------------
-  function playMobileLaunchAnimation() {
-    return new Promise((resolve) => {
-      const splash = document.getElementById('mobile-launch-splash');
-      if (!splash) {
-        resolve();
-        return;
-      }
-
-      let isFinished = false;
-      const finishSplash = () => {
-        if (isFinished) return;
-        isFinished = true;
-        splash.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => {
-          splash.remove();
-          resolve();
-        }, 400);
-      };
-
-      // Tap to skip
-      splash.addEventListener('click', finishSplash);
-      splash.addEventListener('touchstart', finishSplash, { passive: true });
-
-      const video = document.getElementById('mobile-splash-video');
-      if (video) {
-        // Video plays all through
-        video.addEventListener('ended', finishSplash);
-        video.addEventListener('error', (err) => {
-          console.warn('Video error, skipping splash:', err);
-          finishSplash();
-        });
-
-        // Ensure video is unmuted & plays inline smoothly
-        video.muted = true;
-        const p = video.play();
-        if (p !== undefined) {
-          p.catch((err) => {
-            console.warn('Video play prevented or failed:', err);
-            setTimeout(finishSplash, 1500);
-          });
-        }
-        // Safety timeout so splash never stays stuck
-        setTimeout(finishSplash, 8000);
-      } else {
-        finishSplash();
-      }
-    });
-  }
-
   // ----------------- TASK / HABIT EDIT MODALS -----------------
   const PRIORITY_ORDER = ['urgent', 'medium', 'low'];
 
@@ -1232,7 +1181,6 @@
 
   // ----------------- INITIALIZATION -----------------
   function init() {
-    playMobileLaunchAnimation();
     if (mobileSkeleton) mobileSkeleton.classList.remove('hidden');
 
     try {
