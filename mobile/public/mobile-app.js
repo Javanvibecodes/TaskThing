@@ -1044,6 +1044,83 @@
     }
   }
 
+  // ----------------- LOTTIE OPENING ANIMATION -----------------
+  function playMobileOpeningAnimation() {
+    return new Promise((resolve) => {
+      const splash = document.getElementById('mobile-opening');
+      if (!splash) {
+        resolve();
+        return;
+      }
+
+      let finished = false;
+      let anim = null;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => {
+          try { if (anim) anim.destroy(); } catch (e) { /* ignore */ }
+          splash.remove();
+          resolve();
+        }, 320);
+      };
+
+      // The static logo paints instantly so the splash never shows a blank
+      // screen while the Lottie JSON/image loads. Once the animation is
+      // rendering the real logo at a matching size, fade the placeholder out.
+      const placeholder = document.getElementById('mobile-opening-logo');
+      let placeholderHidden = false;
+      const hidePlaceholder = () => {
+        if (placeholderHidden || !placeholder) return;
+        placeholderHidden = true;
+        placeholder.style.transition = 'opacity 0.15s ease';
+        placeholder.style.opacity = '0';
+        setTimeout(() => {
+          try { placeholder.remove(); } catch (e) { /* ignore */ }
+        }, 180);
+      };
+
+      // Tap anywhere to skip
+      splash.addEventListener('click', finish);
+      splash.addEventListener('touchstart', finish, { passive: true });
+
+      const container = document.getElementById('mobile-opening-lottie');
+      if (window.lottie && container) {
+        try {
+          anim = window.lottie.loadAnimation({
+            container,
+            renderer: 'svg',
+            loop: false,
+            autoplay: true,
+            path: 'assets/opening.json',
+            rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+          });
+          // Frame 12 is where the animated logo reaches full opacity and is
+          // roughly the same size as the placeholder -> clean handoff.
+          anim.addEventListener('enterFrame', () => {
+            if (anim && anim.currentFrame >= 12) hidePlaceholder();
+          });
+          anim.addEventListener('complete', () => setTimeout(finish, 350));
+          anim.addEventListener('data_failed', () => {
+            // No animation data: keep the static logo up for a moment,
+            // exactly like the fallback the user asked for.
+            setTimeout(finish, 2200);
+          });
+        } catch (err) {
+          console.warn('Opening animation failed, skipping:', err);
+          setTimeout(finish, 2200);
+        }
+      } else {
+        setTimeout(finish, 2200);
+      }
+
+      // Safety net: the splash can never block the app
+      setTimeout(finish, 4500);
+    });
+  }
+
   // ----------------- TASK / HABIT EDIT MODALS -----------------
   const PRIORITY_ORDER = ['urgent', 'medium', 'low'];
 
@@ -1181,6 +1258,7 @@
 
   // ----------------- INITIALIZATION -----------------
   function init() {
+    playMobileOpeningAnimation();
     if (mobileSkeleton) mobileSkeleton.classList.remove('hidden');
 
     try {
