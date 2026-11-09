@@ -338,6 +338,45 @@ ipcMain.handle('sync:generatePairingQR', async () => {
   }
 });
 
+ipcMain.handle('app:checkLatestVersion', async () => {
+  const { execSync } = require('child_process');
+  const currentVersion = '1.0.0';
+  let latestTag = null;
+  let changelog = '';
+  try {
+    // Fetch all tags from origin (may fail if no remote configured)
+    const tagsOutput = execSync('git fetch --tags && git tag --sort=-version:refname', { encoding: 'utf8' });
+    const tags = tagsOutput.split('\n').filter(t => t.trim());
+    if (tags.length > 0) {
+      latestTag = tags[0].trim();
+      // Try to read the CHANGELOG.md for the latest tag
+      try {
+        const changelogContent = require('fs').readFileSync(path.join(__dirname, '..', '..', 'CHANGELOG.md'), 'utf8');
+        // Extract changelog section for the latest tag
+        const lines = changelogContent.split('\n');
+        let inSection = false;
+        for (const line of lines) {
+          if (line.trim() === '## [' + latestTag) { inSection = true; continue; }
+          if (inSection) {
+            if (line.trim() === '## [' || line.startsWith('###') && line.includes('[')) { break; }
+            changelog += line + '\n';
+          }
+        }
+      } catch (e) {
+        // CHANGELOG.md not found - that's ok
+      }
+    }
+  } catch (e) {
+    // No git remote or tags available
+    latestTag = null;
+  }
+  return {
+    current: currentVersion,
+    latest: latestTag || currentVersion,
+    changelog: changelog.trim() || null
+  };
+});
+
 app.whenReady().then(() => {
   createWindow();
   createTray();

@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('tasksAPI', {
   togglePin: () => ipcRenderer.invoke('window:togglePin'),
   
   // Storage
-  loadData: () => ipcRenderer.invoke('storage:loadData'),
+  checkLatestVersion: () => ipcRenderer.invoke('app:checkLatestVersion'),
   saveData: (data) => ipcRenderer.invoke('storage:saveData', data),
   exportMarkdown: (content) => ipcRenderer.invoke('export:markdown', content),
   

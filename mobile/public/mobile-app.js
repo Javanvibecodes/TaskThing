@@ -951,12 +951,13 @@
       }
 
       html5QrScanner = new Html5Qrcode('qr-reader');
-      // Pass { facingMode: "environment" } as 1st arg, and square 200x200 qrbox as 2nd arg
+      // Pass { facingMode: "environment" } as 1st arg; no qrbox so there
+      // is no extra inner/horizontal scan box – the library scans the
+      // full video frame and auto-detects QR codes.
       await html5QrScanner.start(
         { facingMode: 'environment' },
         {
           fps: 10,
-          qrbox: { width: 190, height: 190 },
           aspectRatio: 1.0
         },
         (decodedText) => {
@@ -1529,22 +1530,60 @@
     });
 
     // Check for Updates button
-    btnCheckUpdates?.addEventListener('click', () => {
+    btnCheckUpdates?.addEventListener('click', async () => {
       btnCheckUpdates.disabled = true;
       const originalText = btnCheckUpdates.textContent;
       btnCheckUpdates.textContent = 'Checking...';
-      setTimeout(() => {
-        btnCheckUpdates.disabled = false;
-        btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.0).');
-      }, 700);
+      try {
+        // Try to fetch latest tag from GitHub API (configured below)
+        const remote = mobileData.settings.updateRemote;
+        if (remote) {
+          const resp = await fetch(`${remote}/latest`, { method: 'GET', headers: { 'Accept': 'application/json' } });
+          if (resp.ok) {
+            const data = await resp.json();
+            const latest = data.tag_name || data.name || 'v0';
+            const version = mobileData.appVersion || '1.0.0';
+            if (latest !== version) {
+              // Show changelog for this release
+              const changelog = data.body || data.changelog || '';
+              showChangelogModal(version, latest, changelog);
+            } else {
+              alert('You are on the latest version of Task Thing (v' + version + ').');
+            }
+          } else {
+            alert('Update check failed (status ' + resp.status + ').');
+          }
+        } else {
+          // No remote configured - check local git tag via preload
+          window.ipc.checkLatestVersion(version => {
+            if (latest !== version.current) {
+              showChangelogModal(version.current, version.latest, version.changelog || '');
+            } else {
+              alert('You are on the latest version of Task Thing (v' + version.current + ').');
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Update check error:', err);
+        alert('Update check error. You are on v' + (mobileData.appVersion || '1.0.0') + '.');
+      }
+      btnCheckUpdates.disabled = false;
+      btnCheckUpdates.textContent = originalText;
     });
 
     // Report Issue button
     btnReportIssue?.addEventListener('click', () => {
-      const issue = prompt('Describe the issue or feedback:');
-      if (issue && issue.trim()) {
-        alert('Thank you! Your feedback has been recorded locally. We appreciate you helping improve Task Thing.');
+      const repo = mobileData.settings.githubRepo;
+      if (repo && repo.trim()) {
+        window.open(`https://github.com/${repo}/issues/new`, '_blank');
+      } else {
+        // Fallback: prompt for the GitHub repo name or show a message
+        const name = prompt('Enter your GitHub repo name (e.g. your-org/task-thing):');
+        if (name && name.trim()) {
+          window.open(`https://github.com/${name.trim()}/issues/new`, '_blank');
+        } else {
+          alert('Please set your GitHub repo in settings to open issues, or enter the repo name above.');
+        }
       }
     });
 
