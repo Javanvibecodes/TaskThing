@@ -1082,17 +1082,17 @@
       const isTarget = btn.getAttribute('data-target') === targetKey;
       const icon = btn.querySelector('.mobile-tab-icon');
       if (isTarget) {
-        btn.classList.add('text-primary');
-        btn.classList.remove('text-on-surface-variant');
+        btn.classList.add('bg-primary', 'text-white', 'rounded-lg');
+        btn.classList.remove('text-primary', 'text-on-surface-variant');
         if (icon) {
-          icon.classList.add('text-primary');
-          icon.classList.remove('text-on-surface-variant');
+          icon.classList.add('text-white');
+          icon.classList.remove('text-primary', 'text-on-surface-variant');
         }
       } else {
-        btn.classList.remove('text-primary');
+        btn.classList.remove('bg-primary', 'text-white', 'rounded-lg');
         btn.classList.add('text-on-surface-variant');
         if (icon) {
-          icon.classList.remove('text-primary');
+          icon.classList.remove('text-white', 'text-primary');
           icon.classList.add('text-on-surface-variant');
         }
       }
@@ -1560,7 +1560,7 @@
       setTimeout(() => {
         btnCheckUpdates.disabled = false;
         btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.1).');
+        alert('You are on the latest version of Task Thing (v1.0.2).');
       }, 700);
     });
 

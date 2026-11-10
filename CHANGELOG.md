@@ -2,6 +2,15 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.2] - 2026-11-10
+
+### Changed
+- PC: the launch splash now shows the Blob app logo instead of the intro video.
+- PC: the theme palette shows only the theme name, colour bubble and check mark; the per-theme colour descriptions and the "Active: ..." label are gone.
+- PC: removed the "Quick Mode", "QUICK-ADD", "Local Workspace" and "LOCAL ONLY" labels.
+- PC & Android: the active navigation button and the PC pin button are highlighted with the selected theme colour.
+- Mobile: removed the "Themes are local to this device" note from the theme palette.
+
 ## [1.0.1] - 2026-11-10
 
 ### Fixed

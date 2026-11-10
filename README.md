@@ -1,6 +1,6 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.1
+**Version:** 1.0.2
 
 A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 
@@ -54,9 +54,9 @@ Changes made while the phone is offline are queued and sent automatically on the
 - **Daily Tasks** — add, edit, prioritize, and check off tasks; syncs to phone instantly
 - **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto-appear each morning
 - **Real-Time Sync** — every change on either device propagates to the other over Wi-Fi in under a second
-- **Instant Branded Launch** — the Blob logo appears immediately when the app is opened and is held for about 3 seconds while the app loads, then the task dashboard appears
+- **Instant Branded Launch** — the Blob logo appears immediately when the app is opened (held for about 3 seconds on mobile) while the app loads, then the task dashboard appears
 - **No Offline Dependencies** — Tailwind styles, fonts, icons and the QR scanner are bundled inside the app, so startup never waits on a network request
-- **Clear Navigation State** — the active tab's icon is highlighted blue, and the Today badge is only shown when tasks are actually pending
+- **Clear Navigation State** — the active tab is highlighted in the selected theme colour, and the Today badge is only shown when tasks are actually pending
 - **No Placeholder Tasks** — the app goes straight to the task dashboard without loading skeletons or empty states
 - **Privacy-First** — all sync is local; no cloud accounts, no third-party servers
 

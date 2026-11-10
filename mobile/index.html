@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
-  <meta name="app-version" content="1.0.1"/>
+  <meta name="app-version" content="1.0.2"/>
 
   <!-- Paint the very first frame white before any stylesheet is parsed, so
        there is no dark flash while the WebView boots. -->
@@ -378,7 +378,7 @@
     <section id="screen-themes" class="mobile-screen hidden p-4 flex flex-col gap-4 min-h-full">
       <div>
         <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Theme Palette</h2>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Pick an accent colour below. Themes are local to this device.</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Pick an accent colour below.</span>
       </div>
 
       <!-- Color Palettes -->
@@ -488,7 +488,7 @@
           <span>Check for Updates</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          The app checks for newer versions. This app is currently v1.0.1.
+          The app checks for newer versions. This app is currently v1.0.2.
         </p>
         <button id="btn-check-updates" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
           Check Now
@@ -608,10 +608,10 @@
   <!-- Bottom Navigation Bar (5 tabs) — fixed so it never disappears -->
   <nav class="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-outline-variant flex items-center justify-around px-2 z-[100] shrink-0" style="padding-bottom: env(safe-area-inset-bottom);">
     <!-- Active Tasks Tab (With real-time pending badge) -->
-    <button data-target="active-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-primary py-1 px-2.5 relative">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px] text-primary">checklist</span>
+    <button data-target="active-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 bg-primary text-white rounded-lg py-1 px-2.5 relative">
+      <span class="mobile-tab-icon material-symbols-outlined text-[20px] text-white">checklist</span>
       <span class="font-label-mono text-[9px]">Today</span>
-      <span id="mobile-nav-pending-badge" class="hidden absolute -top-0.5 right-1.5 min-w-[15px] h-[15px] px-1 items-center justify-center rounded-full bg-primary text-white font-label-mono text-[9px] font-bold leading-none"></span>
+      <span id="mobile-nav-pending-badge" class="hidden absolute -top-1 -right-0.5 min-w-[15px] h-[15px] px-1 items-center justify-center rounded-full bg-surface text-primary font-label-mono text-[9px] font-bold leading-none shadow-sm"></span>
     </button>
     
     <!-- Repeated Habits Tab -->

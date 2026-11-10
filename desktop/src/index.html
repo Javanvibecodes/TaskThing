@@ -94,9 +94,9 @@
   <!-- ================= MAIN WIDGET CONTAINER ================= -->
   <div id="main-widget-container" class="relative w-full max-w-[440px] bg-surface rounded-xl ring-1 ring-outline-variant overflow-hidden flex flex-col h-[570px] transition-all">
     
-    <!-- Launch Animation Video Overlay (PC) -->
-    <div id="launch-splash-screen" class="absolute inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden rounded-xl cursor-pointer" title="Click to skip">
-      <video id="desktop-splash-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" class="w-full h-full object-cover rounded-xl opacity-0 transition-opacity duration-300"></video>
+    <!-- Launch Splash (PC): app logo on a clean surface -->
+    <div id="launch-splash-screen" class="absolute inset-0 bg-surface z-50 flex items-center justify-center transition-opacity duration-500 overflow-hidden rounded-xl cursor-pointer" title="Click to skip">
+      <img src="assets/blob.png" alt="Task Thing" class="w-24 h-24 aspect-square object-contain" />
     </div>
     
     <!-- Titlebar Header -->
@@ -138,7 +138,7 @@
       <aside class="w-14 bg-surface flex flex-col items-center justify-between py-space-lg shrink-0 border-r border-outline-variant">
         <nav class="flex flex-col items-center gap-space-sm w-full px-space-xs" id="nav-container">
           <!-- Active Tasks Nav -->
-          <button data-path="active-tasks" aria-current="page" class="nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary-container text-primary shadow-sm" title="Today's Tasks">
+          <button data-path="active-tasks" aria-current="page" class="nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary text-white shadow-sm" title="Today's Tasks">
             <span class="material-symbols-outlined text-[20px]">checklist</span>
             <span id="nav-pending-badge" class="hidden absolute top-1 right-1 min-w-[15px] h-[15px] px-1 items-center justify-center rounded-full bg-surface text-primary font-label-mono text-[9px] font-bold leading-none"></span>
           </button>
@@ -303,16 +303,6 @@
             <span id="completed-summary-text" class="font-body-sm text-body-sm text-on-surface-variant max-w-[240px]">You completed all your planned things today. Enjoy your day!</span>
           </div>
 
-          <!-- Active Tasks Footer Info Bar -->
-          <div class="mt-auto px-space-md py-space-sm flex items-center justify-between text-on-surface-variant bg-surface shrink-0 border-t border-outline-variant">
-            <div class="flex items-center gap-1 font-label-mono text-label-mono text-on-surface-variant/80">
-              <span>Task Thing • Local Workspace</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <span class="material-symbols-outlined text-[13px] text-primary">flash_on</span>
-              <span class="font-label-mono text-label-mono text-primary font-medium">Quick Mode</span>
-            </div>
-          </div>
         </section>
 
         <!-- ================= VIEW 2: REPEATED TASKS (DAILY HABITS) ================= -->
@@ -441,81 +431,69 @@
           </div>
 
           <div class="p-space-md flex flex-col gap-3 overflow-y-auto flex-1">
-            <div class="text-[11px] text-on-surface-variant leading-relaxed">
-              Themes are strictly local to this device.
-            </div>
-
             <!-- 6 presets -->
             <div class="grid grid-cols-2 gap-2">
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="cobalt">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Electric Blue</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#0381FC]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Blue #0381FC</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#0381FC] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
 
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="emerald">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Emerald Forest</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#10b981]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Mint jade</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#10b981] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
 
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="amber">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Amber Gold</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#f59e0b]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Warm amber</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#f59e0b] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
 
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="coral">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Coral Flame</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#f43f5e]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Crimson coral</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#f43f5e] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
 
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="obsidian">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Obsidian Slate</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#475569]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Silver slate</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#475569] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
 
               <button class="theme-preset-btn p-2.5 rounded-xl border border-outline-variant bg-surface-container flex flex-col gap-1.5 text-left transition-all hover:border-primary" data-preset="arctic">
                 <div class="flex items-center justify-between">
                   <span class="font-headline-sm text-[12px] text-on-surface font-semibold">Arctic Breeze</span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#06b6d4]"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-label-mono text-[9px] text-on-surface-variant">Cyan</span>
-                  <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#06b6d4] ring-1 ring-outline-variant"></span>
+                    <span class="check-icon material-symbols-outlined text-primary text-[14px] hidden">check_circle</span>
+                  </span>
                 </div>
               </button>
             </div>
-
-            <div class="mt-2 flex items-center justify-between pt-2 border-t border-outline-variant">
-              <span id="theme-active-label" class="font-label-mono text-[10px] text-primary">Active: Cobalt</span>
+            <div class="mt-2 flex items-center justify-end pt-2 border-t border-outline-variant">
               <div class="flex items-center gap-1.5">
                 <button id="btn-theme-reset" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-mono text-[10px]">Reset Default</button>
                 <button id="btn-theme-save" class="px-3 py-1 rounded bg-primary text-white font-semibold font-label-mono text-[10px] hover:brightness-110">Save</button>
@@ -596,10 +574,7 @@
     <footer class="h-8 bg-surface px-space-lg flex items-center justify-between font-label-mono text-label-mono text-on-surface-variant select-none shrink-0 border-t border-outline-variant">
       <div class="flex items-center gap-space-xs">
         <span id="footer-sync-dot" class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-        <span id="footer-sync-status">LOCAL ONLY</span>
-      </div>
-      <div class="flex items-center gap-space-sm" id="footer-quick-badge">
-        <span class="hover:text-primary cursor-pointer text-on-surface-variant text-[10px] font-semibold tracking-wider" id="btn-footer-quick">QUICK-ADD</span>
+        <span id="footer-sync-status"></span>
       </div>
     </footer>
   </div>

@@ -87,7 +87,6 @@
   const themePresets = document.querySelectorAll('.theme-preset-btn');
   const btnThemeSave = document.getElementById('btn-theme-save');
   const btnThemeReset = document.getElementById('btn-theme-reset');
-  const themeActiveLabel = document.getElementById('theme-active-label');
 
   // Settings & Pairing
   const qrCodeImg = document.getElementById('qr-code-img');
@@ -122,7 +121,6 @@
   // Footer & Status
   const footerSyncDot = document.getElementById('footer-sync-dot');
   const footerSyncStatus = document.getElementById('footer-sync-status');
-  const btnFooterQuick = document.getElementById('btn-footer-quick');
 
   // Window Controls (Mac vs Windows)
   const macControls = document.getElementById('mac-controls');
@@ -168,25 +166,9 @@
         }, 500);
       };
 
-      // Click to skip
+      // Click to skip; otherwise show the app logo briefly, then reveal the UI
       launchSplashScreen.addEventListener('click', finishSplash);
-
-      const video = document.getElementById('desktop-splash-video');
-      if (video) {
-        video.addEventListener('playing', () => {
-          video.classList.remove('opacity-0');
-          video.classList.add('opacity-100');
-        });
-        // Video plays all through
-        video.addEventListener('ended', finishSplash);
-        video.addEventListener('error', finishSplash);
-        video.play().catch(() => {
-          setTimeout(finishSplash, 2000);
-        });
-        setTimeout(finishSplash, 12000);
-      } else {
-        finishSplash();
-      }
+      setTimeout(finishSplash, 1500);
     });
   }
 
@@ -296,7 +278,7 @@
       syncCardText.textContent = `${clientCount} Device Connected (Real-Time Sync)`;
     } else {
       footerSyncDot.className = 'w-1.5 h-1.5 rounded-full bg-outline';
-      footerSyncStatus.textContent = 'LOCAL ONLY';
+      footerSyncStatus.textContent = 'OFFLINE';
       footerSyncStatus.className = 'text-on-surface-variant';
 
       syncCardDot.className = 'w-1.5 h-1.5 rounded-full bg-outline';
@@ -325,7 +307,7 @@
       const isTarget = item.getAttribute('data-path') === targetPath;
       if (isTarget) {
         item.setAttribute('aria-current', 'page');
-        item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary-container text-primary shadow-sm';
+        item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary text-white shadow-sm';
       } else {
         item.removeAttribute('aria-current');
         item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors';
@@ -932,8 +914,6 @@
       }
     });
 
-    themeActiveLabel.textContent = preset.charAt(0).toUpperCase() + preset.slice(1);
-
     if (shouldSave) {
       persist(); // Local save ONLY — no broadcast!
     }
@@ -941,14 +921,16 @@
 
   function updatePinUI(pinned) {
     appData.settings.alwaysOnTop = pinned;
+    pinIcon.style.color = '';
     if (pinned) {
-      pinIcon.style.color = 'var(--primary)';
+      // Highlight with the active theme colour while the window is pinned
+      btnPinToggle.className = 'w-8 h-8 flex items-center justify-center rounded bg-primary text-white shadow-sm transition-colors';
       btnSettingsPin.textContent = 'Pin: ON';
-      btnSettingsPin.classList.add('text-secondary');
+      btnSettingsPin.className = 'px-2.5 py-1 rounded bg-primary text-white font-label-mono text-[11px] font-semibold';
     } else {
-      pinIcon.style.color = '';
+      btnPinToggle.className = 'w-8 h-8 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors';
       btnSettingsPin.textContent = 'Pin: OFF';
-      btnSettingsPin.classList.remove('text-secondary');
+      btnSettingsPin.className = 'px-2.5 py-1 rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-mono text-[11px]';
     }
   }
 
@@ -1260,10 +1242,6 @@
       }
     });
 
-    btnFooterQuick.addEventListener('click', () => {
-      switchView('active-tasks');
-      openQuickAdd('today');
-    });
   }
 
   // ----------------- UTILITIES -----------------
