@@ -1,29 +1,46 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 
-A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi‑Fi — no cloud, no third‑party servers. Your data stays on your devices.
+A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 
-## Platforms
+## Download
 
-| Platform | Status | Download |
-|----------|--------|----------|
-| **Windows** | ✅ Stable | [Download Windows .exe](https://github.com/your-org/task-thing/releases/latest/download/Task-Thing-Setup.exe) |
-| **macOS** | ✅ Stable | [Download macOS .dmg](https://github.com/your-org/task-thing/releases/latest/download/Task-Thing.dmg) |
-| **Android** | ✅ Stable (tested) | [Download Android APK](https://github.com/your-org/task-thing/releases/latest/download/app-debug.apk) |
-| **iOS** | 📦 Targeted (Capacitor) | Build via `npx cap open ios` or `npx cap build ios` |
+| Platform | Package | Direct download |
+|----------|---------|-----------------|
+| **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
+| **Linux (x64)** | Portable `.tar.gz` | [Download Task-Thing-linux-x64.tar.gz](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-linux-x64.tar.gz) |
+| **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
+| **macOS** | Build from source | [Build instructions](#build-from-source) |
+| **iOS** | Build from source | [Build instructions](#build-from-source) |
 
-> **iOS notes:** This project uses Capacitor for cross‑platform mobile support. To build for iOS, run `npx cap open ios` in the `mobile` directory, open the Xcode project, and build for your device or simulator. The app is signed for development with your Apple ID. Push notifications and App Store submission require an Apple Developer account.
+### Direct links
+
+- Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
+- Linux: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-linux-x64.tar.gz`
+- Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
+
+The desktop packages are not code-signed, so Windows SmartScreen and macOS Gatekeeper may warn on first launch. On Windows choose **More info → Run anyway**. On macOS, right-click the app and choose **Open**, or run `xattr -dr com.apple.quarantine "Task Thing.app"`.
+
+### Install notes
+
+- **Windows:** run `Task-Thing-win-x64.exe`. The installer does not require administrator rights.
+- **Linux:** extract and run:
+  ```bash
+  tar -xzf Task-Thing-linux-x64.tar.gz
+  ./Task-Thing-linux-x64/task-thing-desktop
+  ```
+- **Android:** open `Task-Thing-android.apk` on the device and allow installing from this source when prompted.
 
 ## How PC & Phone Sync Works
 
-Task Thing runs a local WebSocket sync server on your computer (default port **44751**). No cloud accounts, no third‑party servers — your tasks and habits stay on your local network.
+Task Thing runs a local WebSocket sync server on your computer (default port **48721**). No cloud accounts, no third-party servers — your tasks and habits stay on your local network.
 
 ### On Your PC (Desktop Widget)
 
-1. Launch Task Thing on Windows or macOS.
-2. Click the **Sync** tab in the navigation bar.
-3. A QR code appears containing your PC's IP address, port **44751**, and a secure sync token.
+1. Launch Task Thing on Windows or Linux.
+2. Click the **Preferences (tune)** icon in the sidebar.
+3. A QR code appears containing your PC's IP address, port **48721**, and a secure sync token.
 4. Click **Copy IP** to paste the connection details manually, or proceed to the phone step.
 
 ### On Your Phone (Android)
@@ -31,43 +48,68 @@ Task Thing runs a local WebSocket sync server on your computer (default port **4
 1. Open Task Thing from your app drawer.
 2. Tap the **Sync** tab at the bottom.
 3. Grant camera permission when the system dialog appears.
-4. Point your camera at the PC screen QR code — the scanner auto‑detects the pairing payload with **no extra framing** required.
-5. **Alternative:** Tap **Manual IP** and enter your PC's local IP (e.g. `192.168.1.50`) plus port **44751**.
-6. The header pill turns **green** when the live connection is active.
+4. Point your camera at the PC screen QR code — the scanner auto-detects the pairing payload with no extra framing required.
+5. **Alternative:** Tap **Manual IP** and enter your PC's local IP (for example `192.168.1.50`) plus port **48721**.
+6. The header pill turns blue when the live connection is active.
 
-### Real‑Time Two‑Way Synchronization
+### Real-Time Two-Way Synchronization
 
-Once paired, any task added, checked off, edited, or habit checked on either your PC desktop widget or your mobile phone syncs instantly over Wi‑Fi. The connection is bidirectional — changes on either device propagate to the other in under a second.
+Once paired, any task added, checked off, edited, or habit checked on either your PC desktop widget or your mobile phone syncs instantly over Wi-Fi. The connection is bidirectional — changes on either device propagate to the other in under a second.
 
-## Direct App Downloads
-
-| Platform | File | Size |
-|----------|------|------|
-| Windows | `Task-Thing-Setup.exe` | ~15 MB |
-| macOS | `Task-Thing.dmg` | ~25 MB |
-| Android | `app-debug.apk` | ~35 MB |
-| iOS | Build from Xcode | — |
+Changes made while the phone is offline are queued and sent automatically on the next connection. The queue records only real pending differences, so an item that was added and then deleted again does not appear as an unsynced change.
 
 ## Features
 
 - **Daily Tasks** — add, edit, prioritize, and check off tasks; syncs to phone instantly
-- **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto‑appear each morning
-- **Real‑Time Sync** — every change on either device propagates to the other over Wi‑Fi in under a second
-- **Static Launch Splash** — instant white screen with centered Blob logo on mobile; fades after 2 s
+- **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto-appear each morning
+- **Real-Time Sync** — every change on either device propagates to the other over Wi-Fi in under a second
+- **Instant Branded Launch** — the Blob logo appears immediately when the app is opened and is held for about 3 seconds while the app loads, then the task dashboard appears
+- **No Offline Dependencies** — Tailwind styles, fonts, icons and the QR scanner are bundled inside the app, so startup never waits on a network request
+- **Clear Navigation State** — the active tab's icon is highlighted blue, and the Today badge is only shown when tasks are actually pending
 - **No Placeholder Tasks** — the app goes straight to the task dashboard without loading skeletons or empty states
-- **Privacy‑First** — all sync is local; no cloud accounts, no third‑party servers
+- **Privacy-First** — all sync is local; no cloud accounts, no third-party servers
+
+## Build from Source
+
+Requirements: Node.js 20+, pnpm 12+, and the platform SDK for the target you are building.
+
+```bash
+pnpm install
+```
+
+### Desktop (Electron)
+
+```bash
+pnpm desktop:start          # run from source
+pnpm desktop:dist:win       # Windows installer
+pnpm desktop:dist:mac       # macOS .dmg + .zip (must run on macOS)
+pnpm desktop:dist:linux     # Linux targets (AppImage/deb are built on Linux)
+```
+
+### Mobile (Capacitor)
+
+```bash
+cd mobile
+pnpm install
+pnpm build                  # compiles Tailwind CSS and the web bundle
+npx cap sync
+
+# Android
+npx cap open android        # or: cd android && ./gradlew assembleDebug
+
+# iOS (macOS + Xcode required)
+npx cap open ios
+```
+
+macOS `.dmg`, iOS `.ipa` and Linux AppImage/deb packages must be produced on their native operating systems (or on a matching CI runner); Windows can only produce the Windows installer and the portable Linux tarball. See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 
-This project is open source under the **MIT License**. See the [GitHub Repository](https://github.com/your-org/task-thing) for details.
+This project is open source under the **MIT License**. See the [GitHub Repository](https://github.com/Javanvibecodes/TaskThing) for details.
 
 ## Quick Start
 
 1. **Download** the app for your operating system from the table above.
-2. **Launch** the desktop widget and click **Sync** → **Copy IP**.
+2. **Launch** the desktop widget and open **Preferences** to show the pairing QR code.
 3. **Open** Task Thing on your Android phone, tap **Sync**, and scan the QR code — or enter the IP manually.
 4. **Start adding tasks** on either device — they sync instantly.
-
----
-
-*Generated with ❤️ by the Task Thing team. Open Source under MIT License.*

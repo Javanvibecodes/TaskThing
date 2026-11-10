@@ -2,6 +2,20 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.1] - 2026-11-10
+
+### Fixed
+- Mobile: launch no longer shows a white/black gap before the logo. The native splash with the Blob logo now appears the instant the launcher icon is tapped and stays for ~3 seconds, then the app UI opens.
+- Mobile: opening logo no longer fades/scales in (removed the blink between the native and web splash).
+- Mobile: startup no longer depends on the network. Tailwind utilities, Inter/JetBrains Mono fonts, Material Symbols and html5-qrcode are bundled locally instead of loaded from CDNs.
+- Android/iOS: the WebView and window backgrounds are white (were black), eliminating the dark flash/frame during startup.
+- Mobile: the Sync screen no longer reports changes queued when there are none. The offline queue is compacted, so add-then-delete cancels out and repeated edits keep only the latest mutation.
+- Mobile/Desktop: the active tab icon is highlighted blue.
+- Mobile/Desktop: the Today tab counter badge is hidden when no tasks are pending (it previously showed a hard-coded 4).
+
+### Added
+- Windows installer, Linux portable tarball and Android APK published as release assets, with direct download links in the README.
+
 ## [1.0.0] - 2026-11-09
 
 ### Added

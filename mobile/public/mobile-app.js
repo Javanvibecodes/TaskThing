@@ -168,6 +168,12 @@
       const savedQueue = localStorage.getItem('tasks_offline_queue');
       if (savedQueue) {
         offlineQueue = JSON.parse(savedQueue);
+        compactOfflineQueue();
+        if (offlineQueue.length > 0) {
+          localStorage.setItem('tasks_offline_queue', JSON.stringify(offlineQueue));
+        } else {
+          localStorage.removeItem('tasks_offline_queue');
+        }
       }
 
       checkDayRollover();
@@ -244,12 +250,78 @@
     } catch (e) {}
   }
 
+  // Collapse the offline queue down to actual pending changes. An add that is
+  // followed by a delete of the same item cancels out, and repeated edits of
+  // the same task/habit keep only the latest one. Without this, the Sync screen
+  // could report "N changes queued" even though the net change set is empty.
+  function compactOfflineQueue() {
+    if (!offlineQueue.length) return;
+
+    const out = [];
+    const pendingAdd = new Map();
+    const lastByType = new Map();
+    const indicesByKey = new Map();
+
+    offlineQueue.forEach(mutation => {
+      if (!mutation || !mutation.type) return;
+      const id = mutation.payload && mutation.payload.id;
+      if (!id) {
+        out.push(mutation);
+        return;
+      }
+
+      const isHabit = mutation.type.startsWith('HABIT');
+      const key = (isHabit ? 'h:' : 't:') + id;
+      const isAdd = mutation.type === 'TASK_ADDED' || mutation.type === 'HABIT_ADDED';
+      const isDelete = mutation.type === 'TASK_DELETED' || mutation.type === 'HABIT_DELETED';
+
+      if (isAdd) {
+        pendingAdd.set(key, out.length);
+        indicesByKey.set(key, [out.length]);
+        out.push(mutation);
+        return;
+      }
+
+      if (isDelete) {
+        if (pendingAdd.has(key)) {
+          // The item was created offline and is now gone again: nothing to sync.
+          (indicesByKey.get(key) || []).forEach(index => { out[index] = null; });
+          pendingAdd.delete(key);
+          indicesByKey.delete(key);
+        } else {
+          const indices = indicesByKey.get(key) || [];
+          indices.push(out.length);
+          indicesByKey.set(key, indices);
+          out.push(mutation);
+        }
+        return;
+      }
+
+      // Edited / completed / reopened: keep only the most recent one per type.
+      const typeKey = mutation.type + ':' + key;
+      const indices = indicesByKey.get(key) || [];
+      if (lastByType.has(typeKey)) {
+        out[lastByType.get(typeKey)] = mutation;
+      } else {
+        lastByType.set(typeKey, out.length);
+        indices.push(out.length);
+        indicesByKey.set(key, indices);
+        out.push(mutation);
+      }
+    });
+
+    offlineQueue = out
+      .filter(Boolean)
+      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  }
+
   function queueOfflineMutation(mutation) {
     // DO NOT queue theme mutations — themes stay local!
     if (mutation.type === 'THEME_CHANGED') return;
 
     mutation.timestamp = Date.now();
     offlineQueue.push(mutation);
+    compactOfflineQueue();
     try {
       localStorage.setItem('tasks_offline_queue', JSON.stringify(offlineQueue));
     } catch (e) {}
@@ -546,13 +618,16 @@
     activeTasksList.innerHTML = '';
     const tasks = mobileData.activeTasks || [];
     
-    // Decrementing Pending badge on Tasks tab!
+    // Pending badge on the Today tab: only visible when tasks are pending
     if (mobilePendingBadge) {
-      mobilePendingBadge.textContent = tasks.length;
-      if (tasks.length === 0) {
-        mobilePendingBadge.classList.add('opacity-40');
+      if (tasks.length > 0) {
+        mobilePendingBadge.textContent = tasks.length;
+        mobilePendingBadge.classList.remove('hidden');
+        mobilePendingBadge.classList.add('flex');
       } else {
-        mobilePendingBadge.classList.remove('opacity-40');
+        mobilePendingBadge.textContent = '';
+        mobilePendingBadge.classList.add('hidden');
+        mobilePendingBadge.classList.remove('flex');
       }
     }
 
@@ -1005,12 +1080,21 @@
   function switchScreen(targetKey) {
     tabButtons.forEach(btn => {
       const isTarget = btn.getAttribute('data-target') === targetKey;
+      const icon = btn.querySelector('.mobile-tab-icon');
       if (isTarget) {
         btn.classList.add('text-primary');
         btn.classList.remove('text-on-surface-variant');
+        if (icon) {
+          icon.classList.add('text-primary');
+          icon.classList.remove('text-on-surface-variant');
+        }
       } else {
         btn.classList.remove('text-primary');
         btn.classList.add('text-on-surface-variant');
+        if (icon) {
+          icon.classList.remove('text-primary');
+          icon.classList.add('text-on-surface-variant');
+        }
       }
     });
 
@@ -1476,7 +1560,7 @@
       setTimeout(() => {
         btnCheckUpdates.disabled = false;
         btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.0).');
+        alert('You are on the latest version of Task Thing (v1.0.1).');
       }, 700);
     });
 

@@ -40,3 +40,12 @@
 
 # Capacitor
 /mobile/capacitor.config.json
+
+# Dependencies & desktop build output
+/node_modules/
+/desktop/node_modules/
+/mobile/node_modules/
+/desktop/dist/
+
+# Release staging
+/release-assets/

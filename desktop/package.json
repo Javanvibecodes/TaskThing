@@ -1,6 +1,6 @@
 {
   "name": "task-thing-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Task Thing — Get your things together",
   "main": "src/main.js",
   "type": "commonjs",
@@ -18,10 +18,10 @@
     "directories": {
       "output": "dist"
     },
+    "artifactName": "Task-Thing-${os}-${arch}.${ext}",
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ]
     },
     "mac": {
@@ -43,7 +43,7 @@
       "src/**/*",
       "package.json"
     ],
-    "icon": "src/assets/blob.png"
+    "icon": "build/icon.png"
   },
   "keywords": [
     "widget",
@@ -54,7 +54,8 @@
   "author": "Task Thing",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^45.2.3"
+    "electron": "^45.2.3",
+    "electron-builder": "26.0.12"
   },
   "dependencies": {
     "qrcode": "^1.5.4",
