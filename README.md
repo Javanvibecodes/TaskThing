@@ -9,7 +9,6 @@ A lightning-fast Electron desktop widget and Capacitor mobile companion that kee
 | Platform | Package | Direct download |
 |----------|---------|-----------------|
 | **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
-| **Linux (x64)** | Portable `.tar.gz` | [Download Task-Thing-linux-x64.tar.gz](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-linux-x64.tar.gz) |
 | **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
 | **macOS** | Build from source | [Build instructions](#build-from-source) |
 | **iOS** | Build from source | [Build instructions](#build-from-source) |
@@ -17,7 +16,6 @@ A lightning-fast Electron desktop widget and Capacitor mobile companion that kee
 ### Direct links
 
 - Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
-- Linux: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-linux-x64.tar.gz`
 - Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
 
 The desktop packages are not code-signed, so Windows SmartScreen and macOS Gatekeeper may warn on first launch. On Windows choose **More info → Run anyway**. On macOS, right-click the app and choose **Open**, or run `xattr -dr com.apple.quarantine "Task Thing.app"`.
@@ -25,11 +23,6 @@ The desktop packages are not code-signed, so Windows SmartScreen and macOS Gatek
 ### Install notes
 
 - **Windows:** run `Task-Thing-win-x64.exe`. The installer does not require administrator rights.
-- **Linux:** extract and run:
-  ```bash
-  tar -xzf Task-Thing-linux-x64.tar.gz
-  ./Task-Thing-linux-x64/task-thing-desktop
-  ```
 - **Android:** open `Task-Thing-android.apk` on the device and allow installing from this source when prompted.
 
 ## How PC & Phone Sync Works
@@ -38,7 +31,7 @@ Task Thing runs a local WebSocket sync server on your computer (default port **4
 
 ### On Your PC (Desktop Widget)
 
-1. Launch Task Thing on Windows or Linux.
+1. Launch Task Thing on Windows.
 2. Click the **Preferences (tune)** icon in the sidebar.
 3. A QR code appears containing your PC's IP address, port **48721**, and a secure sync token.
 4. Click **Copy IP** to paste the connection details manually, or proceed to the phone step.
@@ -83,7 +76,6 @@ pnpm install
 pnpm desktop:start          # run from source
 pnpm desktop:dist:win       # Windows installer
 pnpm desktop:dist:mac       # macOS .dmg + .zip (must run on macOS)
-pnpm desktop:dist:linux     # Linux targets (AppImage/deb are built on Linux)
 ```
 
 ### Mobile (Capacitor)
@@ -101,7 +93,7 @@ npx cap open android        # or: cd android && ./gradlew assembleDebug
 npx cap open ios
 ```
 
-macOS `.dmg`, iOS `.ipa` and Linux AppImage/deb packages must be produced on their native operating systems (or on a matching CI runner); Windows can only produce the Windows installer and the portable Linux tarball. See [CHANGELOG.md](CHANGELOG.md) for release notes.
+macOS `.dmg` and iOS `.ipa` packages must be produced on their native operating systems (or on a matching CI runner). See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 

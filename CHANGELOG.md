@@ -14,7 +14,7 @@ All notable changes to Task Thing will be documented in this file.
 - Mobile/Desktop: the Today tab counter badge is hidden when no tasks are pending (it previously showed a hard-coded 4).
 
 ### Added
-- Windows installer, Linux portable tarball and Android APK published as release assets, with direct download links in the README.
+- Windows installer and Android APK published as release assets, with direct download links in the README.
 
 ## [1.0.0] - 2026-11-09
 
