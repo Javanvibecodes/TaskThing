@@ -10,15 +10,13 @@ A lightning-fast Electron desktop widget and Capacitor mobile companion that kee
 |----------|---------|-----------------|
 | **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
 | **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
-| **macOS** | Build from source | [Build instructions](#build-from-source) |
-| **iOS** | Build from source | [Build instructions](#build-from-source) |
 
 ### Direct links
 
 - Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
 - Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
 
-The desktop packages are not code-signed, so Windows SmartScreen and macOS Gatekeeper may warn on first launch. On Windows choose **More info → Run anyway**. On macOS, right-click the app and choose **Open**, or run `xattr -dr com.apple.quarantine "Task Thing.app"`.
+The desktop installer is not code-signed, so Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
 
 ### Install notes
 
@@ -75,7 +73,6 @@ pnpm install
 ```bash
 pnpm desktop:start          # run from source
 pnpm desktop:dist:win       # Windows installer
-pnpm desktop:dist:mac       # macOS .dmg + .zip (must run on macOS)
 ```
 
 ### Mobile (Capacitor)
@@ -85,15 +82,10 @@ cd mobile
 pnpm install
 pnpm build                  # compiles Tailwind CSS and the web bundle
 npx cap sync
-
-# Android
 npx cap open android        # or: cd android && ./gradlew assembleDebug
-
-# iOS (macOS + Xcode required)
-npx cap open ios
 ```
 
-macOS `.dmg` and iOS `.ipa` packages must be produced on their native operating systems (or on a matching CI runner). See [CHANGELOG.md](CHANGELOG.md) for release notes.
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 
