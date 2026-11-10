@@ -279,6 +279,11 @@ ipcMain.handle('export:markdown', (event, content) => {
   return true;
 });
 
+ipcMain.handle('clipboard:write', (event, content) => {
+  clipboard.writeText(String(content || ''));
+  return true;
+});
+
 // Broadcast local desktop changes to mobile clients
 ipcMain.handle('sync:broadcastMutation', (event, mutation) => {
   if (syncServer && mutation) {
@@ -314,11 +319,10 @@ ipcMain.handle('sync:generatePairingQR', async () => {
   const port = data.settings?.syncPort || 48721;
   const token = data.settings?.pairingToken || 'TC-LOCAL';
 
+  // Keep the payload short so the QR modules stay large and easy to scan.
   const payload = JSON.stringify({
     app: 'Task Thing',
-    version: '1.0.0',
     primaryHost: ip,
-    hosts: allIps,
     port: port,
     token: token
   });
@@ -326,11 +330,12 @@ ipcMain.handle('sync:generatePairingQR', async () => {
   try {
     const qrDataUrl = await QRCode.toDataURL(payload, {
       margin: 1,
+      errorCorrectionLevel: 'M',
       color: {
         dark: '#0B0C10',
         light: '#FFFFFF'
       },
-      width: 180
+      width: 320
     });
     return { success: true, qr: qrDataUrl, payload };
   } catch (err) {

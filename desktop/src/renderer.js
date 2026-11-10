@@ -95,6 +95,7 @@
   const syncToken = document.getElementById('sync-token');
   const syncCardDot = document.getElementById('sync-card-dot');
   const syncCardText = document.getElementById('sync-card-text');
+  const btnCopySync = document.getElementById('btn-copy-sync');
   const btnSettingsPin = document.getElementById('btn-settings-pin');
   // Tag Popover Elements
   const newTagPopover = document.getElementById('new-tag-popover');
@@ -962,6 +963,23 @@
 
   // ----------------- EVENT LISTENERS -----------------
   function setupEventListeners() {
+    // Copy a ready-to-paste pairing link (includes the token)
+    if (btnCopySync) {
+      btnCopySync.addEventListener('click', async () => {
+        const link = `ws://${syncHostIp.textContent}:${syncPort.textContent}?token=${encodeURIComponent(syncToken.textContent)}`;
+        try {
+          if (window.tasksAPI?.writeClipboard) {
+            await window.tasksAPI.writeClipboard(link);
+          } else {
+            await navigator.clipboard.writeText(link);
+          }
+          showToast('Pairing link copied');
+        } catch (e) {
+          showToast('Could not copy pairing link');
+        }
+      });
+    }
+
     // Navigation
     navItems.forEach(btn => {
       btn.addEventListener('click', () => {

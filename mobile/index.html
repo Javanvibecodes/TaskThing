@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
-  <meta name="app-version" content="1.0.2"/>
+  <meta name="app-version" content="1.0.3"/>
 
   <!-- Paint the very first frame white before any stylesheet is parsed, so
        there is no dark flash while the WebView boots. -->
@@ -472,6 +472,10 @@
             Connect
           </button>
         </div>
+        <input id="manual-token-input" type="text" placeholder="Pairing token (e.g. TC-AB12CD34)" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
+        <span class="font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
+          Tip: press <strong>Copy pairing link</strong> in the PC Preferences and paste it above — the token is included.
+        </span>
       </div>
     </section>
 
@@ -488,7 +492,7 @@
           <span>Check for Updates</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          The app checks for newer versions. This app is currently v1.0.2.
+          The app checks for newer versions. This app is currently v1.0.3.
         </p>
         <button id="btn-check-updates" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
           Check Now

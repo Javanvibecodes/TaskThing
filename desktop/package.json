@@ -1,6 +1,6 @@
 {
   "name": "task-thing-desktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Task Thing — Get your things together",
   "main": "src/main.js",
   "type": "commonjs",

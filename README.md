@@ -1,6 +1,6 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.2
+**Version:** 1.0.3
 
 A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 
@@ -32,7 +32,7 @@ Task Thing runs a local WebSocket sync server on your computer (default port **4
 1. Launch Task Thing on Windows.
 2. Click the **Preferences (tune)** icon in the sidebar.
 3. A QR code appears containing your PC's IP address, port **48721**, and a secure sync token.
-4. Click **Copy IP** to paste the connection details manually, or proceed to the phone step.
+4. Click **Copy pairing link** to copy the full `ws://IP:PORT?token=...` link, or scan the QR code below.
 
 ### On Your Phone (Android)
 
@@ -40,7 +40,7 @@ Task Thing runs a local WebSocket sync server on your computer (default port **4
 2. Tap the **Sync** tab at the bottom.
 3. Grant camera permission when the system dialog appears.
 4. Point your camera at the PC screen QR code — the scanner auto-detects the pairing payload with no extra framing required.
-5. **Alternative:** Tap **Manual IP** and enter your PC's local IP (for example `192.168.1.50`) plus port **48721**.
+5. **Alternative:** Paste the **Copy pairing link** value into the IP field, or enter your PC's local IP (for example `192.168.1.50`) plus port **48721** and the pairing token shown on the PC.
 6. The header pill turns blue when the live connection is active.
 
 ### Real-Time Two-Way Synchronization

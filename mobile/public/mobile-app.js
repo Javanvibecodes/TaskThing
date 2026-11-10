@@ -132,6 +132,7 @@
   const btnToggleCamera = document.getElementById('btn-toggle-camera');
   const cameraBtnText = document.getElementById('camera-btn-text');
   const manualIpInput = document.getElementById('manual-ip-input');
+  const manualTokenInput = document.getElementById('manual-token-input');
   const btnManualConnect = document.getElementById('btn-manual-connect');
   const btnReconnect = document.getElementById('mobile-btn-reconnect');
   const mobileSyncDot = document.getElementById('mobile-sync-dot');
@@ -419,7 +420,7 @@
           updateConnectionUI('disconnected');
           scheduleAutoReconnect();
         } else {
-          updateConnectionUI('failed', hostToTry, 'Connection Failed — Host unreachable');
+          updateConnectionUI('failed', hostToTry, 'Connection failed — check the PC IP, port and pairing token');
         }
       };
 
@@ -1021,8 +1022,11 @@
       await html5QrScanner.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
-          aspectRatio: 1.0
+          fps: 15,
+          aspectRatio: 1.0,
+          // Native BarcodeDetector is dramatically faster where available
+          // (Android WebView / Chrome); the library falls back automatically.
+          experimentalFeatures: { useBarCodeDetectorIfSupported: true }
         },
         (decodedText) => {
           handleScannedData(decodedText);
@@ -1054,6 +1058,45 @@
         </span>
       `;
     }
+  }
+
+  // Accepts "ip", "ip:port", a query link, or a full pairing link such as
+  // ws://192.168.1.15:48721?token=TC-AB12CD34 (what the PC copies).
+  function parseManualTarget(rawValue) {
+    let value = (rawValue || '').trim();
+    if (!value) return null;
+
+    if (/^(wss?|https?):\/\//i.test(value)) {
+      try {
+        const parsed = new URL(value);
+        if (!parsed.hostname) return null;
+        return {
+          host: parsed.hostname,
+          port: parseInt(parsed.port, 10) || 48721,
+          token: parsed.searchParams.get('token') || ''
+        };
+      } catch (e) {
+        // Fall through to the plain host:port parser below
+      }
+    }
+
+    let token = '';
+    const queryIndex = value.indexOf('?');
+    if (queryIndex >= 0) {
+      token = new URLSearchParams(value.slice(queryIndex + 1)).get('token') || '';
+      value = value.slice(0, queryIndex);
+    }
+
+    value = value.replace(/\/.*$/, '');
+    const parts = value.split(':');
+    const host = (parts[0] || '').trim();
+    if (!host) return null;
+
+    return {
+      host,
+      port: parseInt(parts[1], 10) || 48721,
+      token
+    };
   }
 
   function handleScannedData(dataStr) {
@@ -1527,12 +1570,15 @@
 
     // Manual connect
     btnManualConnect.addEventListener('click', () => {
-      let val = manualIpInput.value.trim();
-      if (!val) return;
-      val = val.replace(/^https?:\/\//i, '').replace(/^wss?:\/\//i, '').replace(/\/.*$/, '');
-      const parts = val.split(':');
-      syncConfig.host = parts[0];
-      syncConfig.port = parts[1] ? parseInt(parts[1], 10) : 48721;
+      const target = parseManualTarget(manualIpInput.value);
+      if (!target) {
+        alert('Enter your PC IP address, for example 192.168.1.15:48721, or paste the pairing link from the PC.');
+        return;
+      }
+      syncConfig.host = target.host;
+      syncConfig.port = target.port;
+      const typedToken = manualTokenInput ? manualTokenInput.value.trim() : '';
+      syncConfig.token = target.token || typedToken || syncConfig.token || 'TC-LOCAL';
       persistSyncConfig();
       connectToDesktop(syncConfig.host, true);
     });
@@ -1560,7 +1606,7 @@
       setTimeout(() => {
         btnCheckUpdates.disabled = false;
         btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.2).');
+        alert('You are on the latest version of Task Thing (v1.0.3).');
       }, 700);
     });
 

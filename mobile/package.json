@@ -1,6 +1,6 @@
 {
   "name": "task-thing-mobile",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Task Thing — Mobile App for Android and iOS",
   "scripts": {
     "dev": "vite",

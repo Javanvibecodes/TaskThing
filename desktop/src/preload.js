@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('tasksAPI', {
   checkLatestVersion: () => ipcRenderer.invoke('app:checkLatestVersion'),
   saveData: (data) => ipcRenderer.invoke('storage:saveData', data),
   exportMarkdown: (content) => ipcRenderer.invoke('export:markdown', content),
+  writeClipboard: (content) => ipcRenderer.invoke('clipboard:write', content),
   
   // Mobile Sync & Network info
   getNetworkInfo: () => ipcRenderer.invoke('sync:getNetworkInfo'),

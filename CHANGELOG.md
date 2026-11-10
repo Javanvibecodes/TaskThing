@@ -2,6 +2,16 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.3] - 2026-11-10
+
+### Fixed
+- Sync: manual IP connection no longer fails instantly. The mobile app now sends the pairing token (accepted from the copied pairing link, the token field, or the legacy TC-LOCAL default), and errors mention the token instead of claiming the host is unreachable.
+- Sync: the QR code is larger and encodes a shorter payload, so phone cameras can resolve it reliably.
+- Sync: the mobile scanner uses the native BarcodeDetector when available and scans at 15 fps, making pairing much faster.
+
+### Added
+- PC Preferences: a **Copy pairing link** button copies `ws://IP:PORT?token=...` for pasting into the mobile app.
+
 ## [1.0.2] - 2026-11-10
 
 ### Changed
