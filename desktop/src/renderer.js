@@ -325,7 +325,7 @@
       const isTarget = item.getAttribute('data-path') === targetPath;
       if (isTarget) {
         item.setAttribute('aria-current', 'page');
-        item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary-container text-on-primary-container shadow-sm';
+        item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors bg-primary-container text-primary shadow-sm';
       } else {
         item.removeAttribute('aria-current');
         item.className = 'nav-item relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors';
@@ -352,12 +352,15 @@
     activeTasksList.innerHTML = '';
     const tasks = appData.activeTasks || [];
     
-    // Update pending badge on Active Tasks tab!
-    navPendingBadge.textContent = tasks.length;
-    if (tasks.length === 0) {
-      navPendingBadge.classList.add('opacity-40');
+    // Pending badge on the Today's Tasks tab: only visible when tasks are pending
+    if (tasks.length > 0) {
+      navPendingBadge.textContent = tasks.length;
+      navPendingBadge.classList.remove('hidden');
+      navPendingBadge.classList.add('flex');
     } else {
-      navPendingBadge.classList.remove('opacity-40');
+      navPendingBadge.textContent = '';
+      navPendingBadge.classList.add('hidden');
+      navPendingBadge.classList.remove('flex');
     }
 
     remainingCountBadge.textContent = `${tasks.length} remaining`;

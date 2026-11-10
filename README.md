@@ -1,68 +1,107 @@
-# Task Thing
+# Task Thing — Minimal Desktop Widget & Mobile Companion
 
-A local-first, minimal productivity widget and mobile companion for daily task tracking on Windows, macOS, Linux, Android, and iOS. All data remains stored locally on your devices with zero cloud database dependency.
+**Version:** 1.0.1
 
----
+A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 
-## Downloads
+## Download
 
-Download the latest version directly for your platform:
+| Platform | Package | Direct download |
+|----------|---------|-----------------|
+| **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
+| **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
+| **macOS** | Build from source | [Build instructions](#build-from-source) |
+| **iOS** | Build from source | [Build instructions](#build-from-source) |
 
-| Platform | File | Direct Download |
-| :--- | :--- | :--- |
-| Windows | `Task-Thing-Setup.exe` | [Download for Windows](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-Setup.exe) |
-| Android | `Task-Thing.apk` | [Download APK](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/app-debug.apk) |
-| macOS | `Task-Thing.dmg` | [Download for macOS](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing.dmg) |
-| Linux | `Task-Thing.AppImage` | [Download for Linux](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing.AppImage) |
+### Direct links
 
-View all releases and changelogs on the [Releases page](https://github.com/Javanvibecodes/TaskThing/releases).
+- Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
+- Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
 
----
+The desktop packages are not code-signed, so Windows SmartScreen and macOS Gatekeeper may warn on first launch. On Windows choose **More info → Run anyway**. On macOS, right-click the app and choose **Open**, or run `xattr -dr com.apple.quarantine "Task Thing.app"`.
 
-## Desktop Widget
+### Install notes
 
-Cross-platform floating desktop widget designed to stay out of the way until needed.
+- **Windows:** run `Task-Thing-win-x64.exe`. The installer does not require administrator rights.
+- **Android:** open `Task-Thing-android.apk` on the device and allow installing from this source when prompted.
 
-### Features
+## How PC & Phone Sync Works
 
-- Frameless Design: Crisp, borderless floating window with no artificial drop shadows.
-- Native Caption Controls:
-  - Windows: Minimize, Pin Always-on-top, Compact Mode toggle, and Close controls on the top right.
-  - macOS: Traffic light controls on the top left.
-- Today Tasks and Real-Time Counter: Dynamic badge displaying remaining uncompleted tasks for today.
-- Add Task Form:
-  - Accessible via the Add Task button.
-  - Options to schedule for Today or queue for Tomorrow.
-  - Built-in Tag Bank cycler with a New Tag button to create and save custom labels.
-- Daily Habit Routines: Recurring tasks that automatically populate in Today's task list every morning.
-- Overdue Task Rollover: Uncompleted tasks from previous days display an Overdue indicator with a single-click Move to Today action.
-- Distinct Empty States: Tailored views when no tasks have been created yet, and celebratory views when all planned tasks are completed.
-- Color Presets: Six accent themes (Cobalt, Emerald, Amber, Coral, Obsidian, and Arctic) configurable independently per device.
+Task Thing runs a local WebSocket sync server on your computer (default port **48721**). No cloud accounts, no third-party servers — your tasks and habits stay on your local network.
 
----
+### On Your PC (Desktop Widget)
 
-## Mobile Companion
+1. Launch Task Thing on Windows.
+2. Click the **Preferences (tune)** icon in the sidebar.
+3. A QR code appears containing your PC's IP address, port **48721**, and a secure sync token.
+4. Click **Copy IP** to paste the connection details manually, or proceed to the phone step.
 
-Cross-platform mobile application for Android and iOS providing full mobile management.
+### On Your Phone (Android)
 
-### Features
+1. Open Task Thing from your app drawer.
+2. Tap the **Sync** tab at the bottom.
+3. Grant camera permission when the system dialog appears.
+4. Point your camera at the PC screen QR code — the scanner auto-detects the pairing payload with no extra framing required.
+5. **Alternative:** Tap **Manual IP** and enter your PC's local IP (for example `192.168.1.50`) plus port **48721**.
+6. The header pill turns blue when the live connection is active.
 
-- Native Interface: Adapts to system display cutouts, notches, and navigation bars.
-- Immediate Launch: Clean logo splash screen that transitions straight to the main task view.
-- Task and Habit Management: Add, edit, check off, and organize daily tasks and recurring habits.
-- Tag Manager: Easily create custom tags on mobile that persist across sessions.
-- In-App Help and Legal: Built-in pairing instructions, offline privacy policy, and terms of use.
+### Real-Time Two-Way Synchronization
 
----
+Once paired, any task added, checked off, edited, or habit checked on either your PC desktop widget or your mobile phone syncs instantly over Wi-Fi. The connection is bidirectional — changes on either device propagate to the other in under a second.
 
-## Peer-to-Peer Local Sync
+Changes made while the phone is offline are queued and sent automatically on the next connection. The queue records only real pending differences, so an item that was added and then deleted again does not appear as an unsynced change.
 
-Synchronize tasks and habits between your desktop widget and mobile phone over your local network without intermediate servers.
+## Features
 
-### Features
+- **Daily Tasks** — add, edit, prioritize, and check off tasks; syncs to phone instantly
+- **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto-appear each morning
+- **Real-Time Sync** — every change on either device propagates to the other over Wi-Fi in under a second
+- **Instant Branded Launch** — the Blob logo appears immediately when the app is opened and is held for about 3 seconds while the app loads, then the task dashboard appears
+- **No Offline Dependencies** — Tailwind styles, fonts, icons and the QR scanner are bundled inside the app, so startup never waits on a network request
+- **Clear Navigation State** — the active tab's icon is highlighted blue, and the Today badge is only shown when tasks are actually pending
+- **No Placeholder Tasks** — the app goes straight to the task dashboard without loading skeletons or empty states
+- **Privacy-First** — all sync is local; no cloud accounts, no third-party servers
 
-- Local Network Only: Syncs directly over your local Wi-Fi router or phone mobile hotspot. No external internet connection or cloud service required.
-- Single QR Scan Pairing: Scan the QR code displayed in the desktop widget once to pair devices permanently.
-- Background Auto-Reconnection: Automatically re-establishes synchronization whenever both devices are on the same local network.
-- Offline Buffer and Merge: Any tasks created or checked off while away or offline are saved locally and merged using timestamps upon reconnection.
-- Complete Privacy: Your task data, routines, and history never leave your own devices.
+## Build from Source
+
+Requirements: Node.js 20+, pnpm 12+, and the platform SDK for the target you are building.
+
+```bash
+pnpm install
+```
+
+### Desktop (Electron)
+
+```bash
+pnpm desktop:start          # run from source
+pnpm desktop:dist:win       # Windows installer
+pnpm desktop:dist:mac       # macOS .dmg + .zip (must run on macOS)
+```
+
+### Mobile (Capacitor)
+
+```bash
+cd mobile
+pnpm install
+pnpm build                  # compiles Tailwind CSS and the web bundle
+npx cap sync
+
+# Android
+npx cap open android        # or: cd android && ./gradlew assembleDebug
+
+# iOS (macOS + Xcode required)
+npx cap open ios
+```
+
+macOS `.dmg` and iOS `.ipa` packages must be produced on their native operating systems (or on a matching CI runner). See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
+## License
+
+This project is open source under the **MIT License**. See the [GitHub Repository](https://github.com/Javanvibecodes/TaskThing) for details.
+
+## Quick Start
+
+1. **Download** the app for your operating system from the table above.
+2. **Launch** the desktop widget and open **Preferences** to show the pairing QR code.
+3. **Open** Task Thing on your Android phone, tap **Sync**, and scan the QR code — or enter the IP manually.
+4. **Start adding tasks** on either device — they sync instantly.

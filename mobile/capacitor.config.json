@@ -7,12 +7,22 @@
     "androidScheme": "http",
     "cleartext": true
   },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "androidScaleType": "CENTER_CROP",
+      "androidSplashResourceName": "splash",
+      "iosSplashResourceName": "Splash",
+      "showSpinner": false
+    }
+  },
   "android": {
-    "backgroundColor": "#000000"
+    "backgroundColor": "#ffffff"
   },
   "ios": {
-    "backgroundColor": "#000000",
+    "backgroundColor": "#ffffff",
     "contentInset": "always"
   }
 }
-
