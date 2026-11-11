@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
-  <meta name="app-version" content="1.0.4"/>
+  <meta name="app-version" content="1.0.5"/>
 
   <!-- Paint the very first frame white before any stylesheet is parsed, so
        there is no dark flash while the WebView boots. -->
@@ -555,11 +555,17 @@
           <span>Check for Updates</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          The app checks for newer versions. This app is currently v1.0.4.
+          This app is currently <span id="current-app-version">v1.0.5</span>. Updates are downloaded from GitHub.
         </p>
-        <button id="btn-check-updates" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
-          Check Now
-        </button>
+        <p id="update-status" class="hidden font-body-sm text-[11px] leading-relaxed text-on-surface-variant"></p>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-check-updates" type="button" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all disabled:opacity-60">
+            Check Now
+          </button>
+          <a id="btn-download-update" href="#" target="_blank" rel="noopener" class="hidden px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
+            Get update
+          </a>
+        </div>
       </div>
 
       <div class="p-4 bg-surface-container rounded-2xl border border-outline-variant flex flex-col gap-2">

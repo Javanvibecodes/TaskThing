@@ -2,6 +2,11 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.5] - 2026-11-11
+
+### Fixed
+- **Check for Updates** on the phone now queries the GitHub release feed and compares it with the installed version instead of always claiming the app is current. It reports the newer version with a **Get update** link, says when you are already up to date, and explains when GitHub cannot be reached.
+
 ## [1.0.4] - 2026-11-11
 
 ### Changed

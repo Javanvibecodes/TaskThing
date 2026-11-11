@@ -140,7 +140,13 @@
 
   // Help & Legal elements
   const btnCheckUpdates = document.getElementById('btn-check-updates');
+  const btnDownloadUpdate = document.getElementById('btn-download-update');
+  const updateStatus = document.getElementById('update-status');
+  const currentAppVersionEl = document.getElementById('current-app-version');
   const btnReportIssue = document.getElementById('btn-report-issue');
+
+  const APP_VERSION = (document.querySelector('meta[name="app-version"]')?.content || '1.0.4').trim();
+  const LATEST_RELEASE_API = 'https://api.github.com/repos/Javanvibecodes/TaskThing/releases/latest';
   const btnAddHabitTag = document.getElementById('mobile-btn-add-habit-tag');
 
   // ----------------- STORAGE & PERSISTENCE -----------------
@@ -1558,15 +1564,44 @@
     });
 
     // Check for Updates button
-    btnCheckUpdates?.addEventListener('click', () => {
+    if (currentAppVersionEl) currentAppVersionEl.textContent = 'v' + APP_VERSION;
+    btnCheckUpdates?.addEventListener('click', async () => {
+      if (btnCheckUpdates.disabled) return;
+      const originalText = btnCheckUpdates.textContent.trim();
       btnCheckUpdates.disabled = true;
-      const originalText = btnCheckUpdates.textContent;
       btnCheckUpdates.textContent = 'Checking...';
-      setTimeout(() => {
+      btnDownloadUpdate?.classList.add('hidden');
+      setUpdateStatus('Looking for the latest release on GitHub...');
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      try {
+        const res = await fetch(LATEST_RELEASE_API, {
+          cache: 'no-store',
+          headers: { Accept: 'application/vnd.github+json' },
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error('GitHub responded with ' + res.status);
+        const release = await res.json();
+        const latest = String(release.tag_name || '').replace(/^v/i, '').trim();
+        if (!latest) throw new Error('Release has no version tag');
+
+        if (isNewerVersion(latest, APP_VERSION)) {
+          setUpdateStatus('v' + latest + ' is available — you are on v' + APP_VERSION + '.');
+          if (btnDownloadUpdate) {
+            btnDownloadUpdate.href = release.html_url || 'https://github.com/Javanvibecodes/TaskThing/releases/latest';
+            btnDownloadUpdate.classList.remove('hidden');
+          }
+        } else {
+          setUpdateStatus('You are on the latest version (v' + APP_VERSION + ').');
+        }
+      } catch (err) {
+        setUpdateStatus('Could not reach GitHub to check for updates. Check your internet connection and try again.');
+      } finally {
+        clearTimeout(timeout);
         btnCheckUpdates.disabled = false;
         btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.4).');
-      }, 700);
+      }
     });
 
     // Report Issue button
@@ -1580,6 +1615,24 @@
     document.addEventListener('click', () => {
       addMenu.classList.add('hidden');
     });
+  }
+
+  function setUpdateStatus(message) {
+    if (!updateStatus) return;
+    updateStatus.textContent = message;
+    updateStatus.classList.remove('hidden');
+  }
+
+  function isNewerVersion(candidate, current) {
+    const parse = (v) => String(v).replace(/^v/i, '').split('-')[0].split('.').map(n => parseInt(n, 10) || 0);
+    const a = parse(candidate);
+    const b = parse(current);
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const x = a[i] || 0;
+      const y = b[i] || 0;
+      if (x !== y) return x > y;
+    }
+    return false;
   }
 
   function getTodayString() {
