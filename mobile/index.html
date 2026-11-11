@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
-  <meta name="app-version" content="1.0.5"/>
+  <meta name="app-version" content="1.0.6"/>
 
   <!-- Paint the very first frame white before any stylesheet is parsed, so
        there is no dark flash while the WebView boots. -->
@@ -555,7 +555,7 @@
           <span>Check for Updates</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          This app is currently <span id="current-app-version">v1.0.5</span>. Updates are downloaded from GitHub.
+          This app is currently <span id="current-app-version">v1.0.6</span>. Updates are downloaded from GitHub.
         </p>
         <p id="update-status" class="hidden font-body-sm text-[11px] leading-relaxed text-on-surface-variant"></p>
         <div class="flex flex-wrap items-center gap-2">
@@ -574,11 +574,13 @@
           <span>Report Issue</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          Help us improve Task Thing by reporting any issues you encounter. Local-only, no telemetry.
+          Opens the project's GitHub issue form with your note, app version and device details filled in. Nothing is sent anywhere until you submit it there.
         </p>
-        <button id="btn-report-issue" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
-          Report
-        </button>
+        <textarea id="report-issue-text" rows="3" maxlength="1000" placeholder="What went wrong? What did you expect to happen?" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface text-[12px] leading-relaxed border border-outline outline-none focus:border-primary resize-none"></textarea>
+        <a id="btn-report-issue" href="https://github.com/Javanvibecodes/TaskThing/issues/new" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
+          Open GitHub issue
+        </a>
+        <p id="report-status" class="hidden font-body-sm text-[11px] leading-relaxed text-on-surface-variant"></p>
       </div>
 
       <!-- Pairing Guide -->

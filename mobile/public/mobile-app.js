@@ -144,6 +144,8 @@
   const updateStatus = document.getElementById('update-status');
   const currentAppVersionEl = document.getElementById('current-app-version');
   const btnReportIssue = document.getElementById('btn-report-issue');
+  const reportIssueText = document.getElementById('report-issue-text');
+  const reportStatus = document.getElementById('report-status');
 
   const APP_VERSION = (document.querySelector('meta[name="app-version"]')?.content || '1.0.4').trim();
   const LATEST_RELEASE_API = 'https://api.github.com/repos/Javanvibecodes/TaskThing/releases/latest';
@@ -1604,17 +1606,55 @@
       }
     });
 
-    // Report Issue button
+    // Report Issue: prefill the GitHub issue form from the draft + diagnostics
+    if (reportIssueText) {
+      try {
+        const draft = localStorage.getItem('tasks_report_draft');
+        if (draft) reportIssueText.value = draft;
+      } catch (e) {}
+      reportIssueText.addEventListener('input', () => {
+        try { localStorage.setItem('tasks_report_draft', reportIssueText.value); } catch (e) {}
+      });
+    }
+
     btnReportIssue?.addEventListener('click', () => {
-      const issue = prompt('Describe the issue or feedback:');
-      if (issue && issue.trim()) {
-        alert('Thank you! Your feedback has been recorded locally. We appreciate you helping improve Task Thing.');
-      }
+      const note = (reportIssueText?.value || '').trim();
+      const title = note ? note.split('\n')[0].trim().slice(0, 90) : 'Mobile app feedback';
+      const syncState = !syncConfig.host
+        ? 'not paired'
+        : (syncConfig.connected ? 'connected to ' + syncConfig.host : 'paired, offline');
+      const body = [
+        note || '(No description yet — please add what happened.)',
+        '',
+        '---',
+        'App version: v' + APP_VERSION,
+        'Platform: ' + getPlatformLabel(),
+        'Sync: ' + syncState
+      ].join('\n');
+
+      btnReportIssue.href = 'https://github.com/Javanvibecodes/TaskThing/issues/new'
+        + '?title=' + encodeURIComponent(title)
+        + '&body=' + encodeURIComponent(body);
+      setReportStatus('Opening GitHub in your browser. Your note is kept here as a draft.');
     });
 
     document.addEventListener('click', () => {
       addMenu.classList.add('hidden');
     });
+  }
+
+  function setReportStatus(message) {
+    if (!reportStatus) return;
+    reportStatus.textContent = message;
+    reportStatus.classList.remove('hidden');
+  }
+
+  function getPlatformLabel() {
+    const platform = (window.Capacitor && typeof window.Capacitor.getPlatform === 'function')
+      ? window.Capacitor.getPlatform()
+      : 'web';
+    const size = window.screen ? window.screen.width + 'x' + window.screen.height : 'unknown';
+    return platform + ' ' + size;
   }
 
   function setUpdateStatus(message) {

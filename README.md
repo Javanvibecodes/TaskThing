@@ -1,6 +1,6 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.5
+**Version:** 1.0.6
 
 A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 

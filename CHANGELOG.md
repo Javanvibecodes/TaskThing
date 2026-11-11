@@ -2,6 +2,11 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.6] - 2026-11-11
+
+### Fixed
+- **Report Issue** on the phone now works instead of calling `prompt()`, which Android's WebView never displays. The card has a note box, and **Open GitHub issue** opens a prefilled issue form in the browser with your note plus the app version, device size and sync state. The note is kept as a local draft until you submit it.
+
 ## [1.0.5] - 2026-11-11
 
 ### Fixed
