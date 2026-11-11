@@ -31,8 +31,10 @@ class SyncServer {
     this.server = null;
     this.wss = null;
     this.clients = new Set();
+    this.deviceName = options.deviceName || 'Task Thing PC';
     this.onMutation = options.onMutation || (() => {});
     this.onClientCountChange = options.onClientCountChange || (() => {});
+    this.onClientsChange = options.onClientsChange || (() => {});
     this.onRequestSnapshot = options.onRequestSnapshot || (() => ({}));
   }
 
@@ -107,6 +109,8 @@ class SyncServer {
             status: 'ok',
             app: 'Task Thing',
             version: '1.0.0',
+            port: this.port,
+            device: this.deviceName,
             clients: this.clients.size,
             timestamp: Date.now()
           }));
@@ -183,7 +187,16 @@ class SyncServer {
 
       this.wss.on('connection', (ws, request) => {
         this.clients.add(ws);
+        ws.meta = { name: 'Unknown device', platform: 'unknown', connectedAt: Date.now() };
         this.onClientCountChange(this.clients.size);
+        this.notifyClients();
+
+        // Tell the phone which PC it is talking to, so it can show it.
+        this.sendTo(ws, 'WELCOME', {
+          name: this.deviceName,
+          platform: process.platform,
+          port: this.port
+        });
 
         // A code was used: hand over the long-lived token, then burn the code.
         if (request.pairedWithCode) {
@@ -224,12 +237,14 @@ class SyncServer {
         ws.on('close', () => {
           this.clients.delete(ws);
           this.onClientCountChange(this.clients.size);
+          this.notifyClients();
         });
 
         ws.on('error', (err) => {
           console.warn('[tasks.core] WebSocket client error:', err.message);
           this.clients.delete(ws);
           this.onClientCountChange(this.clients.size);
+          this.notifyClients();
         });
       });
 
@@ -260,6 +275,22 @@ class SyncServer {
 
   handleClientMessage(clientWs, message) {
     const { type, payload, timestamp } = message;
+
+    // 0. A phone introducing itself, so the PC can show which device is linked
+    if (type === 'HELLO') {
+      clientWs.meta = {
+        name: (payload && payload.name) || 'Unknown device',
+        platform: (payload && payload.platform) || 'unknown',
+        connectedAt: clientWs.meta?.connectedAt || Date.now()
+      };
+      this.sendTo(clientWs, 'WELCOME', {
+        name: this.deviceName,
+        platform: process.platform,
+        port: this.port
+      });
+      this.notifyClients();
+      return;
+    }
 
     // 1. Snapshot request
     if (type === 'SYNC_INIT_REQUEST') {
@@ -294,10 +325,46 @@ class SyncServer {
     }
 
     // 4. Regular mutation
+    // Always answer with the full authoritative snapshot instead of forwarding
+    // the raw event: the phone then shows exactly what the PC has, even if a
+    // mutation was applied differently or two changes landed at once.
     if (type) {
       this.onMutation(message);
-      // Broadcast mutation to all other connected clients
-      this.broadcast(type, payload, clientWs);
+      this.broadcastSnapshot();
+    }
+  }
+
+  sendTo(ws, type, payload) {
+    if (!ws || ws.readyState !== 1) return false;
+    try {
+      ws.send(JSON.stringify({ type, payload, timestamp: Date.now() }));
+      return true;
+    } catch (e) {
+      console.warn('[tasks.core] Could not send to client:', e.message);
+      return false;
+    }
+  }
+
+  broadcastSnapshot() {
+    const snapshot = this.onRequestSnapshot();
+    this.broadcast('STATE_SNAPSHOT', snapshot);
+  }
+
+  getClients() {
+    return [...this.clients]
+      .filter((ws) => ws.readyState === 1)
+      .map((ws) => ({
+        name: ws.meta?.name || 'Unknown device',
+        platform: ws.meta?.platform || 'unknown',
+        connectedAt: ws.meta?.connectedAt || null
+      }));
+  }
+
+  notifyClients() {
+    try {
+      this.onClientsChange(this.getClients());
+    } catch (e) {
+      console.warn('[tasks.core] Client list listener failed:', e.message);
     }
   }
 
@@ -336,6 +403,7 @@ class SyncServer {
     this.failedAttempts.clear();
     this.clients.clear();
     this.onClientCountChange(0);
+    this.notifyClients();
   }
 }
 

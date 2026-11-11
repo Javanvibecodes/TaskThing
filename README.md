@@ -6,12 +6,12 @@ A lightning-fast Electron desktop widget and Capacitor mobile companion that kee
 
 ## Download
 
-| Platform | Package | Direct download |
-|----------|---------|-----------------|
-| **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
-| **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
+| Platform | Package |
+|----------|---------|
+| **Windows 10/11 (x64)** | Installer `.exe` |
+| **Android 7.0+** | APK |
 
-### Direct links
+### Direct links (release download URLs)
 
 - Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
 - Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
@@ -25,13 +25,13 @@ The desktop installer is not code-signed, so Windows SmartScreen may warn on fir
 
 ## How PC & Phone Sync Works
 
-Task Thing runs a local WebSocket sync server on your computer (default port **48721**). No cloud accounts, no third-party servers — your tasks and habits stay on your local network.
+Task Thing runs a local WebSocket sync server on your computer. No cloud accounts, no third-party servers — your tasks and habits stay on your local network.
 
 ### On Your PC (Desktop Widget)
 
 1. Launch Task Thing on Windows.
 2. Click the **Preferences (tune)** icon in the sidebar.
-3. A **6-digit pairing code** appears next to your PC's IP address and port **48721**.
+3. A **6-digit pairing code** appears next to your PC's IP address.
 4. Type that code into the phone (or use **Copy pairing link** for a one-paste setup).
 
 ### On Your Phone (Android)

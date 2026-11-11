@@ -3,7 +3,6 @@
   let mobileData = {
     settings: {
       themePreset: 'cobalt',
-      syncPort: 48721,
       connected: false
     },
     tagsBank: ['Design', 'Dev', 'Ops', 'Team', 'Personal'],
@@ -16,8 +15,10 @@
   let syncConfig = {
     host: '',
     hosts: [],
-    port: mobileData.settings.syncPort || 48721,
+    port: 0,           // 0 = not known yet; the PC picks a free port at runtime
     token: '',
+    desktopName: '',
+    desktopPlatform: '',
     connected: false,
     mode: 'disconnected'
   };
@@ -28,6 +29,8 @@
   let connectTimeout = null;
   let heartbeatTimer = null;
   let manualDisconnect = false;
+  let refreshPending = false;
+  let hintTimer = null;
   let currentPriority = 'urgent';
   let currentTagIndex = 0;
   let schedulingTarget = 'today'; // 'today' | 'tomorrow'
@@ -133,6 +136,9 @@
   const btnManualConnect = document.getElementById('btn-manual-connect');
   const btnReconnect = document.getElementById('mobile-btn-reconnect');
   const btnDisconnect = document.getElementById('mobile-btn-disconnect');
+  const btnRefresh = document.getElementById('mobile-btn-refresh');
+  const syncPeer = document.getElementById('mobile-sync-peer');
+  const syncHint = document.getElementById('mobile-sync-hint');
   const mobileSyncDot = document.getElementById('mobile-sync-dot');
   const mobileSyncText = document.getElementById('mobile-sync-text');
   const mobileSyncDetailStatus = document.getElementById('mobile-sync-detail-status');
@@ -252,7 +258,9 @@
         host: syncConfig.host,
         hosts: syncConfig.hosts,
         port: syncConfig.port,
-        token: syncConfig.token
+        token: syncConfig.token,
+        desktopName: syncConfig.desktopName,
+        desktopPlatform: syncConfig.desktopPlatform
       }));
     } catch (e) {}
   }
@@ -393,15 +401,34 @@
 
     manualDisconnect = false;
 
-    const port = syncConfig.port || 48721;
+    updateConnectionUI('connecting', hostToTry);
+
+    // The PC never promises a fixed port (it takes the first one that is free),
+    // so probe for it instead of assuming. A port typed in by hand wins.
+    let port = options.rediscover ? 0 : (syncConfig.port || 0);
+    if (!port) {
+      setSyncHint('Looking for Task Thing on ' + hostToTry + '…');
+      const found = await discoverDesktop(hostToTry);
+      if (!found) {
+        setSyncHint('');
+        failConnection('No Task Thing answered at ' + hostToTry + '. Check the IP and that both devices are on the same Wi-Fi.');
+        return;
+      }
+      port = found.port;
+      if (found.device) syncConfig.desktopName = found.device;
+    }
+
+    syncConfig.host = hostToTry;
+    syncConfig.port = port;
+    persistSyncConfig();
+    setSyncHint('');
+
     // A code is only ever used for the first pairing; reconnects use the
     // long-lived token the desktop handed back after that pairing.
     const credential = pairingCode
       ? `code=${encodeURIComponent(pairingCode)}`
       : `token=${encodeURIComponent(syncConfig.token || '')}`;
     const wsUrl = `ws://${hostToTry}:${port}?${credential}`;
-
-    updateConnectionUI('connecting', hostToTry);
 
     try {
       ws = new WebSocket(wsUrl);
@@ -421,6 +448,12 @@
         syncConfig.mode = isHotspotIp(hostToTry) ? 'hotspot' : 'lan';
         persistSyncConfig();
         updateConnectionUI('connected', hostToTry);
+
+        // Introduce this phone so the PC can show which device is linked.
+        sendWsMessage({
+          type: 'HELLO',
+          payload: { name: getThisDeviceName(), platform: getPlatformLabel() }
+        });
 
         // Fetch state snapshot
         sendWsMessage({ type: 'SYNC_INIT_REQUEST' });
@@ -465,6 +498,13 @@
           return;
         }
 
+        // The PC may have come back on a different port (it takes the first one
+        // that is free), so scan once more before declaring failure.
+        if (!pairingCode && !options.rediscover && syncConfig.host) {
+          connectToDesktop(syncConfig.host, Object.assign({}, options, { rediscover: true }));
+          return;
+        }
+
         failConnection(pairingCode
           ? 'Pairing failed — that code is not valid for this PC. Get the current code from the PC Preferences and try again.'
           : 'Connection failed — check the PC IP, the port, and that the phone is on the same Wi-Fi.');
@@ -477,6 +517,89 @@
       console.error('WebSocket connection failed:', err);
       failConnection('Connection failed: ' + (err.message || err));
     }
+  }
+
+  // ----------------- PORT DISCOVERY -----------------
+  // The PC binds the first free port from this range, so the phone asks each
+  // candidate for its /ping instead of assuming 48721 is the one.
+  const PORT_SCAN_START = 48721;
+  const PORT_SCAN_COUNT = 25;
+
+  function probeDesktopPort(host, port) {
+    return new Promise((resolve) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 900);
+      fetch(`http://${host}:${port}/ping`, { signal: controller.signal })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((info) => {
+          clearTimeout(timer);
+          if (info && info.app === 'Task Thing') {
+            resolve({ port: Number(info.port) || port, device: info.device || '' });
+          } else {
+            resolve(null);
+          }
+        })
+        .catch(() => {
+          clearTimeout(timer);
+          resolve(null);
+        });
+    });
+  }
+
+  async function discoverDesktop(host) {
+    if (!host) return null;
+
+    // A port already known to work is tried first, then the whole range.
+    const ports = [];
+    if (syncConfig.port) ports.push(syncConfig.port);
+    for (let i = 0; i < PORT_SCAN_COUNT; i += 1) {
+      const candidate = PORT_SCAN_START + i;
+      if (!ports.includes(candidate)) ports.push(candidate);
+    }
+
+    const results = await Promise.all(ports.map((port) => probeDesktopPort(host, port)));
+    return results.find(Boolean) || null;
+  }
+
+  function setSyncHint(message, autoHideMs = 0) {
+    if (!syncHint) return;
+    if (hintTimer) {
+      clearTimeout(hintTimer);
+      hintTimer = null;
+    }
+    if (!message) {
+      syncHint.textContent = '';
+      syncHint.classList.add('hidden');
+      return;
+    }
+    syncHint.textContent = message;
+    syncHint.classList.remove('hidden');
+    if (autoHideMs > 0) {
+      hintTimer = setTimeout(() => {
+        hintTimer = null;
+        syncHint.textContent = '';
+        syncHint.classList.add('hidden');
+      }, autoHideMs);
+    }
+  }
+
+  function platformName(platform) {
+    if (!platform) return '';
+    if (platform === 'win32') return 'Windows PC';
+    if (platform === 'android') return 'Android';
+    if (platform === 'ios') return 'iPhone';
+    return platform.charAt(0).toUpperCase() + platform.slice(1);
+  }
+
+  function getThisDeviceName() {
+    const ua = navigator.userAgent || '';
+    const android = ua.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build|\))/);
+    if (android && android[1]) return android[1].trim();
+    if (/iPhone/.test(ua)) return 'iPhone';
+    if (/iPad/.test(ua)) return 'iPad';
+    if (/Windows/.test(ua)) return 'Phone browser on Windows';
+    if (/Macintosh/.test(ua)) return 'Browser on Mac';
+    return 'Phone browser';
   }
 
   function isHotspotIp(ip) {
@@ -513,10 +636,22 @@
       return;
     }
 
+    if (type === 'WELCOME' && payload) {
+      // The PC tells us who it is, so the phone can name the machine it is on.
+      syncConfig.desktopName = payload.name || syncConfig.desktopName;
+      syncConfig.desktopPlatform = payload.platform || syncConfig.desktopPlatform;
+      persistSyncConfig();
+      if (ws && ws.readyState === WebSocket.OPEN) updateConnectionUI('connected', syncConfig.host);
+      return;
+    }
+
     if (type === 'STATE_SNAPSHOT') {
       if (payload) {
         if (Array.isArray(payload.activeTasks)) {
           mobileData.activeTasks = payload.activeTasks;
+        }
+        if (Array.isArray(payload.tomorrowTasks)) {
+          mobileData.tomorrowTasks = payload.tomorrowTasks;
         }
         if (Array.isArray(payload.completedTasks)) {
           mobileData.completedTasks = payload.completedTasks;
@@ -534,6 +669,12 @@
         renderHistory();
         renderRepeatedTasks();
         updateTomorrowBanner();
+
+        if (refreshPending) {
+          refreshPending = false;
+          const active = (payload.activeTasks || []).length;
+          setSyncHint(`Refreshed from your PC · ${active} active task${active === 1 ? '' : 's'}`, 4000);
+        }
       }
       return;
     }
@@ -587,33 +728,23 @@
     reconnectTimer = setTimeout(async () => {
       if (syncConfig.connected || manualDisconnect) return;
 
-      // If we already have a successful connection host, try that first
+      // If we already have a successful connection host, try that first. The
+      // PC's port may have changed while the phone was away, so rediscover it.
       if (syncConfig.host) {
-        connectToDesktop(syncConfig.host);
+        connectToDesktop(syncConfig.host, { rediscover: true });
         return;
       }
 
-      // Check alternate hotspot candidates
+      // Otherwise look for the PC on known hosts and the usual hotspot IPs.
       const candidates = [...(syncConfig.hosts || []), ...HOTSPOT_CANDIDATES];
       for (const ip of candidates) {
-        if (ip && ip !== syncConfig.host) {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 1000);
-            const res = await fetch(`http://${ip}:${syncConfig.port || 48721}/ping`, {
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            if (res.ok) {
-              connectToDesktop(ip);
-              return;
-            }
-          } catch (e) {
-            // continue to next candidate
-          }
+        if (!ip) continue;
+        const found = await discoverDesktop(ip);
+        if (found) {
+          connectToDesktop(ip, { rediscover: true });
+          return;
         }
       }
-      // No candidates found - UI will show disconnected; user can scan QR or manual connect
     }, 3000);
   }
 
@@ -634,8 +765,25 @@
     const isConnPending = state === 'connecting' || (ws && ws.readyState === WebSocket.CONNECTING);
     const isFailed = state === 'failed';
 
+    // Only ever show one primary action at a time: Disconnect while a session
+    // is live (or starting), Reconnect when there is nothing to disconnect.
     if (btnDisconnect) {
       btnDisconnect.classList.toggle('hidden', !(isConn || isConnPending));
+    }
+    if (btnReconnect) {
+      btnReconnect.classList.toggle('hidden', isConn || isConnPending);
+    }
+
+    if (syncPeer) {
+      const desktopName = syncConfig.desktopName || '';
+      if (isConn && desktopName) {
+        const plat = platformName(syncConfig.desktopPlatform);
+        syncPeer.textContent = `Connected to ${desktopName}${plat ? ' · ' + plat : ''} · ${syncConfig.host}:${syncConfig.port}`;
+        syncPeer.classList.remove('hidden');
+      } else {
+        syncPeer.textContent = '';
+        syncPeer.classList.add('hidden');
+      }
     }
 
     if (isConn) {
@@ -643,7 +791,7 @@
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-primary animate-pulse';
       mobileSyncText.textContent = host ? modeText : 'PC Synced';
       mobileSyncText.className = 'font-label-mono text-[10px] text-primary font-semibold';
-      mobileSyncDetailStatus.textContent = `Connected (${syncConfig.host || host}:${syncConfig.port || 48721})`;
+      mobileSyncDetailStatus.textContent = `Connected (${syncConfig.host || host}:${syncConfig.port})`;
       mobileSyncDetailStatus.className = 'font-headline-sm text-body-md text-primary font-semibold';
     } else if (isConnPending) {
       mobileSyncDot.className = 'w-2 h-2 rounded-full bg-tertiary animate-pulse';
@@ -1038,7 +1186,8 @@
   }
 
   // Accepts "ip", "ip:port", a query link, or a full pairing link such as
-  // ws://192.168.1.15:48721?token=TC-AB12CD34 (what the PC copies).
+  // ws://192.168.1.15:48722?token=TC-AB12CD34 (what the PC copies). A missing
+  // port stays 0, which makes the caller discover the PC's live port.
   function parseManualTarget(rawValue) {
     let value = (rawValue || '').trim();
     if (!value) return null;
@@ -1049,7 +1198,7 @@
         if (!parsed.hostname) return null;
         return {
           host: parsed.hostname,
-          port: parseInt(parsed.port, 10) || 48721,
+          port: parseInt(parsed.port, 10) || 0,
           token: parsed.searchParams.get('token') || ''
         };
       } catch (e) {
@@ -1071,7 +1220,7 @@
 
     return {
       host,
-      port: parseInt(parts[1], 10) || 48721,
+      port: parseInt(parts[1], 10) || 0,
       token
     };
   }
@@ -1557,6 +1706,28 @@
     });
 
     btnDisconnect?.addEventListener('click', () => disconnectFromDesktop());
+
+    // Pull the current state on demand, in case a push was missed.
+    btnRefresh?.addEventListener('click', () => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        refreshPending = true;
+        setSyncHint('Refreshing from your PC…');
+        sendWsMessage({ type: 'SYNC_INIT_REQUEST' });
+        setTimeout(() => {
+          if (refreshPending) {
+            refreshPending = false;
+            setSyncHint('The PC did not answer the refresh. Check it is still running.', 6000);
+          }
+        }, 6000);
+        return;
+      }
+
+      renderActiveTasks();
+      renderHistory();
+      renderRepeatedTasks();
+      updateTomorrowBanner();
+      setSyncHint('Showing the data saved on this phone. Connect to pull the latest from your PC.', 6000);
+    });
 
     // Theme selector (Local Only)
     document.querySelectorAll('.mobile-preset-btn').forEach(btn => {

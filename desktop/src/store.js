@@ -27,7 +27,6 @@ class LocalStore {
         colorMode: 'dark',
         alwaysOnTop: false,
         soundEnabled: true,
-        syncPort: 48721,
         pairingToken: 'TC-' + Math.random().toString(36).substring(2, 10).toUpperCase()
       },
       repeatedTasks: [],
