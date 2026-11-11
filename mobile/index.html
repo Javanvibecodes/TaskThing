@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Task Thing Mobile</title>
-  <meta name="app-version" content="1.0.3"/>
+  <meta name="app-version" content="1.0.4"/>
 
   <!-- Paint the very first frame white before any stylesheet is parsed, so
        there is no dark flash while the WebView boots. -->
@@ -20,8 +20,6 @@
   <link rel="stylesheet" href="fonts/inter.css"/>
   <link rel="stylesheet" href="fonts/jbm.css"/>
   <link rel="stylesheet" href="assets/tailwind.css"/>
-  <!-- QR scanner library bundled locally (no network at startup) -->
-  <script src="vendor/html5-qrcode.min.js" type="text/javascript"></script>
 
   <style>
     /* =========================================================
@@ -171,6 +169,67 @@
     #mobile-opening-logo {
       opacity: 1;
     }
+
+    /* =========================================================
+       Bottom navigation
+       Owned by plain CSS (not utilities) so the bar keeps an
+       opaque white backing, clears the Android gesture inset,
+       and paints icon + label the same colour when active.
+       ========================================================= */
+    #mobile-bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 100;
+      background: #ffffff;
+      border-top: 1px solid rgb(var(--outline-variant));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      box-shadow: 0 -1px 10px rgba(10, 12, 16, 0.04);
+    }
+    #mobile-nav-row {
+      height: 64px;
+      display: flex;
+      align-items: stretch;
+      justify-content: space-around;
+      gap: 2px;
+      padding: 4px 6px;
+    }
+    .mobile-tab-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border-radius: 10px;
+      background: transparent;
+      color: rgb(var(--on-surface-variant));
+      line-height: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      border: 0;
+    }
+    .mobile-tab-btn .mobile-tab-icon {
+      font-size: 20px;
+      color: inherit;
+    }
+    .mobile-tab-btn .mobile-tab-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: inherit;
+      white-space: nowrap;
+    }
+    .mobile-tab-btn.is-active {
+      background: rgb(var(--primary));
+      color: rgb(var(--on-primary));
+    }
+
+    /* Keep scrollable content clear of the fixed bar + system gesture area. */
+    #mobile-main-scroll {
+      padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    }
   </style>
 </head>
 <body class="relative bg-surface text-on-surface font-body-md h-[100dvh] flex flex-col overflow-hidden" data-theme="cobalt">
@@ -195,7 +254,7 @@
   </header>
 
   <!-- Mobile Screens Container -->
-  <main id="mobile-main-scroll" class="flex-1 overflow-y-auto min-h-0 relative pb-24">
+  <main id="mobile-main-scroll" class="flex-1 overflow-y-auto min-h-0 relative">
 
     <!-- ================= SCREEN 1: ACTIVE TASKS ================= -->
     <section id="screen-active-tasks" class="mobile-screen p-4 flex flex-col gap-3 min-h-full">
@@ -443,38 +502,42 @@
           <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Sync State</span>
           <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-on-surface font-semibold">Disconnected</span>
         </div>
-        <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
-          Reconnect
-        </button>
-      </div>
-
-      <!-- Camera Scanner Card -->
-      <div class="bg-surface-container rounded-2xl p-4 flex flex-col items-center gap-3 border border-outline-variant shadow-sm">
-        <div id="qr-reader" class="w-[230px] h-[230px] max-w-[230px] aspect-square bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col items-center justify-center border border-outline relative">
-          <span class="material-symbols-outlined text-[48px] text-on-surface-variant mb-2">qr_code_scanner</span>
-          <span class="font-label-mono text-[11px] text-on-surface-variant text-center px-4">
-            Point camera at the desktop widget QR code
-          </span>
-        </div>
-
-        <button id="btn-toggle-camera" class="w-full h-10 rounded-xl bg-primary text-white font-headline-sm text-label-md flex items-center justify-center gap-2 shadow-md transition-all active:scale-98">
-          <span class="material-symbols-outlined text-[18px]">camera_alt</span>
-          <span id="camera-btn-text">Start QR Scanner</span>
-        </button>
-      </div>
-
-      <!-- Manual Connection Fallback -->
-      <div class="bg-surface-container/60 rounded-2xl p-4 flex flex-col gap-3 border border-outline-variant">
-        <span class="font-label-mono text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">Manual Desktop IP Connect</span>
-        <div class="flex items-center gap-2">
-          <input id="manual-ip-input" type="text" placeholder="e.g. 192.168.1.15:48721" class="flex-1 bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
-          <button id="btn-manual-connect" class="h-9 px-3 rounded-lg bg-primary text-white font-label-md text-label-md font-semibold shrink-0">
-            Connect
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="mobile-btn-disconnect" class="hidden px-3 py-1.5 rounded-lg bg-error-container text-error font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
+            Disconnect
+          </button>
+          <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
+            Reconnect
           </button>
         </div>
-        <input id="manual-token-input" type="text" placeholder="Pairing token (e.g. TC-AB12CD34)" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
+      </div>
+
+      <!-- Pairing code card -->
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-3 border border-outline-variant shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="font-label-mono text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">Pair with your PC</span>
+          <span class="material-symbols-outlined text-[18px] text-primary">pin</span>
+        </div>
+        <p class="font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
+          Open <strong>Preferences</strong> on the PC widget to see its 6-digit pairing code, then enter it below with the PC's IP address.
+        </p>
+
+        <label class="flex flex-col gap-1">
+          <span class="font-label-mono text-[10px] text-on-surface-variant">PC IP address</span>
+          <input id="manual-ip-input" type="text" inputmode="decimal" placeholder="e.g. 192.168.1.15:48721" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
+        </label>
+
+        <label class="flex flex-col gap-1">
+          <span class="font-label-mono text-[10px] text-on-surface-variant">6-digit pairing code</span>
+          <input id="manual-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2.5 text-on-surface font-mono text-[20px] tracking-[0.35em] text-center border border-outline outline-none focus:border-primary placeholder:text-on-surface-variant/30"/>
+        </label>
+
+        <button id="btn-manual-connect" class="w-full h-10 rounded-xl bg-primary text-white font-label-md text-label-md font-semibold shadow-sm active:scale-[0.98] transition-all">
+          Connect
+        </button>
+
         <span class="font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
-          Tip: press <strong>Copy pairing link</strong> in the PC Preferences and paste it above — the token is included.
+          Tip: the code changes after each successful pair. You can also paste the PC's <strong>Copy pairing link</strong> into the IP field.
         </span>
       </div>
     </section>
@@ -492,7 +555,7 @@
           <span>Check for Updates</span>
         </span>
         <p class="font-body-sm text-on-surface-variant text-[11px] leading-relaxed">
-          The app checks for newer versions. This app is currently v1.0.3.
+          The app checks for newer versions. This app is currently v1.0.4.
         </p>
         <button id="btn-check-updates" type="button" class="self-start px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[10px] font-semibold active:scale-95 transition-all">
           Check Now
@@ -521,7 +584,7 @@
         <ol class="font-body-sm text-on-surface-variant list-decimal list-inside space-y-1.5 leading-relaxed text-[12px]">
           <li><strong>Same Wi-Fi</strong>: Connect phone and PC to the same Wi-Fi.</li>
           <li><strong>Phone Hotspot</strong>: Turn on Personal Hotspot on phone and connect PC to it. Direct sync works automatically.</li>
-          <li><strong>Scan Once</strong>: In the PC widget, click <em>Preferences (tune)</em> to view the QR code. On this phone, go to <em>Sync</em>, tap <em>Start QR Scanner</em>, and point at the PC screen.</li>
+          <li><strong>Enter the code</strong>: In the PC widget, click <em>Preferences (tune)</em> to see its 6-digit pairing code. On this phone, go to <em>Sync</em>, type the PC's IP address and that code, then tap <em>Connect</em>.</li>
         </ol>
       </div>
 
@@ -537,7 +600,7 @@
         <ul class="font-body-sm text-on-surface-variant list-disc list-inside space-y-1 text-[12px]">
           <li><strong>Zero Cloud Databases</strong>: No tasks, notes, or timestamps are ever sent to third-party servers.</li>
           <li><strong>Zero Analytics & Telemetry</strong>: No user tracking, advertising SDKs, or diagnostic telemetry.</li>
-          <li><strong>Peer-to-Peer Encrypted</strong>: Communications between phone and PC occur directly on your local network using token-authenticated sockets.</li>
+          <li><strong>Peer-to-Peer Encrypted</strong>: Communications between phone and PC occur directly on your local network using pairing-code and token-authenticated sockets.</li>
         </ul>
       </div>
 
@@ -609,44 +672,46 @@
     </div>
   </div>
 
-  <!-- Bottom Navigation Bar (5 tabs) — fixed so it never disappears -->
-  <nav class="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-outline-variant flex items-center justify-around px-2 z-[100] shrink-0" style="padding-bottom: env(safe-area-inset-bottom);">
-    <!-- Active Tasks Tab (With real-time pending badge) -->
-    <button data-target="active-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 bg-primary text-white rounded-lg py-1 px-2.5 relative">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px] text-white">checklist</span>
-      <span class="font-label-mono text-[9px]">Today</span>
-      <span id="mobile-nav-pending-badge" class="hidden absolute -top-1 -right-0.5 min-w-[15px] h-[15px] px-1 items-center justify-center rounded-full bg-surface text-primary font-label-mono text-[9px] font-bold leading-none shadow-sm"></span>
-    </button>
-    
-    <!-- Repeated Habits Tab -->
-    <button data-target="repeated-tasks" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px]">event_repeat</span>
-      <span class="font-label-mono text-[9px]">Habits</span>
-    </button>
+  <!-- Bottom Navigation Bar — fixed, opaque, clears the system gesture inset -->
+  <nav id="mobile-bottom-nav" role="tablist" aria-label="Main navigation">
+    <div id="mobile-nav-row">
+      <!-- Active Tasks Tab (With real-time pending badge) -->
+      <button data-target="active-tasks" role="tab" aria-selected="true" class="mobile-tab-btn is-active relative">
+        <span class="mobile-tab-icon material-symbols-outlined">checklist</span>
+        <span class="mobile-tab-label">Today</span>
+        <span id="mobile-nav-pending-badge" class="hidden absolute top-0.5 right-1 min-w-[15px] h-[15px] px-1 items-center justify-center rounded-full bg-surface text-primary font-label-mono text-[9px] font-bold leading-none shadow-sm"></span>
+      </button>
 
-    <!-- History Tab (NO BADGE) -->
-    <button data-target="completed-history" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px]">done_all</span>
-      <span class="font-label-mono text-[9px]">History</span>
-    </button>
-    
-    <!-- Themes Tab -->
-    <button data-target="themes" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px]">palette</span>
-      <span class="font-label-mono text-[9px]">Themes</span>
-    </button>
-    
-    <!-- Sync Tab -->
-    <button data-target="sync" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px]">devices</span>
-      <span class="font-label-mono text-[9px]">Sync</span>
-    </button>
+      <!-- Repeated Habits Tab -->
+      <button data-target="repeated-tasks" role="tab" aria-selected="false" class="mobile-tab-btn">
+        <span class="mobile-tab-icon material-symbols-outlined">event_repeat</span>
+        <span class="mobile-tab-label">Habits</span>
+      </button>
 
-    <!-- Help & Legal Tab -->
-    <button data-target="legal" class="mobile-tab-btn flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface py-1 px-2.5">
-      <span class="mobile-tab-icon material-symbols-outlined text-[20px]">help</span>
-      <span class="font-label-mono text-[9px]">Help</span>
-    </button>
+      <!-- History Tab (NO BADGE) -->
+      <button data-target="completed-history" role="tab" aria-selected="false" class="mobile-tab-btn">
+        <span class="mobile-tab-icon material-symbols-outlined">done_all</span>
+        <span class="mobile-tab-label">History</span>
+      </button>
+
+      <!-- Themes Tab -->
+      <button data-target="themes" role="tab" aria-selected="false" class="mobile-tab-btn">
+        <span class="mobile-tab-icon material-symbols-outlined">palette</span>
+        <span class="mobile-tab-label">Themes</span>
+      </button>
+
+      <!-- Sync Tab -->
+      <button data-target="sync" role="tab" aria-selected="false" class="mobile-tab-btn">
+        <span class="mobile-tab-icon material-symbols-outlined">devices</span>
+        <span class="mobile-tab-label">Sync</span>
+      </button>
+
+      <!-- Help & Legal Tab -->
+      <button data-target="legal" role="tab" aria-selected="false" class="mobile-tab-btn">
+        <span class="mobile-tab-icon material-symbols-outlined">help</span>
+        <span class="mobile-tab-label">Help</span>
+      </button>
+    </div>
   </nav>
 
   <!-- Lottie player (local, offline) then the mobile client -->

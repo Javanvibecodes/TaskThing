@@ -15,7 +15,7 @@ contextBridge.exposeInMainWorld('tasksAPI', {
   
   // Mobile Sync & Network info
   getNetworkInfo: () => ipcRenderer.invoke('sync:getNetworkInfo'),
-  generatePairingQR: () => ipcRenderer.invoke('sync:generatePairingQR'),
+  regeneratePairingCode: () => ipcRenderer.invoke('sync:regeneratePairingCode'),
   broadcastMutation: (mutation) => ipcRenderer.invoke('sync:broadcastMutation', mutation),
   
   // Real-time synchronization events from mobile clients
@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('tasksAPI', {
   },
   onClientCountChange: (callback) => {
     ipcRenderer.on('sync:clientCount', (event, count) => callback(count));
+  },
+  onPairingCodeChange: (callback) => {
+    ipcRenderer.on('sync:pairingCode', (event, code) => callback(code));
   },
   
   // Notification / Events

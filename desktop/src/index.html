@@ -510,25 +510,27 @@
           </div>
 
           <div class="p-space-md flex flex-col gap-3 overflow-y-auto flex-1">
-            <!-- QR Pairing Card -->
+            <!-- Pairing code card -->
             <div class="bg-surface-container/60 rounded-xl p-space-md flex flex-col gap-2.5 border border-outline-variant">
               <div class="flex items-center justify-between">
-                <span class="font-label-mono text-[11px] text-on-surface uppercase tracking-wider font-semibold">Scan QR to Link Mobile App</span>
+                <span class="font-label-mono text-[11px] text-on-surface uppercase tracking-wider font-semibold">Link Mobile App</span>
                 <div class="flex items-center gap-1">
                   <span id="sync-card-dot" class="w-2 h-2 rounded-full bg-outline"></span>
                   <span id="sync-card-text" class="font-label-mono text-[10px] text-on-surface-variant">Ready</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <div class="w-40 h-40 bg-white rounded-lg p-1 flex items-center justify-center shrink-0 border border-outline-variant">
-                  <img id="qr-code-img" src="" alt="Pairing QR Code" class="w-full h-full object-contain"/>
+              <div class="flex items-end justify-between gap-3">
+                <div class="flex flex-col gap-1">
+                  <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Pairing code</span>
+                  <span id="pairing-code" class="font-mono text-[30px] leading-none font-bold tracking-[0.28em] text-primary select-all">------</span>
                 </div>
-                <div class="flex flex-col gap-1 text-[11px] text-on-surface-variant">
-                  <p class="leading-relaxed">Scan with the Task Thing Mobile camera to link directly.</p>
-                  <p class="text-[10px] text-on-surface-variant/80 leading-relaxed">No third-party cloud. Works via Wi-Fi router or phone mobile hotspot.</p>
-                </div>
+                <button id="btn-new-pairing-code" type="button" class="px-2.5 py-1.5 rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-mono text-[10px] font-semibold shrink-0 transition-colors">New code</button>
               </div>
+
+              <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                On your phone open <strong>Sync</strong> and enter this code with your PC's IP address. The code changes after every successful pair and never leaves this device.
+              </p>
 
               <!-- Connection coordinates -->
               <button id="btn-copy-sync" type="button" class="w-full py-1 rounded bg-primary text-white font-label-mono text-[10px] font-semibold hover:brightness-110 transition-colors">Copy pairing link</button>

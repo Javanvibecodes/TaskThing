@@ -2,6 +2,17 @@
 
 All notable changes to Task Thing will be documented in this file.
 
+## [1.0.4] - 2026-11-11
+
+### Changed
+- Sync pairing now uses a 6-digit code instead of a QR camera scan. The PC shows the code; the phone types it with the PC's IP. The code is single-use, rotated after every successful pair and rate limited against guessing, and reconnects use a token handed over during pairing.
+- The mobile bottom bar now has an opaque white backing, clears the Android gesture inset, and keeps the page clear of it, so tabs never overlap content.
+- The active tab paints its icon and label the same theme colour.
+- New **Disconnect** button ends an active or in-progress sync session.
+
+### Fixed
+- A failed connection attempt is aborted immediately, reports a clear reason, then returns the app to the disconnected state without retrying in the background.
+
 ## [1.0.3] - 2026-11-10
 
 ### Fixed

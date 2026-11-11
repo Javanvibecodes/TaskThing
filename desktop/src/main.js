@@ -1,7 +1,6 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, clipboard } = require('electron');
 const path = require('path');
 const os = require('os');
-const QRCode = require('qrcode');
 const LocalStore = require('./store');
 const SyncServer = require('./sync-server');
 
@@ -98,6 +97,11 @@ function initSyncServer() {
     onClientCountChange: (count) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('sync:clientCount', count);
+      }
+    },
+    onPairingCodeChange: (code) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('sync:pairingCode', code);
       }
     }
   });
@@ -306,41 +310,16 @@ ipcMain.handle('sync:getNetworkInfo', () => {
     allIps,
     port,
     token,
+    pairingCode: syncServer ? syncServer.getPairingCode() : '',
     clientCount,
     url: `http://${ip}:${port}`,
     wsUrl: `ws://${ip}:${port}?token=${token}`
   };
 });
 
-ipcMain.handle('sync:generatePairingQR', async () => {
-  const ip = getPrimaryIpAddress();
-  const allIps = getAllLocalIpAddresses().map(a => a.address);
-  const data = store ? store.get() : {};
-  const port = data.settings?.syncPort || 48721;
-  const token = data.settings?.pairingToken || 'TC-LOCAL';
-
-  // Keep the payload short so the QR modules stay large and easy to scan.
-  const payload = JSON.stringify({
-    app: 'Task Thing',
-    primaryHost: ip,
-    port: port,
-    token: token
-  });
-
-  try {
-    const qrDataUrl = await QRCode.toDataURL(payload, {
-      margin: 1,
-      errorCorrectionLevel: 'M',
-      color: {
-        dark: '#0B0C10',
-        light: '#FFFFFF'
-      },
-      width: 320
-    });
-    return { success: true, qr: qrDataUrl, payload };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+ipcMain.handle('sync:regeneratePairingCode', () => {
+  if (!syncServer) return null;
+  return syncServer.rotatePairingCode();
 });
 
 ipcMain.handle('app:checkLatestVersion', async () => {

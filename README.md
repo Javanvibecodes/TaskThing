@@ -1,6 +1,6 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.3
+**Version:** 1.0.4
 
 A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
 
@@ -31,17 +31,18 @@ Task Thing runs a local WebSocket sync server on your computer (default port **4
 
 1. Launch Task Thing on Windows.
 2. Click the **Preferences (tune)** icon in the sidebar.
-3. A QR code appears containing your PC's IP address, port **48721**, and a secure sync token.
-4. Click **Copy pairing link** to copy the full `ws://IP:PORT?token=...` link, or scan the QR code below.
+3. A **6-digit pairing code** appears next to your PC's IP address and port **48721**.
+4. Type that code into the phone (or use **Copy pairing link** for a one-paste setup).
 
 ### On Your Phone (Android)
 
 1. Open Task Thing from your app drawer.
 2. Tap the **Sync** tab at the bottom.
-3. Grant camera permission when the system dialog appears.
-4. Point your camera at the PC screen QR code — the scanner auto-detects the pairing payload with no extra framing required.
-5. **Alternative:** Paste the **Copy pairing link** value into the IP field, or enter your PC's local IP (for example `192.168.1.50`) plus port **48721** and the pairing token shown on the PC.
-6. The header pill turns blue when the live connection is active.
+3. Enter your PC's local IP (for example `192.168.1.50`) — no camera or QR scanning needed.
+4. Type the **6-digit pairing code** shown on the PC and tap **Connect**.
+5. The header pill turns blue when the live connection is active; **Disconnect** ends it, and **Reconnect** resumes without retyping the code.
+
+The code is single-use: the PC rotates it after every successful pairing, and it never leaves your devices. Reconnects use a long-lived token the PC hands over during pairing, so you only enter a code once per device.
 
 ### Real-Time Two-Way Synchronization
 
@@ -55,7 +56,7 @@ Changes made while the phone is offline are queued and sent automatically on the
 - **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto-appear each morning
 - **Real-Time Sync** — every change on either device propagates to the other over Wi-Fi in under a second
 - **Instant Branded Launch** — the Blob logo appears immediately when the app is opened (held for about 3 seconds on mobile) while the app loads, then the task dashboard appears
-- **No Offline Dependencies** — Tailwind styles, fonts, icons and the QR scanner are bundled inside the app, so startup never waits on a network request
+- **No Offline Dependencies** — Tailwind styles, fonts and icons are bundled inside the app, so startup never waits on a network request
 - **Clear Navigation State** — the active tab is highlighted in the selected theme colour, and the Today badge is only shown when tasks are actually pending
 - **No Placeholder Tasks** — the app goes straight to the task dashboard without loading skeletons or empty states
 - **Privacy-First** — all sync is local; no cloud accounts, no third-party servers
@@ -94,6 +95,6 @@ This project is open source under the **MIT License**. See the [GitHub Repositor
 ## Quick Start
 
 1. **Download** the app for your operating system from the table above.
-2. **Launch** the desktop widget and open **Preferences** to show the pairing QR code.
-3. **Open** Task Thing on your Android phone, tap **Sync**, and scan the QR code — or enter the IP manually.
+2. **Launch** the desktop widget and open **Preferences** to read the 6-digit pairing code.
+3. **Open** Task Thing on your Android phone, tap **Sync**, enter the PC IP and that code, then tap **Connect**.
 4. **Start adding tasks** on either device — they sync instantly.

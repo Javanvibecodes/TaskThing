@@ -89,7 +89,8 @@
   const btnThemeReset = document.getElementById('btn-theme-reset');
 
   // Settings & Pairing
-  const qrCodeImg = document.getElementById('qr-code-img');
+  const pairingCodeEl = document.getElementById('pairing-code');
+  const btnNewPairingCode = document.getElementById('btn-new-pairing-code');
   const syncHostIp = document.getElementById('sync-host-ip');
   const syncPort = document.getElementById('sync-port');
   const syncToken = document.getElementById('sync-token');
@@ -941,7 +942,12 @@
     quickTagText.textContent = tags[currentTagIndex];
   }
 
-  // ----------------- NETWORK & QR CODE -----------------
+  // ----------------- NETWORK & PAIRING CODE -----------------
+  function renderPairingCode(code) {
+    if (!pairingCodeEl) return;
+    pairingCodeEl.textContent = code || '------';
+  }
+
   async function loadNetworkInfo() {
     if (!window.tasksAPI) return;
     try {
@@ -949,16 +955,28 @@
       syncHostIp.textContent = net.ip;
       syncPort.textContent = net.port;
       syncToken.textContent = net.token;
+      renderPairingCode(net.pairingCode);
 
       updateSyncStatusUI(net.clientCount || 0);
-
-      const qrResult = await window.tasksAPI.generatePairingQR();
-      if (qrResult.success) {
-        qrCodeImg.src = qrResult.qr;
-      }
     } catch (err) {
       console.error('Error fetching network info:', err);
     }
+  }
+
+  if (window.tasksAPI?.onPairingCodeChange) {
+    window.tasksAPI.onPairingCodeChange((code) => renderPairingCode(code));
+  }
+
+  if (btnNewPairingCode) {
+    btnNewPairingCode.addEventListener('click', async () => {
+      try {
+        const code = await window.tasksAPI.regeneratePairingCode();
+        renderPairingCode(code);
+        showToast('New pairing code ready');
+      } catch (e) {
+        showToast('Could not refresh pairing code');
+      }
+    });
   }
 
   // ----------------- EVENT LISTENERS -----------------

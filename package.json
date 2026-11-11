@@ -1,6 +1,6 @@
 {
   "name": "task-thing-monorepo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Task Thing — Get your things together (Desktop Widget & Mobile App)",
   "private": true,
   "scripts": {

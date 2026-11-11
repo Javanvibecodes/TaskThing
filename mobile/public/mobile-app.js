@@ -27,8 +27,7 @@
   let reconnectTimer = null;
   let connectTimeout = null;
   let heartbeatTimer = null;
-  let isScanning = false;
-  let html5QrScanner = null;
+  let manualDisconnect = false;
   let currentPriority = 'urgent';
   let currentTagIndex = 0;
   let schedulingTarget = 'today'; // 'today' | 'tomorrow'
@@ -129,12 +128,11 @@
   const btnAddHabit = document.getElementById('mobile-btn-add-habit');
 
   // Sync screen elements
-  const btnToggleCamera = document.getElementById('btn-toggle-camera');
-  const cameraBtnText = document.getElementById('camera-btn-text');
   const manualIpInput = document.getElementById('manual-ip-input');
-  const manualTokenInput = document.getElementById('manual-token-input');
+  const manualCodeInput = document.getElementById('manual-code-input');
   const btnManualConnect = document.getElementById('btn-manual-connect');
   const btnReconnect = document.getElementById('mobile-btn-reconnect');
+  const btnDisconnect = document.getElementById('mobile-btn-disconnect');
   const mobileSyncDot = document.getElementById('mobile-sync-dot');
   const mobileSyncText = document.getElementById('mobile-sync-text');
   const mobileSyncDetailStatus = document.getElementById('mobile-sync-detail-status');
@@ -335,9 +333,49 @@
   }
 
   // ----------------- REAL-TIME SYNC CLIENT -----------------
-  async function connectToDesktop(customHost = null, isManual = false) {
-    if (reconnectTimer) clearTimeout(reconnectTimer);
+  function teardownSocket() {
     if (connectTimeout) clearTimeout(connectTimeout);
+    connectTimeout = null;
+    stopHeartbeat();
+    if (ws) {
+      ws.onopen = null;
+      ws.onmessage = null;
+      ws.onclose = null;
+      ws.onerror = null;
+      try { ws.close(); } catch (e) {}
+      ws = null;
+    }
+  }
+
+  // Kill the attempt at once, show why it failed, then settle back into the
+  // plain "no connection" state so nothing keeps retrying behind the user.
+  function failConnection(message) {
+    teardownSocket();
+    syncConfig.connected = false;
+    updateConnectionUI('failed', null, message);
+    setTimeout(() => {
+      if (!syncConfig.connected && !ws) updateConnectionUI('disconnected');
+    }, 4000);
+  }
+
+  function disconnectFromDesktop() {
+    manualDisconnect = true;
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+    teardownSocket();
+    syncConfig.connected = false;
+    updateConnectionUI('disconnected');
+    if (syncConfig.host) {
+      mobileSyncDetailStatus.textContent = 'Disconnected — tap Reconnect to sync again';
+    }
+  }
+
+  async function connectToDesktop(customHost = null, options = {}) {
+    const pairingCode = String(options.code || '').replace(/\D/g, '');
+
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+    teardownSocket();
 
     const hostToTry = customHost || syncConfig.host;
     if (!hostToTry) {
@@ -345,41 +383,31 @@
       return;
     }
 
+    manualDisconnect = false;
+
     const port = syncConfig.port || 48721;
-    const token = syncConfig.token || '';
-    const wsUrl = `ws://${hostToTry}:${port}?token=${encodeURIComponent(token)}`;
+    // A code is only ever used for the first pairing; reconnects use the
+    // long-lived token the desktop handed back after that pairing.
+    const credential = pairingCode
+      ? `code=${encodeURIComponent(pairingCode)}`
+      : `token=${encodeURIComponent(syncConfig.token || '')}`;
+    const wsUrl = `ws://${hostToTry}:${port}?${credential}`;
 
     updateConnectionUI('connecting', hostToTry);
 
     try {
-      if (ws) {
-        ws.onopen = null;
-        ws.onmessage = null;
-        ws.onclose = null;
-        ws.onerror = null;
-        try { ws.close(); } catch (e) {}
-        ws = null;
-      }
-
       ws = new WebSocket(wsUrl);
 
-      // 5-second strict timeout: abort if PC is unreachable
+      // Strict timeout: abort the attempt instead of leaving it hanging.
       connectTimeout = setTimeout(() => {
         if (ws && ws.readyState === WebSocket.CONNECTING) {
-          console.warn('WebSocket connection timed out for host:', hostToTry);
-          ws.onopen = null;
-          ws.onmessage = null;
-          ws.onclose = null;
-          ws.onerror = null;
-          try { ws.close(); } catch (e) {}
-          ws = null;
-          updateConnectionUI('failed', hostToTry, 'Connection timed out — PC unreachable');
-          if (!isManual) scheduleAutoReconnect();
+          failConnection('Connection timed out — the PC did not answer. Check the IP and that both devices are on the same Wi-Fi.');
         }
-      }, 5000);
+      }, 6000);
 
       ws.onopen = () => {
         if (connectTimeout) clearTimeout(connectTimeout);
+        connectTimeout = null;
         syncConfig.host = hostToTry;
         syncConfig.connected = true;
         syncConfig.mode = isHotspotIp(hostToTry) ? 'hotspot' : 'lan';
@@ -412,32 +440,34 @@
 
       ws.onclose = () => {
         if (connectTimeout) clearTimeout(connectTimeout);
+        connectTimeout = null;
         const wasConnected = syncConfig.connected;
         syncConfig.connected = false;
         stopHeartbeat();
         ws = null;
+
         if (wasConnected) {
           updateConnectionUI('disconnected');
-          scheduleAutoReconnect();
-        } else {
-          updateConnectionUI('failed', hostToTry, 'Connection failed — check the PC IP, port and pairing token');
+          if (!manualDisconnect) scheduleAutoReconnect();
+          return;
         }
+
+        if (manualDisconnect) {
+          updateConnectionUI('disconnected');
+          return;
+        }
+
+        failConnection(pairingCode
+          ? 'Pairing failed — that code is not valid for this PC. Get the current code from the PC Preferences and try again.'
+          : 'Connection failed — check the PC IP, the port, and that the phone is on the same Wi-Fi.');
       };
 
-      ws.onerror = (error) => {
-        if (connectTimeout) clearTimeout(connectTimeout);
-        console.error('WebSocket error:', error);
-        syncConfig.connected = false;
-        stopHeartbeat();
-        try { ws.close(); } catch (e) {}
-        ws = null;
-        updateConnectionUI('failed', hostToTry, 'Connection Failed — Host unreachable');
+      ws.onerror = () => {
+        // onclose reports the failure with a readable reason.
       };
     } catch (err) {
-      if (connectTimeout) clearTimeout(connectTimeout);
       console.error('WebSocket connection failed:', err);
-      ws = null;
-      updateConnectionUI('failed', hostToTry, 'Connection Failed: ' + (err.message || err));
+      failConnection('Connection failed: ' + (err.message || err));
     }
   }
 
@@ -465,6 +495,15 @@
 
   function handleServerMessage(msg) {
     const { type, payload } = msg;
+
+    if (type === 'PAIR_ACCEPTED' && payload && payload.token) {
+      // First pairing succeeded: remember the long-lived token and drop the
+      // one-time code so it is never reused.
+      syncConfig.token = payload.token;
+      persistSyncConfig();
+      if (manualCodeInput) manualCodeInput.value = '';
+      return;
+    }
 
     if (type === 'STATE_SNAPSHOT') {
       if (payload) {
@@ -534,10 +573,11 @@
   }
 
   function scheduleAutoReconnect() {
+    if (manualDisconnect) return;
     if (reconnectTimer) clearTimeout(reconnectTimer);
 
     reconnectTimer = setTimeout(async () => {
-      if (syncConfig.connected) return;
+      if (syncConfig.connected || manualDisconnect) return;
 
       // If we already have a successful connection host, try that first
       if (syncConfig.host) {
@@ -585,6 +625,10 @@
     const isConn = state === 'connected' || (ws && ws.readyState === WebSocket.OPEN);
     const isConnPending = state === 'connecting' || (ws && ws.readyState === WebSocket.CONNECTING);
     const isFailed = state === 'failed';
+
+    if (btnDisconnect) {
+      btnDisconnect.classList.toggle('hidden', !(isConn || isConnPending));
+    }
 
     if (isConn) {
       const modeText = syncConfig.mode === 'hotspot' ? 'Hotspot Synced' : 'LAN Synced';
@@ -985,81 +1029,6 @@
     tagLabel.textContent = tags[currentTagIndex];
   }
 
-  // ----------------- QR SCANNER & PAIRING -----------------
-  // Request camera permission before starting scanner
-  async function requestCameraPermission() {
-    try {
-      const permission = await navigator.permissions.query({ name: 'camera' });
-      if (permission.state === 'granted') return true;
-      if (permission.state === 'denied') {
-        alert('Camera permission was previously denied. Please enable it in browser settings to use QR scanning.');
-        return false;
-      }
-      // permission.state === 'prompt' - show browser prompt
-      return true; // let startScanner() handle the browser prompt
-    } catch (e) {
-      // Permissions API not supported, proceed directly
-      return true;
-    }
-  }
-
-  async function startScanner() {
-    if (typeof Html5Qrcode === 'undefined') {
-      alert('Camera module unavailable. Connect manually via IP below.');
-      return;
-    }
-
-    try {
-      if (html5QrScanner) {
-        try { await html5QrScanner.stop(); } catch (e) {}
-        html5QrScanner = null;
-      }
-
-      html5QrScanner = new Html5Qrcode('qr-reader');
-      // Pass { facingMode: "environment" } as 1st arg; no qrbox so there
-      // is no extra inner/horizontal scan box – the library scans the
-      // full video frame and auto-detects QR codes.
-      await html5QrScanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 15,
-          aspectRatio: 1.0,
-          // Native BarcodeDetector is dramatically faster where available
-          // (Android WebView / Chrome); the library falls back automatically.
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-        },
-        (decodedText) => {
-          handleScannedData(decodedText);
-          stopScanner();
-        },
-        () => {}
-      );
-      isScanning = true;
-      cameraBtnText.textContent = 'Stop Scanner';
-    } catch (err) {
-      console.error('Camera scanner start error:', err);
-      const msg = err.message || err;
-      alert('Camera error: ' + msg + '. If camera permission is blocked, please check app settings or connect manually with IP.');
-    }
-  }
-
-  async function stopScanner() {
-    if (html5QrScanner && isScanning) {
-      try {
-        await html5QrScanner.stop();
-        html5QrScanner.clear();
-      } catch (e) {}
-      isScanning = false;
-      cameraBtnText.textContent = 'Start QR Scanner';
-      document.getElementById('qr-reader').innerHTML = `
-        <span class="material-symbols-outlined text-[48px] text-on-surface-variant mb-2">qr_code_scanner</span>
-        <span class="font-label-mono text-[11px] text-on-surface-variant text-center px-4">
-          Point camera at the desktop widget QR code
-        </span>
-      `;
-    }
-  }
-
   // Accepts "ip", "ip:port", a query link, or a full pairing link such as
   // ws://192.168.1.15:48721?token=TC-AB12CD34 (what the PC copies).
   function parseManualTarget(rawValue) {
@@ -1099,46 +1068,13 @@
     };
   }
 
-  function handleScannedData(dataStr) {
-    try {
-      const parsed = JSON.parse(dataStr);
-      if (parsed.app === 'Task Thing' || parsed.app === 'tasks.core') {
-        syncConfig.host = parsed.primaryHost || parsed.host;
-        syncConfig.hosts = parsed.hosts || [syncConfig.host];
-        syncConfig.port = parsed.port || 48721;
-        syncConfig.token = parsed.token || '';
-        persistSyncConfig();
-
-        connectToDesktop(syncConfig.host);
-        alert(`Paired with PC at ${syncConfig.host}:${syncConfig.port}!`);
-        switchScreen('active-tasks');
-      } else {
-        alert('Unrecognized Task Thing QR code.');
-      }
-    } catch (e) {
-      alert('Invalid QR code format.');
-    }
-  }
-
   function switchScreen(targetKey) {
+    // Only one class drives the active look, so the icon and the label always
+    // share the same colour.
     tabButtons.forEach(btn => {
       const isTarget = btn.getAttribute('data-target') === targetKey;
-      const icon = btn.querySelector('.mobile-tab-icon');
-      if (isTarget) {
-        btn.classList.add('bg-primary', 'text-white', 'rounded-lg');
-        btn.classList.remove('text-primary', 'text-on-surface-variant');
-        if (icon) {
-          icon.classList.add('text-white');
-          icon.classList.remove('text-primary', 'text-on-surface-variant');
-        }
-      } else {
-        btn.classList.remove('bg-primary', 'text-white', 'rounded-lg');
-        btn.classList.add('text-on-surface-variant');
-        if (icon) {
-          icon.classList.remove('text-white', 'text-primary');
-          icon.classList.add('text-on-surface-variant');
-        }
-      }
+      btn.classList.toggle('is-active', isTarget);
+      btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
     });
 
     screens.forEach(s => {
@@ -1156,9 +1092,6 @@
     closeHabitForm();
     closeHabitModal();
 
-    if (targetKey !== 'sync' && isScanning) {
-      stopScanner();
-    }
   }
 
   // ----------------- MOBILE OPENING (clean logo splash) -----------------
@@ -1348,7 +1281,15 @@
       if (mobileSkeleton) mobileSkeleton.classList.add('hidden');
     }
 
-    if (syncConfig.host) {
+    // Only auto-reconnect when this phone has already paired (has a token);
+    // otherwise wait for the user's code entry instead of failing on launch.
+    if (manualIpInput) {
+      manualIpInput.value = syncConfig.host
+        ? `${syncConfig.host}${syncConfig.port ? ':' + syncConfig.port : ''}`
+        : '';
+    }
+
+    if (syncConfig.host && syncConfig.token) {
       connectToDesktop(syncConfig.host);
     } else {
       updateConnectionUI('disconnected');
@@ -1562,34 +1503,52 @@
 
     searchInput.addEventListener('input', (e) => renderHistory(e.target.value));
 
-    // Camera toggle
-    btnToggleCamera.addEventListener('click', () => {
-      if (isScanning) stopScanner();
-      else startScanner();
+    // Pairing code input: digits only, six max.
+    manualCodeInput?.addEventListener('input', () => {
+      manualCodeInput.value = manualCodeInput.value.replace(/\D/g, '').slice(0, 6);
     });
 
-    // Manual connect
+    // Manual / code pairing
     btnManualConnect.addEventListener('click', () => {
       const target = parseManualTarget(manualIpInput.value);
       if (!target) {
-        alert('Enter your PC IP address, for example 192.168.1.15:48721, or paste the pairing link from the PC.');
+        alert('Enter your PC IP address, for example 192.168.1.15, or paste the pairing link from the PC.');
         return;
       }
+
+      const code = manualCodeInput ? manualCodeInput.value.replace(/\D/g, '') : '';
+      if (target.token) {
+        syncConfig.token = target.token;
+        if (manualCodeInput) manualCodeInput.value = '';
+      }
+
+      if (!code && !target.token && !syncConfig.token) {
+        alert('Enter the 6-digit pairing code shown in the PC Preferences.');
+        return;
+      }
+
       syncConfig.host = target.host;
       syncConfig.port = target.port;
-      const typedToken = manualTokenInput ? manualTokenInput.value.trim() : '';
-      syncConfig.token = target.token || typedToken || syncConfig.token || 'TC-LOCAL';
       persistSyncConfig();
-      connectToDesktop(syncConfig.host, true);
+      connectToDesktop(syncConfig.host, { isManual: true, code });
+    });
+
+    manualCodeInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnManualConnect.click();
+      }
     });
 
     btnReconnect.addEventListener('click', () => {
       if (syncConfig.host) {
-        connectToDesktop(syncConfig.host, true);
+        connectToDesktop(syncConfig.host, { isManual: true });
       } else {
-        alert('Scan the PC QR code or enter PC IP address below to pair.');
+        alert('Enter the PC IP address and the 6-digit pairing code above.');
       }
     });
+
+    btnDisconnect?.addEventListener('click', () => disconnectFromDesktop());
 
     // Theme selector (Local Only)
     document.querySelectorAll('.mobile-preset-btn').forEach(btn => {
@@ -1606,7 +1565,7 @@
       setTimeout(() => {
         btnCheckUpdates.disabled = false;
         btnCheckUpdates.textContent = originalText;
-        alert('You are on the latest version of Task Thing (v1.0.3).');
+        alert('You are on the latest version of Task Thing (v1.0.4).');
       }, 700);
     });
 

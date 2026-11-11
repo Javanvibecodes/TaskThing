@@ -1,23 +1,81 @@
 const { WebSocketServer } = require('ws');
 const http = require('http');
-const url = require('url');
+const crypto = require('crypto');
+
+// Constant-time string compare so a wrong code cannot be timing-probed.
+function safeEqual(a, b) {
+  const left = Buffer.from(String(a ?? ''));
+  const right = Buffer.from(String(b ?? ''));
+  if (left.length !== right.length || left.length === 0) return false;
+  return crypto.timingSafeEqual(left, right);
+}
 
 /**
  * Task Thing SyncServer
  * Ultra-lightweight local-first WebSocket sync server.
  * Handles instant bi-directional updates, offline event reconciliation,
  * token-based security, and multi-interface LAN/hotspot connectivity.
+ *
+ * Pairing uses a short-lived 6-digit code shown on the PC. A phone that presents
+ * the current code is handed the long-lived pairing token, and the code is
+ * rotated immediately, so a code can never be replayed or shared between
+ * devices. Wrong guesses are rate limited per client address.
  */
 class SyncServer {
   constructor(options = {}) {
     this.port = options.port || 48721;
     this.token = options.token || 'TC-LOCAL';
+    this.pairingCode = options.pairingCode || SyncServer.createPairingCode();
+    this.onPairingCodeChange = options.onPairingCodeChange || (() => {});
+    this.failedAttempts = new Map();
     this.server = null;
     this.wss = null;
     this.clients = new Set();
     this.onMutation = options.onMutation || (() => {});
     this.onClientCountChange = options.onClientCountChange || (() => {});
     this.onRequestSnapshot = options.onRequestSnapshot || (() => ({}));
+  }
+
+  static createPairingCode() {
+    // 100000-999999: always six digits, never a leading zero.
+    return String(crypto.randomInt(100000, 1000000));
+  }
+
+  getPairingCode() {
+    return this.pairingCode;
+  }
+
+  rotatePairingCode() {
+    const previous = this.pairingCode;
+    do {
+      this.pairingCode = SyncServer.createPairingCode();
+    } while (this.pairingCode === previous);
+    try {
+      this.onPairingCodeChange(this.pairingCode);
+    } catch (e) {
+      console.warn('[tasks.core] Pairing code listener failed:', e.message);
+    }
+    return this.pairingCode;
+  }
+
+  isRateLimited(address) {
+    const entry = this.failedAttempts.get(address);
+    if (!entry) return false;
+    if (Date.now() > entry.resetAt) {
+      this.failedAttempts.delete(address);
+      return false;
+    }
+    return entry.count >= 5;
+  }
+
+  noteFailedAttempt(address) {
+    const now = Date.now();
+    const entry = this.failedAttempts.get(address);
+    if (!entry || now > entry.resetAt) {
+      this.failedAttempts.set(address, { count: 1, resetAt: now + 60000 });
+    } else {
+      entry.count += 1;
+    }
   }
 
   start(port, token) {
@@ -93,16 +151,30 @@ class SyncServer {
 
       this.wss = new WebSocketServer({ noServer: true });
 
-      // Handle Upgrade with Token Authentication
+      // Handle Upgrade with pairing-code / token authentication
       this.server.on('upgrade', (request, socket, head) => {
         const parsedUrl = new URL(request.url, 'http://localhost');
         const clientToken = parsedUrl.searchParams.get('token');
+        const clientCode = parsedUrl.searchParams.get('code');
+        const address = request.socket.remoteAddress || 'unknown';
 
-        if (this.token && clientToken !== this.token) {
+        const tokenOk = Boolean(this.token) && safeEqual(clientToken, this.token);
+        const codeOk = Boolean(this.pairingCode) && safeEqual(clientCode, this.pairingCode);
+
+        if (this.token && !tokenOk && !codeOk) {
+          if (this.isRateLimited(address)) {
+            socket.write('HTTP/1.1 429 Too Many Requests\r\n\r\n');
+            socket.destroy();
+            return;
+          }
+          this.noteFailedAttempt(address);
           socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
           socket.destroy();
           return;
         }
+
+        this.failedAttempts.delete(address);
+        request.pairedWithCode = codeOk && !tokenOk;
 
         this.wss.handleUpgrade(request, socket, head, (ws) => {
           this.wss.emit('connection', ws, request);
@@ -112,6 +184,20 @@ class SyncServer {
       this.wss.on('connection', (ws, request) => {
         this.clients.add(ws);
         this.onClientCountChange(this.clients.size);
+
+        // A code was used: hand over the long-lived token, then burn the code.
+        if (request.pairedWithCode) {
+          try {
+            ws.send(JSON.stringify({
+              type: 'PAIR_ACCEPTED',
+              payload: { token: this.token },
+              timestamp: Date.now()
+            }));
+          } catch (e) {
+            console.warn('[tasks.core] Could not send pairing token:', e.message);
+          }
+          this.rotatePairingCode();
+        }
 
         ws.isAlive = true;
         ws.on('pong', () => {
@@ -247,6 +333,7 @@ class SyncServer {
       this.server.close();
       this.server = null;
     }
+    this.failedAttempts.clear();
     this.clients.clear();
     this.onClientCountChange(0);
   }
