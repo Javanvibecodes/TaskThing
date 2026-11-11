@@ -11,11 +11,6 @@ A lightning-fast Electron desktop widget and Capacitor mobile companion that kee
 | **Windows 10/11 (x64)** | Installer `.exe` |
 | **Android 7.0+** | APK |
 
-### Direct links (release download URLs)
-
-- Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
-- Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
-
 The desktop installer is not code-signed, so Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
 
 ### Install notes
