@@ -1,21 +1,27 @@
-# Copyright and ownership
+# Copyright, license, and trademarks
 
-Copyright (c) 2026 Javanvibecodes. All rights reserved, subject to the
-applicable licenses for third-party components.
+Copyright (c) 2026 Javanvibecodes and the respective contributors.
 
-Task Thing is distributed as proprietary software. The public GitHub
-repository is provided for viewing and inspection; public visibility does not
-make the project open source and does not grant a general right to copy,
-modify, or redistribute the original project.
+The original Task Thing source code and repository materials are released
+under the MIT License. The license permits use, copying, modification,
+merging, publication, distribution, sublicensing, and sale, subject to the
+conditions in the [LICENSE](LICENSE) file.
 
-The Task Thing name, logo, visual identity, original application code,
-original documentation, and original creative assets are reserved by the
-rights holder unless a separate written permission or applicable third-party
-license says otherwise.
+Contributors retain copyright in their contributions. By submitting a
+contribution, you agree that it may be distributed under the repository's
+MIT License unless you and the project maintainers agree otherwise in
+writing.
 
-Third-party packages, fonts, icons, and other bundled materials may have
-separate owners and license terms. See THIRD_PARTY_NOTICES.md. Do not assume
-that this copyright statement applies to third-party materials.
+## Name and branding
 
-For permission requests, contact the repository owner through the GitHub
-profile associated with Javanvibecodes.
+The MIT License is a copyright license, not a trademark license. The Task
+Thing name, logo, and brand identifiers are not granted for use as trademarks
+or for implying that a fork, derivative product, or redistribution is an
+official project release or is endorsed by the original maintainers. You may
+change branding in your own fork and distribute it under a different name.
+
+## Third-party materials
+
+Third-party packages, fonts, icons, illustrations, and other bundled
+materials may have separate owners and license terms. Their own notices and
+licenses govern those materials. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

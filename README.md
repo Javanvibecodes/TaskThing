@@ -13,6 +13,7 @@ storage and direct Wi-Fi synchronization.
 
 [Download latest release](https://github.com/Javanvibecodes/TaskThing/releases/latest) ·
 [Documentation](docs/FEATURES.md) ·
+[Contribute](CONTRIBUTING.md) ·
 [Report a bug](https://github.com/Javanvibecodes/TaskThing/issues)
 
 </div>
@@ -20,7 +21,7 @@ storage and direct Wi-Fi synchronization.
 [![Release](https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge)](https://github.com/Javanvibecodes/TaskThing/releases)
 ![Electron](https://img.shields.io/badge/Desktop-Electron-47848F?style=for-the-badge)
 ![Capacitor](https://img.shields.io/badge/Mobile-Capacitor-119EFF?style=for-the-badge)
-![License](https://img.shields.io/badge/License-Proprietary-black?style=for-the-badge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ## What is Task Thing?
 
@@ -32,6 +33,22 @@ your local network.
 **Local-first by design:** core task data is stored on your devices. The
 current project does not require a Task Thing account or hosted Task Thing
 database. Update checks and issue reporting can connect to GitHub.
+
+## Open source
+
+Task Thing is open source under the **MIT License**. You are welcome to study,
+use, fork, modify, improve, and redistribute the project, including building
+your own applications and services on top of it, subject to the license.
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md)
+before opening a pull request. The MIT License applies to the project's
+copyrightable source and other materials in this repository, except where a
+file or third-party component carries a different notice.
+
+The Task Thing name, logo, and brand identity are not granted as trademarks
+by the MIT License. You may fork and modify the software, but do not present
+your fork or product as an official Task Thing release or imply endorsement.
+See [COPYRIGHT.md](COPYRIGHT.md).
 
 ## Downloads
 
@@ -141,15 +158,13 @@ support/update actions contact GitHub. Read [PRIVACY.md](PRIVACY.md) and
 
 ## License
 
-**Task Thing is proprietary software.** This repository is public for
-viewing and inspection only. No general permission is granted to copy,
-modify, redistribute, or create derivative works from the original project.
-Official application binaries are subject to [EULA.md](EULA.md). Third-party
-dependencies remain subject to their own licenses; see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Task Thing is released under the [MIT License](LICENSE). Third-party
+dependencies and bundled assets may carry their own licenses and notices;
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Support
+## Support and community
 
 Read [SUPPORT.md](SUPPORT.md) before opening an issue. Do not publish
 security vulnerabilities, pairing codes, reconnect tokens, or private task
-data in public issues.
+data in public issues. Pull requests and improvements are welcome; see
+[CONTRIBUTING.md](CONTRIBUTING.md).

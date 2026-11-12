@@ -4,7 +4,7 @@
   "description": "Task Thing — Get your things together",
   "main": "src/main.js",
   "type": "commonjs",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -16,21 +16,11 @@
   "build": {
     "appId": "com.taskthing.widget",
     "productName": "Task Thing",
-    "directories": {
-      "output": "dist"
-    },
+    "directories": { "output": "dist" },
     "artifactName": "Task-Thing-${os}-${arch}.${ext}",
-    "win": {
-      "target": ["nsis"]
-    },
-    "mac": {
-      "target": ["dmg", "zip"],
-      "category": "public.app-category.productivity"
-    },
-    "linux": {
-      "target": ["AppImage", "deb", "tar.gz"],
-      "category": "Utility"
-    },
+    "win": { "target": ["nsis"] },
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.productivity" },
+    "linux": { "target": ["AppImage", "deb", "tar.gz"], "category": "Utility" },
     "files": ["src/**/*", "package.json"],
     "icon": "build/icon.png"
   },

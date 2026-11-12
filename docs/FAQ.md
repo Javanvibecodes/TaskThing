@@ -51,9 +51,11 @@ public internet.
 
 ## Is Task Thing open source?
 
-No. The repository is public so people can view it, but the original
-application code is proprietary. See LICENSE and EULA.md. Third-party
-dependencies retain their own licenses.
+Yes. Task Thing is released under the MIT License. You may use, fork, modify,
+and redistribute the project, including building derivative applications,
+subject to the license terms. The Task Thing name and logo are not granted as
+trademarks. See [LICENSE](../LICENSE), [COPYRIGHT](../COPYRIGHT.md), and
+[CONTRIBUTING](../CONTRIBUTING.md).
 
 ## Is there an iOS, macOS, or Linux release?
 
