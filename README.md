@@ -3,22 +3,19 @@
 **Version:** 1.0.6
 
 <p align="center">
-  <img src="README image.png" alt="Task Thing Banner" width="100%" />
+  <img src="README%20image.png" alt="Task Thing Banner" width="100%" />
 </p>
-
-A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi‑Fi — no cloud, no third‑party servers. Your data stays on your devices.
 
 <p align="center">
   <a href="https://github.com/Javanvibecodes/TaskThing">
-    <img src="https://img.shields.io/github/stars/Javanvibecodes/TaskThing?style=for-the-badge&label=GitHub%20star&color=yellow" alt="GitHub star" />
-  </a>
-  <a href="https://github.com/Javanvibecodes/TaskThing/license">
-    <img src="https://img.shields.io/github/license/Javanvibecodes/TaskThing?style=for-the-badge&label=License&color=blue" alt="License: MIT" />
+    <img src="https://img.shields.io/badge/tech%20stack-Electron%20%7C%20Capacitor%20%7C%20Tailwind%20-0381FC?style=for-the-badge" alt="Tech Stack" />
   </a>
   <a href="https://github.com/Javanvibecodes/TaskThing/releases">
-    <img src="https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge&label=Version&color=green" alt="Version" />
+    <img src="https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge&label=Version&color=green" alt="Version 1.0.6" />
   </a>
 </p>
+
+A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi‑Fi — no cloud, no third‑party servers. Your data stays on your devices.
 
 ---
 
