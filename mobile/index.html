@@ -497,19 +497,27 @@
       </div>
 
       <!-- Real-Time Status Card -->
-      <div class="bg-surface-container rounded-2xl p-4 flex items-center justify-between border border-outline-variant">
-        <div class="flex flex-col">
+      <div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-3 border border-outline-variant">
+        <div class="flex flex-col gap-1 min-w-0">
           <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Sync State</span>
-          <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-on-surface font-semibold">Disconnected</span>
+          <span id="mobile-sync-detail-status" class="font-headline-sm text-body-md text-on-surface font-semibold break-words">Disconnected</span>
+          <span id="mobile-sync-peer" class="hidden font-label-mono text-[10px] text-on-surface-variant truncate"></span>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <button id="mobile-btn-disconnect" class="hidden px-3 py-1.5 rounded-lg bg-error-container text-error font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
-            Disconnect
+        <div class="flex items-stretch gap-2">
+          <button id="mobile-btn-refresh" class="flex-1 h-9 rounded-lg bg-surface-container-high text-on-surface font-label-mono text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[14px]">refresh</span>
+            <span>Refresh</span>
           </button>
-          <button id="mobile-btn-reconnect" class="px-3 py-1.5 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold active:scale-95 transition-all">
-            Reconnect
+          <button id="mobile-btn-reconnect" class="flex-1 h-9 rounded-lg bg-primary text-white font-label-mono text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[14px]">link</span>
+            <span>Reconnect</span>
+          </button>
+          <button id="mobile-btn-disconnect" class="hidden flex-1 h-9 rounded-lg bg-error-container text-error font-label-mono text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[14px]">link_off</span>
+            <span>Disconnect</span>
           </button>
         </div>
+        <p id="mobile-sync-hint" class="hidden font-body-sm text-[11px] leading-relaxed text-on-surface-variant"></p>
       </div>
 
       <!-- Pairing code card -->
@@ -524,7 +532,7 @@
 
         <label class="flex flex-col gap-1">
           <span class="font-label-mono text-[10px] text-on-surface-variant">PC IP address</span>
-          <input id="manual-ip-input" type="text" inputmode="decimal" placeholder="e.g. 192.168.1.15:48721" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
+          <input id="manual-ip-input" type="text" inputmode="decimal" placeholder="e.g. 192.168.1.15" class="w-full bg-surface-container-lowest rounded-lg px-3 py-2 text-on-surface font-label-mono text-[12px] border border-outline outline-none focus:border-primary"/>
         </label>
 
         <label class="flex flex-col gap-1">
@@ -537,7 +545,7 @@
         </button>
 
         <span class="font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
-          Tip: the code changes after each successful pair. You can also paste the PC's <strong>Copy pairing link</strong> into the IP field.
+          The app finds your PC's sync port by itself — just the IP is enough. You can also paste the PC's <strong>Copy pairing link</strong> into the IP field. The code changes after each successful pair.
         </span>
       </div>
     </section>

@@ -256,7 +256,9 @@
                   <span id="scheduling-target-badge" class="h-[20px] px-1.5 bg-primary-container text-on-primary-container font-label-mono text-[9px] rounded flex items-center">Today</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button id="btn-cancel-add" class="text-on-surface-variant hover:text-on-surface font-label-mono text-[10px] px-1">Cancel</button>
+                  <button id="btn-cancel-add" class="h-7 px-3 bg-primary text-white font-label-md text-label-md rounded-lg flex items-center gap-1 shadow-sm font-semibold active:scale-95 transition-all">
+                  Save Task
+                </button>
                 </div>
               </div>
             </div>
@@ -533,7 +535,13 @@
               </p>
 
               <!-- Connection coordinates -->
-              <button id="btn-copy-sync" type="button" class="w-full py-1 rounded bg-primary text-white font-label-mono text-[10px] font-semibold hover:brightness-110 transition-colors">Copy pairing link</button>
+              <div class="flex items-center gap-2">
+                <button id="btn-copy-sync" type="button" class="flex-1 py-1 rounded bg-primary text-white font-label-mono text-[10px] font-semibold hover:brightness-110 transition-colors">Copy pairing link</button>
+                <button id="btn-sync-refresh" type="button" title="Reload data and push it to your phone" class="px-2.5 py-1 rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-mono text-[10px] font-semibold shrink-0 flex items-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[13px]">refresh</span>
+                  <span>Refresh</span>
+                </button>
+              </div>
 
               <div class="pt-2 border-t border-outline-variant flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1 font-label-mono text-[11px] text-on-surface">
@@ -548,6 +556,12 @@
                   <span>Token:</span>
                   <span id="sync-token" class="font-mono text-on-surface/70 select-all">TC-AUTH</span>
                 </div>
+              </div>
+
+              <!-- Which phone is actually linked right now -->
+              <div id="sync-devices" class="hidden pt-2 border-t border-outline-variant flex-col gap-1">
+                <span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Connected device</span>
+                <div id="sync-devices-list" class="flex flex-col gap-1"></div>
               </div>
             </div>
 

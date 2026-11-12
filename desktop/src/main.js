@@ -1,8 +1,10 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, clipboard } = require('electron');
 const path = require('path');
+const crypto = require('crypto');
 const os = require('os');
 const LocalStore = require('./store');
 const SyncServer = require('./sync-server');
+const { findFreePort } = require('./port-utils');
 
 let mainWindow = null;
 let tray = null;
@@ -80,14 +82,30 @@ function createWindow() {
   initSyncServer();
 }
 
-function initSyncServer() {
+function sendToRenderer(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
+async function initSyncServer() {
   const data = store.get();
-  const port = data.settings?.syncPort || 48721;
-  const token = data.settings?.pairingToken || 'TC-LOCAL';
+  data.settings = data.settings || {};
+  let token = data.settings.pairingToken;
+  if (!/^[a-f0-9]{64}$/i.test(token || '')) {
+    token = crypto.randomBytes(32).toString('hex');
+    data.settings.pairingToken = token;
+  }
+
+  // Never assume the stored port is ours: a previous copy of the app, or any
+  // other program, may still be holding it. Take the first port that is free.
+  const port = await findFreePort(data.settings.syncPort);
+  data.settings.syncPort = port;
+  store.save(data);
 
   syncServer = new SyncServer({
     port,
-    token,
+    deviceName: os.hostname(),
     onRequestSnapshot: () => {
       return store.get();
     },
@@ -95,18 +113,18 @@ function initSyncServer() {
       handleRemoteMutation(mutation);
     },
     onClientCountChange: (count) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('sync:clientCount', count);
-      }
+      sendToRenderer('sync:clientCount', count);
+    },
+    onClientsChange: (clients) => {
+      sendToRenderer('sync:clients', clients);
     },
     onPairingCodeChange: (code) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('sync:pairingCode', code);
-      }
+      sendToRenderer('sync:pairingCode', code);
     }
   });
 
   syncServer.start(port, token);
+  sendToRenderer('sync:networkChanged');
 }
 
 function handleRemoteMutation(mutation) {
@@ -175,9 +193,7 @@ function handleRemoteMutation(mutation) {
   }
 
   // Forward to renderer so the desktop UI updates instantly
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('sync:remoteMutation', mutation);
-  }
+  sendToRenderer('sync:remoteMutation', mutation);
 }
 
 function createTray() {
@@ -275,7 +291,13 @@ ipcMain.handle('storage:loadData', () => {
 
 ipcMain.handle('storage:saveData', (event, data) => {
   if (!store) store = new LocalStore();
-  return store.save(data);
+  const saved = store.save(data);
+
+  // Push the authoritative state to every connected phone on *every* save.
+  // Relying on each call site to describe its own change meant edits such as
+  // "queue for tomorrow" never reached the phone at all.
+  if (syncServer) syncServer.broadcastSnapshot();
+  return saved;
 });
 
 ipcMain.handle('export:markdown', (event, content) => {
@@ -290,19 +312,25 @@ ipcMain.handle('clipboard:write', (event, content) => {
 
 // Broadcast local desktop changes to mobile clients
 ipcMain.handle('sync:broadcastMutation', (event, mutation) => {
-  if (syncServer && mutation) {
-    syncServer.broadcast(mutation.type, mutation.payload);
-    return true;
-  }
-  return false;
+  if (!syncServer) return false;
+  syncServer.broadcastSnapshot();
+  return true;
+});
+
+// Manual refresh: re-read the store from disk and push it to every device.
+ipcMain.handle('sync:refresh', () => {
+  if (!store) store = new LocalStore();
+  store.data = store.load();
+  if (syncServer) syncServer.broadcastSnapshot();
+  return store.get();
 });
 
 ipcMain.handle('sync:getNetworkInfo', () => {
   const ip = getPrimaryIpAddress();
   const allIps = getAllLocalIpAddresses();
   const data = store ? store.get() : {};
-  const port = data.settings?.syncPort || 48721;
-  const token = data.settings?.pairingToken || 'TC-LOCAL';
+  const port = data.settings?.syncPort || 0;
+  const token = data.settings?.pairingToken || '';
   const clientCount = syncServer ? syncServer.getClientCount() : 0;
 
   return {
@@ -310,10 +338,12 @@ ipcMain.handle('sync:getNetworkInfo', () => {
     allIps,
     port,
     token,
+    deviceName: os.hostname(),
     pairingCode: syncServer ? syncServer.getPairingCode() : '',
     clientCount,
-    url: `http://${ip}:${port}`,
-    wsUrl: `ws://${ip}:${port}?token=${token}`
+    clients: syncServer ? syncServer.getClients() : [],
+    url: port ? `http://${ip}:${port}` : '',
+    wsUrl: port ? `ws://${ip}:${port}` : ''
   };
 });
 

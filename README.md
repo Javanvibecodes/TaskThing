@@ -1,100 +1,170 @@
-# Task Thing — Minimal Desktop Widget & Mobile Companion
+# Task Thing
 
-**Version:** 1.0.6
+<div align="center">
+  <img src="./assets/banner.png" alt="Task Thing Banner" width="100%" />
+</div>
 
-A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
+<div align="center">
 
-## Download
+**Get your things together.**
 
-| Platform | Package | Direct download |
-|----------|---------|-----------------|
-| **Windows 10/11 (x64)** | Installer `.exe` | [Download Task-Thing-win-x64.exe](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
-| **Android 7.0+** | APK | [Download Task-Thing-android.apk](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
+A lightweight desktop task widget and mobile companion with local-first
+storage and direct Wi-Fi synchronization.
 
-### Direct links
+[Download latest release](https://github.com/Javanvibecodes/TaskThing/releases/latest) ·
+[Documentation](docs/FEATURES.md) ·
+[Contribute](CONTRIBUTING.md) ·
+[Report a bug](https://github.com/Javanvibecodes/TaskThing/issues)
 
-- Windows: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe`
-- Android: `https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk`
+</div>
 
-The desktop installer is not code-signed, so Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
+[![Release](https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge)](https://github.com/Javanvibecodes/TaskThing/releases)
+![Electron](https://img.shields.io/badge/Desktop-Electron-47848F?style=for-the-badge)
+![Capacitor](https://img.shields.io/badge/Mobile-Capacitor-119EFF?style=for-the-badge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-### Install notes
+## What is Task Thing?
 
-- **Windows:** run `Task-Thing-win-x64.exe`. The installer does not require administrator rights.
-- **Android:** open `Task-Thing-android.apk` on the device and allow installing from this source when prompted.
+Task Thing keeps daily tasks, recurring tasks, and completed work close at
+hand. The desktop app runs as a compact Electron widget. The mobile companion
+runs through Capacitor. When you pair them, they synchronize directly over
+your local network.
 
-## How PC & Phone Sync Works
+**Local-first by design:** core task data is stored on your devices. The
+current project does not require a Task Thing account or hosted Task Thing
+database. Update checks and issue reporting can connect to GitHub.
 
-Task Thing runs a local WebSocket sync server on your computer (default port **48721**). No cloud accounts, no third-party servers — your tasks and habits stay on your local network.
+## Open source
 
-### On Your PC (Desktop Widget)
+Task Thing is open source under the **MIT License**. You are welcome to study,
+use, fork, modify, improve, and redistribute the project, including building
+your own applications and services on top of it, subject to the license.
 
-1. Launch Task Thing on Windows.
-2. Click the **Preferences (tune)** icon in the sidebar.
-3. A **6-digit pairing code** appears next to your PC's IP address and port **48721**.
-4. Type that code into the phone (or use **Copy pairing link** for a one-paste setup).
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md)
+before opening a pull request. The MIT License applies to the project's
+copyrightable source and other materials in this repository, except where a
+file or third-party component carries a different notice.
 
-### On Your Phone (Android)
+The Task Thing name, logo, and brand identity are not granted as trademarks
+by the MIT License. You may fork and modify the software, but do not present
+your fork or product as an official Task Thing release or imply endorsement.
+See [COPYRIGHT.md](COPYRIGHT.md).
 
-1. Open Task Thing from your app drawer.
-2. Tap the **Sync** tab at the bottom.
-3. Enter your PC's local IP (for example `192.168.1.50`) — no camera or QR scanning needed.
-4. Type the **6-digit pairing code** shown on the PC and tap **Connect**.
-5. The header pill turns blue when the live connection is active; **Disconnect** ends it, and **Reconnect** resumes without retyping the code.
+## Downloads
 
-The code is single-use: the PC rotates it after every successful pairing, and it never leaves your devices. Reconnects use a long-lived token the PC hands over during pairing, so you only enter a code once per device.
+Get official builds from the
+[GitHub Releases page](https://github.com/Javanvibecodes/TaskThing/releases).
 
-### Real-Time Two-Way Synchronization
+| Platform | Download |
+| --- | --- |
+| Windows 10/11 (x64) | [Windows installer](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
+| Android | [Android APK](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
 
-Once paired, any task added, checked off, edited, or habit checked on either your PC desktop widget or your mobile phone syncs instantly over Wi-Fi. The connection is bidirectional — changes on either device propagate to the other in under a second.
+Only platforms with actual uploaded release assets are available for download.
+The desktop installer is currently not code-signed, so Windows may show a
+SmartScreen warning. Verify that the file came from the official release
+before deciding whether to proceed.
 
-Changes made while the phone is offline are queued and sent automatically on the next connection. The queue records only real pending differences, so an item that was added and then deleted again does not appear as an unsynced change.
+## Core features
 
-## Features
+- Daily task creation, editing, prioritization, scheduling, and completion.
+- Recurring tasks / habits.
+- Tags and completed-task history.
+- Compact desktop widget, system tray, and always-on-top option.
+- Mobile companion with local persistence.
+- Desktop-hosted, two-way local-network synchronization.
+- Offline mobile change queue and reconnect support.
+- Theme presets.
 
-- **Daily Tasks** — add, edit, prioritize, and check off tasks; syncs to phone instantly
-- **Recurring Habits** — set it-and-forget-it habits (daily, weekly) that auto-appear each morning
-- **Real-Time Sync** — every change on either device propagates to the other over Wi-Fi in under a second
-- **Instant Branded Launch** — the Blob logo appears immediately when the app is opened (held for about 3 seconds on mobile) while the app loads, then the task dashboard appears
-- **No Offline Dependencies** — Tailwind styles, fonts and icons are bundled inside the app, so startup never waits on a network request
-- **Clear Navigation State** — the active tab is highlighted in the selected theme colour, and the Today badge is only shown when tasks are actually pending
-- **No Placeholder Tasks** — the app goes straight to the task dashboard without loading skeletons or empty states
-- **Privacy-First** — all sync is local; no cloud accounts, no third-party servers
+See [FEATURES.md](docs/FEATURES.md) for the current feature inventory.
 
-## Build from Source
+## Pair your phone and PC
 
-Requirements: Node.js 20+, pnpm 12+, and the platform SDK for the target you are building.
+1. Connect the PC and phone to the same trusted Wi-Fi network or supported
+   hotspot.
+2. On the PC, open **Preferences** and find the local IP address and
+   six-digit pairing code.
+3. On Android, open Task Thing and select the **Sync** tab.
+4. Enter the PC's local IP address and the displayed pairing code.
+5. Tap **Connect** and wait for the connected status.
+
+The pairing code is single-use and rotates after successful pairing. The
+phone stores a reconnect token so you do not need to enter the code every
+time. Use sync only on a trusted network: the current HTTP/WebSocket
+connection is not encrypted.
+
+For full steps, see [the user guide](docs/USER_GUIDE.md) and
+[the sync protocol notes](docs/SYNC_PROTOCOL.md).
+
+## Build from source
+
+**Requirements:** Node.js 20+, pnpm 12+, and the SDKs for the platform you
+want to build.
 
 ```bash
+git clone https://github.com/Javanvibecodes/TaskThing.git
+cd TaskThing
 pnpm install
 ```
 
-### Desktop (Electron)
+Desktop development:
 
 ```bash
-pnpm desktop:start          # run from source
-pnpm desktop:dist:win       # Windows installer
+pnpm desktop
 ```
 
-### Mobile (Capacitor)
+Windows desktop package:
+
+```bash
+pnpm desktop:dist:win
+```
+
+Mobile build:
 
 ```bash
 cd mobile
 pnpm install
-pnpm build                  # compiles Tailwind CSS and the web bundle
+pnpm build
 npx cap sync
-npx cap open android        # or: cd android && ./gradlew assembleDebug
+npx cap open android
 ```
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes.
+See [BUILD.md](docs/BUILD.md) for platform requirements, build targets, and
+release checks.
+
+## Documentation
+
+| Document | Description |
+| --- | --- |
+| [Features](docs/FEATURES.md) | Current product capabilities |
+| [Installation](docs/INSTALLATION.md) | Download and installation instructions |
+| [User guide](docs/USER_GUIDE.md) | Tasks, habits, themes, and sync |
+| [FAQ](docs/FAQ.md) | Common questions and troubleshooting |
+| [Architecture](docs/ARCHITECTURE.md) | Application structure and data flow |
+| [Sync protocol](docs/SYNC_PROTOCOL.md) | Local network protocol and message types |
+| [Data storage](docs/DATA_STORAGE.md) | Local files, Web Storage, and backup notes |
+| [Security](docs/SECURITY.md) | Threat model and hardening recommendations |
+| [Roadmap](docs/ROADMAP.md) | Areas being evaluated; not delivery promises |
+| [Build](docs/BUILD.md) | Development and build instructions |
+| [Releases](docs/RELEASES.md) | Versioning and publishing checklist |
+| [Changelog](CHANGELOG.md) | Version-by-version changes |
+
+## Privacy
+
+Task Thing's core task data is stored locally. Local sync is direct between
+paired devices; it is not an encrypted transport or cloud backup. Some
+support/update actions contact GitHub. Read [PRIVACY.md](PRIVACY.md) and
+[SECURITY.md](SECURITY.md) before enabling synchronization.
 
 ## License
 
-This project is open source under the **MIT License**. See the [GitHub Repository](https://github.com/Javanvibecodes/TaskThing) for details.
+Task Thing is released under the [MIT License](LICENSE). Third-party
+dependencies and bundled assets may carry their own licenses and notices;
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Quick Start
+## Support and community
 
-1. **Download** the app for your operating system from the table above.
-2. **Launch** the desktop widget and open **Preferences** to read the 6-digit pairing code.
-3. **Open** Task Thing on your Android phone, tap **Sync**, enter the PC IP and that code, then tap **Connect**.
-4. **Start adding tasks** on either device — they sync instantly.
+Read [SUPPORT.md](SUPPORT.md) before opening an issue. Do not publish
+security vulnerabilities, pairing codes, reconnect tokens, or private task
+data in public issues. Pull requests and improvements are welcome; see
+[CONTRIBUTING.md](CONTRIBUTING.md).

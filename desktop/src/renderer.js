@@ -97,6 +97,9 @@
   const syncCardDot = document.getElementById('sync-card-dot');
   const syncCardText = document.getElementById('sync-card-text');
   const btnCopySync = document.getElementById('btn-copy-sync');
+  const btnSyncRefresh = document.getElementById('btn-sync-refresh');
+  const syncDevices = document.getElementById('sync-devices');
+  const syncDevicesList = document.getElementById('sync-devices-list');
   const btnSettingsPin = document.getElementById('btn-settings-pin');
   // Tag Popover Elements
   const newTagPopover = document.getElementById('new-tag-popover');
@@ -268,6 +271,16 @@
     window.tasksAPI.onClientCountChange((count) => {
       updateSyncStatusUI(count);
     });
+
+    if (window.tasksAPI.onClientsChange) {
+      window.tasksAPI.onClientsChange((clients) => {
+        renderConnectedDevices(clients);
+      });
+    }
+
+    if (window.tasksAPI.onNetworkChanged) {
+      window.tasksAPI.onNetworkChanged(() => loadNetworkInfo());
+    }
   }
 
   function updateSyncStatusUI(clientCount) {
@@ -286,6 +299,31 @@
       syncCardDot.className = 'w-1.5 h-1.5 rounded-full bg-outline';
       syncCardText.textContent = 'Local Direct Sync Ready (Waiting for Phone)';
     }
+  }
+
+  // Show exactly which phone is linked, not just a count.
+  function renderConnectedDevices(clients) {
+    if (!syncDevices || !syncDevicesList) return;
+    const list = Array.isArray(clients) ? clients : [];
+
+    if (list.length === 0) {
+      syncDevices.classList.add('hidden');
+      syncDevices.classList.remove('flex');
+      syncDevicesList.innerHTML = '';
+      return;
+    }
+
+    syncDevices.classList.remove('hidden');
+    syncDevices.classList.add('flex');
+    syncDevicesList.innerHTML = list.map((client) => `
+      <div class="flex items-center justify-between gap-2 bg-surface-container-high/60 rounded px-2 py-1">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="material-symbols-outlined text-[14px] text-secondary">smartphone</span>
+          <span class="font-label-mono text-[11px] text-on-surface truncate">${escapeHtml(client.name)}</span>
+        </div>
+        <span class="font-label-mono text-[9px] text-on-surface-variant uppercase shrink-0">Live</span>
+      </div>
+    `).join('');
   }
 
   async function handleIncomingRemoteMutation(mutation) {
@@ -385,7 +423,7 @@
 
       card.innerHTML = `
         <div class="flex items-center gap-space-sm min-w-0 flex-1">
-          <button data-task-id="${task.id}" class="task-check-btn w-4 h-4 rounded-full bg-surface-container-highest hover:bg-primary/20 flex items-center justify-center text-transparent hover:text-primary transition-colors flex-shrink-0" title="Mark done">
+          <button data-task-id="${escapeHtml(task.id)}" class="task-check-btn w-4 h-4 rounded-full bg-surface-container-highest hover:bg-primary/20 flex items-center justify-center text-transparent hover:text-primary transition-colors flex-shrink-0" title="Mark done">
             <span class="material-symbols-outlined text-[13px]">check</span>
           </button>
           <div class="flex flex-col min-w-0 cursor-pointer task-title-box">
@@ -958,6 +996,7 @@
       renderPairingCode(net.pairingCode);
 
       updateSyncStatusUI(net.clientCount || 0);
+      renderConnectedDevices(net.clients || []);
     } catch (err) {
       console.error('Error fetching network info:', err);
     }
@@ -965,6 +1004,24 @@
 
   if (window.tasksAPI?.onPairingCodeChange) {
     window.tasksAPI.onPairingCodeChange((code) => renderPairingCode(code));
+  }
+
+  // Manual refresh: reload the store from disk and push it to every device.
+  if (btnSyncRefresh) {
+    btnSyncRefresh.addEventListener('click', async () => {
+      try {
+        const fresh = await window.tasksAPI.refreshSync();
+        if (fresh) appData = fresh;
+        renderActiveTasks();
+        renderCompletedHistory();
+        renderRepeatedTasks();
+        updateTomorrowBanner();
+        await loadNetworkInfo();
+        showToast('Refreshed and pushed to your phone');
+      } catch (e) {
+        showToast('Could not refresh');
+      }
+    });
   }
 
   if (btnNewPairingCode) {
@@ -1033,7 +1090,7 @@
       }
     });
 
-    btnCancelAdd.addEventListener('click', closeQuickAdd);
+    btnCancelAdd.addEventListener('click', submitQuickTask);
     btnEmptyAdd?.addEventListener('click', () => openQuickAdd('today'));
 
     // Dropdown for "Add for Today" vs "Set for Tomorrow"
