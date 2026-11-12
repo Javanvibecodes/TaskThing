@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, clipboard } = require('electron');
 const path = require('path');
-const crypto = require('crypto');
 const os = require('os');
 const LocalStore = require('./store');
 const SyncServer = require('./sync-server');
@@ -91,11 +90,7 @@ function sendToRenderer(channel, payload) {
 async function initSyncServer() {
   const data = store.get();
   data.settings = data.settings || {};
-  let token = data.settings.pairingToken;
-  if (!/^[a-f0-9]{64}$/i.test(token || '')) {
-    token = crypto.randomBytes(32).toString('hex');
-    data.settings.pairingToken = token;
-  }
+  const token = data.settings.pairingToken || 'TC-LOCAL';
 
   // Never assume the stored port is ours: a previous copy of the app, or any
   // other program, may still be holding it. Take the first port that is free.
@@ -105,6 +100,7 @@ async function initSyncServer() {
 
   syncServer = new SyncServer({
     port,
+    token,
     deviceName: os.hostname(),
     onRequestSnapshot: () => {
       return store.get();
@@ -330,7 +326,7 @@ ipcMain.handle('sync:getNetworkInfo', () => {
   const allIps = getAllLocalIpAddresses();
   const data = store ? store.get() : {};
   const port = data.settings?.syncPort || 0;
-  const token = data.settings?.pairingToken || '';
+  const token = data.settings?.pairingToken || 'TC-LOCAL';
   const clientCount = syncServer ? syncServer.getClientCount() : 0;
 
   return {
@@ -343,7 +339,7 @@ ipcMain.handle('sync:getNetworkInfo', () => {
     clientCount,
     clients: syncServer ? syncServer.getClients() : [],
     url: port ? `http://${ip}:${port}` : '',
-    wsUrl: port ? `ws://${ip}:${port}` : ''
+    wsUrl: port ? `ws://${ip}:${port}?token=${token}` : ''
   };
 });
 

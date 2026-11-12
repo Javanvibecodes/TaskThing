@@ -54,6 +54,7 @@ class SyncServer {
     do {
       this.pairingCode = SyncServer.createPairingCode();
     } while (this.pairingCode === previous);
+    this.pairingCodeExpiresAt = Date.now() + this.pairingCodeTtlMs;
     try {
       this.onPairingCodeChange(this.pairingCode);
     } catch (e) {
@@ -94,12 +95,20 @@ class SyncServer {
     try {
       // HTTP server for health-checks, status, WebRTC signaling & WebSocket upgrades
       this.server = http.createServer((req, res) => {
-        // Universal CORS
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+        const origin = req.headers.origin || '';
+        const allowedOrigins = new Set(['capacitor://localhost', 'http://localhost', 'https://localhost']);
+        if (allowedOrigins.has(origin)) {
+          res.setHeader('Access-Control-Allow-Origin', origin);
+          res.setHeader('Vary', 'Origin');
+          res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        }
         if (req.method === 'OPTIONS') {
+          if (!allowedOrigins.has(origin)) {
+            res.writeHead(403);
+            res.end();
+            return;
+          }
           res.writeHead(204);
           res.end();
           return;

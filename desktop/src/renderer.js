@@ -423,7 +423,7 @@
 
       card.innerHTML = `
         <div class="flex items-center gap-space-sm min-w-0 flex-1">
-          <button data-task-id="${escapeHtml(task.id)}" class="task-check-btn w-4 h-4 rounded-full bg-surface-container-highest hover:bg-primary/20 flex items-center justify-center text-transparent hover:text-primary transition-colors flex-shrink-0" title="Mark done">
+          <button data-task-id="${task.id}" class="task-check-btn w-4 h-4 rounded-full bg-surface-container-highest hover:bg-primary/20 flex items-center justify-center text-transparent hover:text-primary transition-colors flex-shrink-0" title="Mark done">
             <span class="material-symbols-outlined text-[13px]">check</span>
           </button>
           <div class="flex flex-col min-w-0 cursor-pointer task-title-box">
