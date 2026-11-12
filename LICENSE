@@ -1,30 +1,21 @@
-PROPRIETARY SOFTWARE LICENSE
+MIT License
 
-Copyright (c) 2026 Javanvibecodes. All rights reserved.
+Copyright (c) 2026 Javanvibecodes
 
-Task Thing, including its source code, application code, design, visual assets,
-documentation, branding, and other original materials in this repository
-(collectively, the "Software"), is proprietary and is not released under an
-open-source license.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-No permission is granted to copy, modify, adapt, publish, distribute,
-sublicense, sell, rent, or create derivative works from the Software, in whole
-or in part, except where a right is expressly granted in a separate written
-agreement signed by the rights holder or where applicable law does not permit
-that restriction.
-
-You may view this public repository on GitHub. Viewing the repository does not
-grant any additional license or ownership rights. A public repository may be
-cloned or downloaded through GitHub; this notice does not technically prevent
-that access.
-
-Official binary releases, if provided, are licensed under the Task Thing End
-User License Agreement (EULA.md). Third-party components remain subject to
-their own licenses, which are not replaced by this notice.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW. See EULA.md for
-additional terms.
-
-For licensing enquiries or written permission, contact the repository owner
-through the GitHub profile associated with Javanvibecodes.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

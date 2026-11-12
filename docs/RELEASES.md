@@ -24,7 +24,7 @@ This is a release convention, not a guarantee of compatibility.
 6. Inspect permissions, network behavior, and security changes.
 7. Generate SHA-256 checksums for release assets.
 8. Verify third-party license obligations and include required notices.
-9. Confirm EULA.md and PRIVACY.md match the shipped behavior.
+9. Confirm LICENSE, PRIVACY.md, and THIRD_PARTY_NOTICES.md are included and accurate.
 10. Upload only artifacts that have been built and tested.
 
 ## Release notes
@@ -37,7 +37,7 @@ Each GitHub release should state:
 - known limitations;
 - installation/upgrade notes;
 - checksums for downloadable files; and
-- links to the EULA, privacy notice, and changelog.
+- links to the MIT License, privacy notice, third-party notices, and changelog.
 
 ## Artifact naming
 

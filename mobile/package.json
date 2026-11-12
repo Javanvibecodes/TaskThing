@@ -2,7 +2,7 @@
   "name": "task-thing-mobile",
   "version": "1.0.6",
   "description": "Task Thing — Mobile App for Android and iOS",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build:css": "tailwindcss -c tailwind.config.js -i src/tailwind.css -o public/assets/tailwind.css --minify",
