@@ -2,16 +2,34 @@
 
 **Version:** 1.0.6
 
-A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi-Fi — no cloud, no third-party servers. Your data stays on your devices.
+<p align="center">
+  <img src="README image.png" alt="Task Thing Banner" width="100%" />
+</p>
+
+A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi‑Fi — no cloud, no third‑party servers. Your data stays on your devices.
+
+<p align="center">
+  <a href="https://github.com/Javanvibecodes/TaskThing">
+    <img src="https://img.shields.io/github/stars/Javanvibecodes/TaskThing?style=for-the-badge&label=GitHub%20star&color=yellow" alt="GitHub star" />
+  </a>
+  <a href="https://github.com/Javanvibecodes/TaskThing/license">
+    <img src="https://img.shields.io/github/license/Javanvibecodes/TaskThing?style=for-the-badge&label=License&color=blue" alt="License: MIT" />
+  </a>
+  <a href="https://github.com/Javanvibecodes/TaskThing/releases">
+    <img src="https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge&label=Version&color=green" alt="Version" />
+  </a>
+</p>
+
+---
 
 ## Download
 
 | Platform | Package |
-|----------|---------|
+| -------- | ------- |
 | **Windows 10/11 (x64)** | [Installer `.exe`](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-win-x64.exe) |
 | **Android 7.0+** | [APK](https://github.com/Javanvibecodes/TaskThing/releases/latest/download/Task-Thing-android.apk) |
 
-The desktop installer is not code-signed, so Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
+> The desktop installer is not code-signed, so Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
 
 ### Install notes
 
@@ -58,7 +76,7 @@ Changes made while the phone is offline are queued and sent automatically on the
 
 ## Build from Source
 
-Requirements: Node.js 20+, pnpm 12+, and the platform SDK for the target you are building.
+**Requirements:** Node.js 20+, pnpm 12+, and the platform SDK for the target you are building.
 
 ```bash
 pnpm install
