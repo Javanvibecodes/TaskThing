@@ -1,6 +1,5 @@
 # Task Thing — Minimal Desktop Widget & Mobile Companion
 
-**Version:** 1.0.6
 
 <div align="center">
   <img src="./assets/banner.png" alt="Task Thing Banner" width="100%" />
