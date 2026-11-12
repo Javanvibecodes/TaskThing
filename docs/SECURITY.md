@@ -1,63 +1,38 @@
 # Security model and hardening notes
 
-## Intended environment
+## Current status
 
-Task Thing's current sync feature is intended for a private, trusted local
-network between a user's own desktop and phone. It is not designed to expose
-the desktop sync server to the public internet.
+Task Thing continues to use direct local-network HTTP and WebSockets. This hardening pass improves authentication and protocol limits, but **does not encrypt LAN traffic**. Do not use sync on an untrusted network, port-forward the sync port, or expose it to the public internet.
 
-## Existing protections
+## Implemented in this hardening pass
 
-- Electron renderer uses context isolation, sandboxing, and disabled Node
-  integration.
-- Renderer access to native functions goes through a preload bridge.
-- Pairing accepts a six-digit random code or the persistent reconnect token.
-- Code comparison uses Node's timing-safe equality function.
-- A successful code-based pairing rotates the code.
-- Failed authentication is rate limited by remote address.
-- WebSocket connections have a heartbeat monitor.
+- The desktop generates a 256-bit reconnect token with Node's cryptographic random generator. The predictable TC-LOCAL fallback is removed.
+- WebSocket credentials move from URL query parameters into WebSocket subprotocols to reduce accidental leakage through URL logs.
+- Pairing codes expire after five minutes and refresh when rotated.
+- WebSocket payloads are capped at 1 MiB.
+- The unauthenticated HTTP WebRTC signaling relay is disabled.
+- The HTTP snapshot endpoint requires a Bearer token.
+- CORS is restricted to Capacitor localhost origins.
+- Offline mutation batches are capped at 100 items.
+- Task IDs are escaped before interpolation into HTML attributes.
+- Android app-data backup is disabled.
 
-## Important limitations
+## Remaining security work
 
-- HTTP/WebSocket traffic is unencrypted; credentials and task data can be
-  observed by an attacker with a suitable network position.
-- The server binds to all network interfaces, not only loopback.
-- The persistent reconnect token is stored in desktop JSON and mobile
-  localStorage; it is not protected by a dedicated secret vault.
-- The six-digit code has no explicit time-to-live in the current code.
-- `/ping` and `/webrtc-signal` are unauthenticated.
-- CORS is permissive. CORS is not an authentication boundary.
-- Android allows cleartext traffic for local connectivity.
-- Local task stores are not encrypted at rest.
-- The protocol does not provide robust multi-device conflict resolution.
-- A firewall or router may expose the listening port if misconfigured.
+- **Encryption is not implemented yet.** A safe WSS migration requires certificate provisioning, trust, pinning, and rotation that work in Android and iOS WebViews.
+- The server still listens on all interfaces to support LAN and hotspot sync. Keep the network private and firewall the port.
+- Reconnect tokens remain in desktop app data and mobile localStorage; platform secure storage is not yet integrated.
+- Android cleartext remains enabled because the current LAN protocol is HTTP/WS. Removing it before HTTPS/WSS migration would break sync.
+- Desktop HTML still loads remote Tailwind and Google Fonts and contains inline code; a restrictive CSP requires bundling and refactoring these resources.
+- IPC sender validation, complete IPC input schemas, mutation schema validation, replay/idempotency protection, device revocation, and full integration tests remain outstanding.
+- Dependency audits must be run against both lockfiles before each release. This patch does not certify all transitive dependencies as vulnerability-free.
 
 ## User precautions
 
 1. Pair only devices you own or trust.
 2. Use a private Wi-Fi network or a trusted hotspot.
-3. Do not port-forward the sync port or expose it to the public internet.
-4. Do not share screenshots containing pairing codes, tokens, or task data.
-5. Protect device login and backups.
-6. Keep the app updated from official releases.
+3. Never expose the sync port to the public internet.
+4. Do not share pairing codes, tokens, or task data.
+5. Keep device login protected and install updates from official releases.
 
-## Recommended engineering hardening
-
-Before broad public or commercial distribution, prioritize:
-
-- Use WSS/HTTPS with authenticated certificates or a secure local transport.
-- Bind to the narrowest required interfaces and provide an explicit
-  opt-in for LAN access.
-- Authenticate every sensitive HTTP endpoint and remove or secure
-  unauthenticated signaling.
-- Replace wildcard CORS with an explicit origin policy where applicable.
-- Add pairing-code expiry, attempt throttling, and a user-controlled
-  revocation/reset workflow.
-- Store reconnect credentials in platform secure storage where available.
-- Validate message schemas, payload sizes, and mutation permissions.
-- Add protocol version negotiation and replay/idempotency protections.
-- Add automated security tests and dependency vulnerability checks.
-- Review Android cleartext and backup settings before production release.
-
-This document describes known behavior and recommendations; it is not a
-security certification or guarantee.
+This document describes implemented controls and known limitations; it is not a security certification or guarantee.

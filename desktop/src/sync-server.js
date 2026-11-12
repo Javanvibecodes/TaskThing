@@ -54,7 +54,6 @@ class SyncServer {
     do {
       this.pairingCode = SyncServer.createPairingCode();
     } while (this.pairingCode === previous);
-    this.pairingCodeExpiresAt = Date.now() + this.pairingCodeTtlMs;
     try {
       this.onPairingCodeChange(this.pairingCode);
     } catch (e) {
@@ -104,14 +103,8 @@ class SyncServer {
           res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         }
         if (req.method === 'OPTIONS') {
-          if (!allowedOrigins.has(origin)) {
-            res.writeHead(403);
-            res.end();
-            return;
-          }
-          res.writeHead(204);
-          res.end();
-          return;
+          if (!allowedOrigins.has(origin)) { res.writeHead(403); res.end(); return; }
+          res.writeHead(204); res.end(); return;
         }
 
         const parsedUrl = new URL(req.url, 'http://localhost');
