@@ -425,13 +425,13 @@
 
     // A code is only ever used for the first pairing; reconnects use the
     // long-lived token the desktop handed back after that pairing.
-    const credential = pairingCode
-      ? `code=${encodeURIComponent(pairingCode)}`
-      : `token=${encodeURIComponent(syncConfig.token || '')}`;
-    const wsUrl = `ws://${hostToTry}:${port}?${credential}`;
+    const wsUrl = `ws://${hostToTry}:${port}`;
+    const authProtocol = pairingCode
+      ? `taskthing-code-${pairingCode}`
+      : `taskthing-token-${syncConfig.token || ''}`;
 
     try {
-      ws = new WebSocket(wsUrl);
+      ws = new WebSocket(wsUrl, ['taskthing', authProtocol]);
 
       // Strict timeout: abort the attempt instead of leaving it hanging.
       connectTimeout = setTimeout(() => {

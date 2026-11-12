@@ -24,7 +24,9 @@ function safeEqual(a, b) {
 class SyncServer {
   constructor(options = {}) {
     this.port = options.port || 48721;
-    this.token = options.token || 'TC-LOCAL';
+    this.token = options.token || '';
+    this.pairingCodeTtlMs = 5 * 60 * 1000;
+    this.pairingCodeExpiresAt = Date.now() + this.pairingCodeTtlMs;
     this.pairingCode = options.pairingCode || SyncServer.createPairingCode();
     this.onPairingCodeChange = options.onPairingCodeChange || (() => {});
     this.failedAttempts = new Map();
@@ -83,6 +85,7 @@ class SyncServer {
   start(port, token) {
     if (port) this.port = port;
     if (token) this.token = token;
+    if (!/^[a-f0-9]{64}$/i.test(this.token)) throw new Error('A 256-bit cryptographic sync token is required.');
 
     if (this.server) {
       this.stop();
@@ -117,28 +120,17 @@ class SyncServer {
           return;
         }
 
-        // WebRTC Signaling Relay endpoint for remote cellular fallback
-        if (parsedUrl.pathname === '/webrtc-signal' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk);
-          req.on('end', () => {
-            try {
-              const signal = JSON.parse(body);
-              this.broadcast('WEBRTC_SIGNAL', signal);
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true }));
-            } catch (err) {
-              res.writeHead(400, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: err.message }));
-            }
-          });
+        // The unauthenticated HTTP signaling relay has been removed.
+        if (parsedUrl.pathname === '/webrtc-signal') {
+          res.writeHead(404);
+          res.end();
           return;
         }
 
         // Snapshot REST endpoint for quick fetch
         if (parsedUrl.pathname === '/snapshot') {
-          const clientToken = parsedUrl.searchParams.get('token');
-          if (this.token && clientToken !== this.token) {
+          const clientToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+          if (!safeEqual(clientToken, this.token)) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Unauthorized' }));
             return;
@@ -153,19 +145,18 @@ class SyncServer {
         res.end();
       });
 
-      this.wss = new WebSocketServer({ noServer: true });
+      this.wss = new WebSocketServer({ noServer: true, maxPayload: 1024 * 1024, handleProtocols: (protocols) => protocols.has('taskthing') ? 'taskthing' : false });
 
       // Handle Upgrade with pairing-code / token authentication
       this.server.on('upgrade', (request, socket, head) => {
-        const parsedUrl = new URL(request.url, 'http://localhost');
-        const clientToken = parsedUrl.searchParams.get('token');
-        const clientCode = parsedUrl.searchParams.get('code');
         const address = request.socket.remoteAddress || 'unknown';
+        const protocols = String(request.headers['sec-websocket-protocol'] || '').split(',').map(v => v.trim()).filter(Boolean);
+        const clientToken = protocols.find(v => v.startsWith('taskthing-token-'))?.slice(16) || '';
+        const clientCode = protocols.find(v => v.startsWith('taskthing-code-'))?.slice(15) || '';
+        const tokenOk = safeEqual(clientToken, this.token);
+        const codeOk = Date.now() <= this.pairingCodeExpiresAt && safeEqual(clientCode, this.pairingCode);
 
-        const tokenOk = Boolean(this.token) && safeEqual(clientToken, this.token);
-        const codeOk = Boolean(this.pairingCode) && safeEqual(clientCode, this.pairingCode);
-
-        if (this.token && !tokenOk && !codeOk) {
+        if (!tokenOk && !codeOk) {
           if (this.isRateLimited(address)) {
             socket.write('HTTP/1.1 429 Too Many Requests\r\n\r\n');
             socket.destroy();
@@ -274,7 +265,8 @@ class SyncServer {
   }
 
   handleClientMessage(clientWs, message) {
-    const { type, payload, timestamp } = message;
+    if (!message || typeof message !== 'object' || Array.isArray(message)) return;
+    const { type, payload } = message;
 
     // 0. A phone introducing itself, so the PC can show which device is linked
     if (type === 'HELLO') {
@@ -307,7 +299,7 @@ class SyncServer {
 
     // 2. Offline queue batch reconciliation
     if (type === 'OFFLINE_QUEUE_SYNC') {
-      if (Array.isArray(payload)) {
+      if (Array.isArray(payload) && payload.length <= 100) {
         payload.forEach(item => {
           this.onMutation(item);
         });
@@ -319,10 +311,7 @@ class SyncServer {
     }
 
     // 3. WebRTC signaling pass-through
-    if (type === 'WEBRTC_SIGNAL') {
-      this.broadcast('WEBRTC_SIGNAL', payload, clientWs);
-      return;
-    }
+    if (type === 'WEBRTC_SIGNAL') return;
 
     // 4. Regular mutation
     // Always answer with the full authoritative snapshot instead of forwarding
