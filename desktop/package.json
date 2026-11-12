@@ -4,6 +4,7 @@
   "description": "Task Thing — Get your things together",
   "main": "src/main.js",
   "type": "commonjs",
+  "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -20,39 +21,21 @@
     },
     "artifactName": "Task-Thing-${os}-${arch}.${ext}",
     "win": {
-      "target": [
-        "nsis"
-      ]
+      "target": ["nsis"]
     },
     "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
+      "target": ["dmg", "zip"],
       "category": "public.app-category.productivity"
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb",
-        "tar.gz"
-      ],
+      "target": ["AppImage", "deb", "tar.gz"],
       "category": "Utility"
     },
-    "files": [
-      "src/**/*",
-      "package.json"
-    ],
+    "files": ["src/**/*", "package.json"],
     "icon": "build/icon.png"
   },
-  "keywords": [
-    "widget",
-    "tasks",
-    "desktop",
-    "productivity"
-  ],
+  "keywords": ["widget", "tasks", "desktop", "productivity"],
   "author": "Task Thing",
-  "license": "MIT",
   "devDependencies": {
     "electron": "^45.2.3",
     "electron-builder": "26.0.12"
