@@ -2,18 +2,16 @@
 
 **Version:** 1.0.6
 
-<p align="center">
-  <img src="README%20image.png" alt="Task Thing Banner" width="100%" />
-</p>
+<div align="center">
+  <img src="./assets/banner.png" alt="Task Thing Banner" width="100%" />
+</div>
 
-<p align="center">
-  <a href="https://github.com/Javanvibecodes/TaskThing">
+<a href="https://github.com/Javanvibecodes/TaskThing">
     <img src="https://img.shields.io/badge/tech%20stack-Electron%20%7C%20Capacitor%20%7C%20Tailwind%20-0381FC?style=for-the-badge" alt="Tech Stack" />
   </a>
   <a href="https://github.com/Javanvibecodes/TaskThing/releases">
     <img src="https://img.shields.io/github/v/release/Javanvibecodes/TaskThing?style=for-the-badge&label=Version&color=green" alt="Version 1.0.6" />
   </a>
-</p>
 
 A lightning-fast Electron desktop widget and Capacitor mobile companion that keep your daily tasks and recurring habits synchronized seamlessly over local Wi‑Fi — no cloud, no third‑party servers. Your data stays on your devices.
 
